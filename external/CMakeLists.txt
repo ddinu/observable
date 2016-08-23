@@ -1,6 +1,2 @@
-include(ExternalProject)
-
-ExternalProject_Add(gtest
-    PREFIX gtest
-    SOURCE_DIR gtest
-)
+set(gtest_force_shared_crt ON)
+add_subdirectory(gtest)
