@@ -1,5 +1,5 @@
 Observable: Generic observable objects for C++
-==================================
+==============================================
 
 Did you ever needed to implement the observer pattern and didn't have an easy
 way to do it? This is for those times.
@@ -57,3 +57,14 @@ Legal and Licensing
 -------------------
 
 Observable is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
+
+Build status
+------------
+
+Visual Studio 2015 builds:
+
+ * |win32 build| (32 bit)
+ * |win64 build| (64 bit)
+
+.. |win32 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
+.. |win64 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
