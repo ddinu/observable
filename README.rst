@@ -7,7 +7,7 @@ way to do it? This is for those times.
 Quick start
 -----------
 
-The library is header-only, just copy the `include/observable` directory into
+The library is header-only, just copy the ``include/observable`` directory into
 your include path and you're set.
 
 Example:
@@ -34,7 +34,7 @@ lambdas and can fire notifications that call your subscribed 'observers'.
 
 Only functions that have the correct number and types of parameters get called.
 
-If you use `notify_tagged()`, the tag used when subscribing also has to match
+If you use ``notify_tagged()``, the tag used when subscribing also has to match
 the one used for the notification.
 
 What's with the CMake files?
