@@ -12,8 +12,7 @@ source_group(src REGULAR_EXPRESSION src/.*)
 source_group(src\\detail REGULAR_EXPRESSION src/detail/.*)
 
 add_executable(observable_test ${SOURCE_FILES})
-enable_strict_warnings(observable_test)
-set_cpp_standard(observable_test)
+configure_compiler(observable_test)
 target_link_libraries(observable_test gtest gtest_main)
 target_include_directories(observable_test PRIVATE include)
 target_include_directories(observable_test
