@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "gtest.h"
 #include "observable/detail/function_collection.hpp"
 
 namespace observable { namespace detail { namespace test {
@@ -12,7 +12,7 @@ TEST(function_collection_test, default_constructed_collection_is_empty)
 TEST(function_collection_test, default_constructed_collection_has_size_zero)
 {
     function_collection functions;
-    ASSERT_EQ(functions.size(), 0);
+    ASSERT_EQ(functions.size(), 0u);
 }
 
 TEST(function_collection_test, can_insert_function)
@@ -45,7 +45,7 @@ TEST(function_collection_test, size_increases_after_insert)
     function_collection functions;
     functions.insert<void()>([]() {});
 
-    ASSERT_EQ(functions.size(), 1);
+    ASSERT_EQ(functions.size(), 1u);
 }
 
 TEST(function_collection_test, size_is_correct)
@@ -55,7 +55,7 @@ TEST(function_collection_test, size_is_correct)
     functions.insert<void()>([]() {});
     functions.insert<void(float)>([](auto) { });
 
-    ASSERT_EQ(functions.size(), 2);
+    ASSERT_EQ(functions.size(), 2u);
 }
 
 TEST(function_collection_test, can_remove_function)
@@ -88,7 +88,7 @@ TEST(function_collection_test, call_all_returns_number_of_called_functions)
     functions.insert<void()>([]() { });
     auto call_count = functions.call_all<void()>();
 
-    ASSERT_EQ(call_count, 2);
+    ASSERT_EQ(call_count, 2u);
 }
 
 TEST(function_collection_test, call_all_returns_zero_for_empty_collection)
@@ -97,7 +97,7 @@ TEST(function_collection_test, call_all_returns_zero_for_empty_collection)
 
     auto call_count = functions.call_all<void()>();
 
-    ASSERT_EQ(call_count, 0);
+    ASSERT_EQ(call_count, 0u);
 }
 
 TEST(function_collection_test, call_arguments_are_passed_to_functions)
@@ -146,7 +146,7 @@ TEST(function_collection_test, call_all_returns_zero_if_no_function_matches)
     functions.insert<void(int)>([](auto) {});
     auto call_count = functions.call_all<void()>();
 
-    ASSERT_EQ(call_count, 0);
+    ASSERT_EQ(call_count, 0u);
 }
 
 TEST(function_collection_test, function_return_values_are_ignored)
@@ -156,7 +156,7 @@ TEST(function_collection_test, function_return_values_are_ignored)
     functions.insert<int()>([]() { return 5; });
     auto call_count = functions.call_all<int()>();
 
-    ASSERT_EQ(call_count, 1);
+    ASSERT_EQ(call_count, 1u);
 }
 
 TEST(function_collection_test, functions_are_copied)
@@ -164,7 +164,7 @@ TEST(function_collection_test, functions_are_copied)
     function_collection functions;
 
     auto call_count = 0;
-    auto id = functions.insert<void()>([&]() { ++call_count; });
+    functions.insert<void()>([&]() { ++call_count; });
 
     auto copy = functions;
     copy.call_all<void()>();

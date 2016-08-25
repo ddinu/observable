@@ -1,6 +1,6 @@
 #include <functional>
 #include <type_traits>
-#include <gtest/gtest.h>
+#include "gtest.h"
 #include "observable/detail/function_traits.hpp"
 
 namespace observable { namespace detail { namespace test {
@@ -85,13 +85,13 @@ TYPED_TEST(function_traits_test, can_get_void_return_type)
 TYPED_TEST(function_traits_test, can_get_arity)
 {
     auto arity = function_traits<arity_3_type>::arity;
-    ASSERT_EQ(arity, 3);
+    ASSERT_EQ(arity, 3u);
 }
 
 TYPED_TEST(function_traits_test, arity_is_zero_for_no_args)
 {
     auto arity = function_traits<arity_0_type>::arity;
-    ASSERT_EQ(arity, 0);
+    ASSERT_EQ(arity, 0u);
 }
 
 TYPED_TEST(function_traits_test, is_functor_is_correctly_set)

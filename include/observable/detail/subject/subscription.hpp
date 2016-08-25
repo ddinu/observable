@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
-#include "../function_collection.hpp"
-#include "../function_handle.hpp"
+#include "observable/detail/function_collection.hpp"
+#include "observable/detail/function_handle.hpp"
 
 namespace observable { namespace detail { namespace subject {
 

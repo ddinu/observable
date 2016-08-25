@@ -7,8 +7,8 @@
 #include <vector>
 #include "copy_policy.hpp"
 #include "subscription.hpp"
-#include "../function_collection.hpp"
-#include "../function_handle.hpp"
+#include "observable/detail/function_collection.hpp"
+#include "observable/detail/function_handle.hpp"
 
 namespace observable { namespace detail { namespace subject {
 

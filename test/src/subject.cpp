@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <chrono>
 #include <vector>
-#include <gtest/gtest.h>
+#include "gtest.h"
 #include "observable/subject.hpp"
 
 namespace observable { namespace test {
@@ -72,7 +72,7 @@ TEST(subject_test, observer_with_const_reference_parameters_is_called)
     tsubject s;
     auto call_count = 0;
 
-    s.subscribe([&](int const & c) { ++call_count; });
+    s.subscribe([&](int const &) { ++call_count; });
     s.notify(5);
 
     ASSERT_EQ(call_count, 1);

@@ -1,5 +1,5 @@
 #include <memory>
-#include <gtest/gtest.h>
+#include "gtest.h"
 #include "observable/detail/function_collection.hpp"
 #include "observable/detail/function_handle.hpp"
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <tuple>
@@ -23,7 +24,7 @@ class function_collection
 public:
     //! Identifier for a function that has been inserted. You can use this to
     //! remove a previously added function.
-    using function_id = void const *;
+    using function_id = std::intptr_t const;
 
     //! Insert a function into the collection.
     //!
@@ -40,7 +41,7 @@ public:
         auto function_ptr = std::make_shared<decltype(function)>(move(function));
         functions_.emplace(key<FunctionSignature>(), function_ptr);
 
-        return static_cast<function_id>(function_ptr.get());
+        return reinterpret_cast<function_id>(function_ptr.get());
     }
 
     //! Remove a function from the collection.
@@ -57,7 +58,7 @@ public:
                           end(functions_),
                           [&](auto && kv) {
                               assert(kv.second);
-                              return kv.second.get() == id;
+                              return reinterpret_cast<function_id>(kv.second.get()) == id;
                           });
 
         if(it == end(functions_))
@@ -105,7 +106,7 @@ public:
         return find_if(begin(functions_),
                        end(functions_),
                        [&](auto && kv) {
-                           return kv.second.get() == id;
+                           return reinterpret_cast<function_id>(kv.second.get()) == id;
                        }) != end(functions_);
     }
 
@@ -126,7 +127,7 @@ private:
 
     //! Retrieve the type index of the provided type.
     template <typename FunctionSignature>
-    constexpr auto key() const
+    static constexpr auto key()
     {
         return std::type_index { typeid(FunctionSignature) };
     }
