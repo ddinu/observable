@@ -63,8 +63,11 @@ Build status
 
 Visual Studio 2015 builds:
 
- * |win32 build| (32 bit)
- * |win64 build| (64 bit)
+ * |win32 build|_ (32 bit)
+ * |win64 build|_ (64 bit)
 
 .. |win32 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
+.. _win32 build: https://ci.appveyor.com/project/ddinu/observable-xwigk/branch/master
+
 .. |win64 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
+.. _win64 build: https://ci.appveyor.com/project/ddinu/observable/branch/master
