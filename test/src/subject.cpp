@@ -124,38 +124,38 @@ TEST(subject_test, can_unsubscribe_from_handle_copy)
 
 TEST(subject_test, no_copy_policy_is_movable)
 {
-    ASSERT_TRUE((std::is_move_constructible_v<subject<int, copy::none>>));
-    ASSERT_TRUE((std::is_move_assignable_v<subject<int, copy::none>>));
+    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::none>>::value));
+    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::none>>::value));
 }
 
 TEST(subject_test, no_copy_policy_not_copyable)
 {
-    ASSERT_FALSE((std::is_copy_constructible_v<subject<int, copy::none>>));
-    ASSERT_FALSE((std::is_copy_assignable_v<subject<int, copy::none>>));
+    ASSERT_FALSE((std::is_copy_constructible<subject<int, copy::none>>::value));
+    ASSERT_FALSE((std::is_copy_assignable<subject<int, copy::none>>::value));
 }
 
 TEST(subject_test, shallow_copy_policy_is_movable)
 {
-    ASSERT_TRUE((std::is_move_constructible_v<subject<int, copy::shallow>>));
-    ASSERT_TRUE((std::is_move_assignable_v<subject<int, copy::shallow>>));
+    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::shallow>>::value));
+    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::shallow>>::value));
 }
 
 TEST(subject_test, shallow_copy_policy_is_copyable)
 {
-    ASSERT_TRUE((std::is_copy_constructible_v<subject<int, copy::shallow>>));
-    ASSERT_TRUE((std::is_copy_assignable_v<subject<int, copy::shallow>>));
+    ASSERT_TRUE((std::is_copy_constructible<subject<int, copy::shallow>>::value));
+    ASSERT_TRUE((std::is_copy_assignable<subject<int, copy::shallow>>::value));
 }
 
 TEST(subject_test, deep_copy_policy_is_movable)
 {
-    ASSERT_TRUE((std::is_move_constructible_v<subject<int, copy::deep>>));
-    ASSERT_TRUE((std::is_move_assignable_v<subject<int, copy::deep>>));
+    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::deep>>::value));
+    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::deep>>::value));
 }
 
 TEST(subject_test, deep_copy_policy_is_copyable)
 {
-    ASSERT_TRUE((std::is_copy_constructible_v<subject<int, copy::deep>>));
-    ASSERT_TRUE((std::is_copy_assignable_v<subject<int, copy::deep>>));
+    ASSERT_TRUE((std::is_copy_constructible<subject<int, copy::deep>>::value));
+    ASSERT_TRUE((std::is_copy_assignable<subject<int, copy::deep>>::value));
 }
 
 TEST(subject_test, moved_subject_works)

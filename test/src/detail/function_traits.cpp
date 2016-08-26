@@ -5,110 +5,128 @@
 
 namespace observable { namespace detail { namespace test {
 
-// Fixture.
-template <typename FunctionTypes>
-struct function_traits_test : testing::Test, FunctionTypes { };
-
-// Used to make the function types conveniently available to the fixture.
-template <typename Arity_0_Type, typename Arity_3_Type, bool IsFunctor>
-struct test_functions
+TEST(function_traits_test, can_get_function_return_type)
 {
-    using arity_0_type = Arity_0_Type;
-    using arity_3_type = Arity_3_Type;
-    static constexpr bool const is_functor = IsFunctor;
-};
-
-namespace funs {
-    // Various functions used for testing.
-
-    namespace {
-        void arity_0_f() { }
-        double arity_3_f(int &, float const, char const &) { return 0; }
-
-        auto arity_0_lambda_v = [=]() -> void { };
-        auto arity_3_lambda_v = [=](int &, float const, char const &) -> double { return 0; };
-
-        auto arity_0_mut_lambda_v = [=]() mutable -> void { };
-        auto arity_3_mut_lambda_v = [=](int &, float const, char const &) mutable -> double { return 0; };
-    }
-
-    using arity_0 = decltype(arity_0_f);
-    using arity_3 = decltype(arity_3_f);
-    using arity_0_lambda = decltype(arity_0_lambda_v);
-    using arity_3_lambda = decltype(arity_3_lambda_v);
-    using arity_0_mut_lambda = decltype(arity_0_mut_lambda_v);
-    using arity_3_mut_lambda = decltype(arity_3_mut_lambda_v);
-    using arity_0_generic = std::function<void()>;
-    using arity_3_generic = std::function<double(int &, float const, char const &)>;
+    using type = typename function_traits<double()>::return_type;
+    ASSERT_TRUE((std::is_same<type, double>::value));
 }
 
-// Test configuration.
-using functions = testing::Types<
-    // Function
-    test_functions<funs::arity_0, funs::arity_3, false>,
-    test_functions<funs::arity_0 &, funs::arity_3 &, false>,
-    test_functions<funs::arity_0 &&, funs::arity_3 &&, false>,
-    test_functions<funs::arity_0 *, funs::arity_3 *, false>,
-    test_functions<funs::arity_0 * const, funs::arity_3 * const, false>,
-
-    // Lambda
-    test_functions<funs::arity_0_lambda, funs::arity_3_lambda, true>,
-    test_functions<funs::arity_0_lambda &, funs::arity_3_lambda &, true>,
-    test_functions<funs::arity_0_lambda const &, funs::arity_3_lambda const &, true>,
-    test_functions<funs::arity_0_lambda &&, funs::arity_3_lambda &&, true>,
-    test_functions<funs::arity_0_lambda const &&, funs::arity_3_lambda const &&, true>,
-    test_functions<funs::arity_0_lambda *, funs::arity_3_lambda *, true>,
-    test_functions<funs::arity_0_lambda const *, funs::arity_3_lambda const *, true>,
-    test_functions<funs::arity_0_lambda const * const, funs::arity_3_lambda const * const, true>,
-
-    // Mutable lambda
-    test_functions<funs::arity_0_mut_lambda, funs::arity_3_mut_lambda, true>,
-
-    // std::function<>
-    test_functions<funs::arity_0_generic, funs::arity_3_generic, true>
->;
-
-TYPED_TEST_CASE(function_traits_test, functions);
-
-TYPED_TEST(function_traits_test, can_get_return_type)
+TEST(function_traits_test, can_get_function_pointer_return_type)
 {
-    using return_type = function_traits<arity_3_type>::return_type;
-    ASSERT_TRUE((std::is_same_v<return_type, double>));
+    using type = typename function_traits<double(*)()>::return_type;
+    ASSERT_TRUE((std::is_same<type, double>::value));
 }
 
-TYPED_TEST(function_traits_test, can_get_void_return_type)
+TEST(function_traits_test, can_get_lambda_return_type)
 {
-    using return_type = function_traits<arity_0_type>::return_type;
-    ASSERT_TRUE((std::is_same_v<return_type, void>));
+    auto lambda = [=]() -> double { return 5.0; };
+    using type = typename function_traits<decltype(lambda)>::return_type;
+    ASSERT_TRUE((std::is_same<type, double>::value));
 }
 
-TYPED_TEST(function_traits_test, can_get_arity)
+TEST(function_traits_test, can_get_function_arity)
 {
-    auto arity = function_traits<arity_3_type>::arity;
+    auto arity = function_traits<void(int, double, char)>::arity;
     ASSERT_EQ(arity, 3u);
 }
 
-TYPED_TEST(function_traits_test, arity_is_zero_for_no_args)
+TEST(function_traits_test, can_get_function_pointer_arity)
 {
-    auto arity = function_traits<arity_0_type>::arity;
+    auto arity = function_traits<void(*)(int, double, char)>::arity;
+    ASSERT_EQ(arity, 3u);
+}
+
+TEST(function_traits_test, can_get_lambda_arity)
+{
+    auto lambda = [=](int, double, char) { };
+    auto arity = function_traits<decltype(lambda)>::arity;
+    ASSERT_EQ(arity, 3u);
+}
+
+TEST(function_traits_test, arity_is_zero_for_no_args)
+{
+    auto arity = function_traits<void()>::arity;
     ASSERT_EQ(arity, 0u);
 }
 
-TYPED_TEST(function_traits_test, is_functor_is_correctly_set)
+TEST(function_traits, normalized_removes_function_pointer)
 {
-    ASSERT_EQ(function_traits<arity_0_type>::is_functor, is_functor);
+    using normalized = typename function_traits<void(*)(int)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int)>::value));
 }
 
-TYPED_TEST(function_traits_test, normalized_signature_is_correct)
+TEST(function_traits, normalized_extracts_lambda_signature)
 {
-    using normalized = function_traits<arity_3_type>::normalized;
-    ASSERT_TRUE((std::is_same_v<normalized, double(int, float, char)>));
+    auto lambda = [=](int) { };
+    using normalized = typename function_traits<decltype(lambda)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int)>::value));
 }
 
-TYPED_TEST(function_traits_test, signature_is_correct)
+TEST(function_traits_test, normalized_strips_parameter_refs)
 {
-    using signature = function_traits<arity_3_type>::signature;
-    ASSERT_TRUE((std::is_same_v<signature, double(int &, float const, char const &)>));
+    using normalized = typename function_traits<void(int &)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int &)>::value));
+}
+
+TEST(function_traits_test, normalized_strips_parameter_const)
+{
+    using normalized = typename function_traits<void(int const)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int)>::value));
+}
+
+TEST(function_traits_test, normalized_stripts_parameter_const_ref)
+{
+    using normalized = typename function_traits<void(int const &)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int)>::value));
+}
+
+TEST(function_traits_test, normalized_preserves_parameter_pointer)
+{
+    using normalized = typename function_traits<void(int *)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int *)>::value));
+}
+
+TEST(function_traits_test, normalized_preserves_parameter_const_pointer)
+{
+    using normalized = typename function_traits<void(int const *)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int const *)>::value));
+}
+
+TEST(function_traits_test, normalized_preserves_parameter_non_const_reference)
+{
+    using normalized = typename function_traits<void(int &)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int &)>::value));
+}
+
+TEST(function_traits_test, normalized_strips_parameter_pointer_const)
+{
+    using normalized = typename function_traits<void(int * const)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int *)>::value));
+}
+
+TEST(function_traits_test, normalized_strips_parameter_pointer_const_reference)
+{
+    using normalized = typename function_traits<void(int * const &)>::normalized;
+    ASSERT_TRUE((std::is_same<normalized, void(int *)>::value));
+}
+
+TEST(function_traits_test, signature_removes_function_pointer)
+{
+    using signature = typename function_traits<void(*)()>::signature;
+    ASSERT_TRUE((std::is_same<signature, void()>::value));
+}
+
+TEST(function_traits_test, signature_is_extracted_from_lambda)
+{
+    auto lambda = [=](int, double) -> char { return 'a'; };
+    using signature = typename function_traits<decltype(lambda)>::signature;
+    ASSERT_TRUE((std::is_same<signature, char(int, double)>::value));
+}
+
+TEST(function_traits_test, signature_preserves_arguments)
+{
+    using signature = typename function_traits<void(int const, char const &)>::signature;
+    ASSERT_TRUE((std::is_same<signature, void(int const, char const &)>::value));
 }
 
 } } }

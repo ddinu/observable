@@ -24,7 +24,7 @@ class function_collection
 public:
     //! Identifier for a function that has been inserted. You can use this to
     //! remove a previously added function.
-    using function_id = std::intptr_t const;
+    using function_id = std::intptr_t;
 
     //! Insert a function into the collection.
     //!

@@ -1,7 +1,6 @@
 include(compile_flags)
 
 set(SOURCE_FILES include/gtest.h
-                 src/observer.cpp
                  src/subject.cpp
                  src/detail/function_collection.cpp
                  src/detail/function_handle.cpp

@@ -76,11 +76,11 @@ protected:
             if(!h)
                 continue;
 
-            if(target.untagged_->contains(h->id()))
+            if(target.untagged_->contains(h->function_id()))
                 h->register_collection(target.untagged_.get());
 
             for(auto && kv : target.tagged_)
-                if(kv.second->contains(h->id()))
+                if(kv.second->contains(h->function_id()))
                     h->register_collection(kv.second.get());
         }
     }
@@ -160,7 +160,7 @@ public:
 
     data(data const & other)
     {
-        copy_impl(other, *this);
+        data::copy_impl(other, *this);
     }
 
     data(data &&) =default;
@@ -184,14 +184,14 @@ public:
 
 private:
     template <typename T>
-    using ptr_type = typename data::template ptr_type<T>;
+    using ptr = typename data::template ptr_type<T>; // Fix for MSVC
 
-    mutable ptr_type<mutex> data_mutex_ = ptr_type<mutex> { new mutex { } };
+    mutable ptr<mutex> data_mutex_ = ptr<mutex> { new mutex { } };
 
-    std::unordered_map<Tag, ptr_type<function_collection>> tagged_;
+    std::unordered_map<Tag, ptr<function_collection>> tagged_;
 
-    ptr_type<function_collection> untagged_ =
-                ptr_type<function_collection> { new function_collection { } };
+    ptr<function_collection> untagged_ =
+                ptr<function_collection> { new function_collection { } };
 
     std::vector<std::weak_ptr<function_handle>> handles_;
 

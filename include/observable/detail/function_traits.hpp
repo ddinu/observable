@@ -22,43 +22,51 @@ namespace observable { namespace detail {
 //! The following static values are provided:
 //!
 //! - arity: The number of arguments.
-//!
-//! - is_functor: True if the function is actually a functor, false otherwise.
 template <typename Functor>
 struct function_traits;
 
 namespace helper {
+    template <typename T>
+    struct norm { using type = T; };
+
+    template <typename T>
+    struct norm<T const> { using type = T; };
+
+    template <typename T>
+    struct norm<T const &> { using type = T; };
+
     template <typename Functor>
     struct traits;
 
-    // Unpack function pointers.
+    // Unpack functions
     template <typename Return, typename ... Arguments>
-    struct traits<Return(*)(Arguments...)>
+    struct traits<Return(Arguments ...)>
     {
         using signature = Return(Arguments ...);
 
-        using normalized = Return(std::remove_const_t<
-                                        std::remove_reference_t<Arguments>> ...);
+        using normalized = Return(typename norm<Arguments>::type ...);
 
         using return_type = Return;
 
         static constexpr std::size_t const arity = sizeof...(Arguments);
+    };
 
-        static constexpr bool const is_functor = false;
+    // Unpack function pointers.
+    template <typename Return, typename ... Arguments>
+    struct traits<Return(*)(Arguments...)> : traits<Return(Arguments ...)>
+    {
     };
 
     // Unpack class methods.
     template <typename Return, typename Functor, typename ... Arguments>
-    struct traits<Return(Functor::*)(Arguments...)> : traits<Return(*)(Arguments...)>
+    struct traits<Return(Functor::*)(Arguments...)> : traits<Return(Arguments...)>
     {
-        static constexpr bool const is_functor = true;
     };
 
     // Unpack const class methods.
     template <typename Return, typename Functor, typename ... Arguments>
-    struct traits<Return(Functor::*)(Arguments...) const> : traits<Return(*)(Arguments...)>
+    struct traits<Return(Functor::*)(Arguments...) const> : traits<Return(Arguments...)>
     {
-        static constexpr bool const is_functor = true;
     };
 
     // Unpack the call operator (for functors).
@@ -69,7 +77,9 @@ namespace helper {
 }
 
 template <typename Functor>
-struct function_traits : helper::traits<std::decay_t<std::remove_pointer_t<Functor>>>
+struct function_traits : helper::traits<
+                            typename std::decay<
+                                typename std::remove_pointer<Functor>::type>::type>
 {
 };
 

@@ -69,10 +69,12 @@ namespace detail {
     {
         using traits = function_traits<Function>;
 
-        static_assert(std::is_same_v<traits::return_type, void>,
+        static_assert(std::is_same<typename traits::return_type, void>::value,
                       "Subscription function cannot return a value.");
-        static_assert(std::is_convertible_v<std::function<traits::signature>,
-                                            std::function<traits::normalized>>,
+
+        static_assert(std::is_convertible<
+                            std::function<typename traits::signature>,
+                            std::function<typename traits::normalized>>::value,
                       "Subscription function arguments must not be non-const "
                       "references.");
     }
@@ -81,10 +83,10 @@ namespace detail {
     template <typename Collection, typename ... Arguments>
     auto call(Collection && collection, Arguments && ... arguments)
     {
-        using signature = function_traits<void(Arguments ...)>::normalized;
+        using signature = typename function_traits<void(Arguments ...)>::normalized;
         check_compatibility<signature>(); // This should never fail.
 
-        collection.call_all<signature>(std::forward<Arguments>(arguments) ...);
+        collection.template call_all<signature>(std::forward<Arguments>(arguments) ...);
     }
 }
 
@@ -93,16 +95,16 @@ template <typename Function>
 inline auto subject<Tag, CopyPolicy>::subscribe(Function && function) -> subscription
 {
     using traits = detail::function_traits<Function>;
-    using signature = traits::normalized;
+    using signature = typename traits::normalized;
     detail::check_compatibility<Function>();
 
-    lock_guard lock { data_mutex() };
+    typename subject::lock_guard lock { subject::data_mutex() };
 
-    auto * collection = untagged();
+    auto * collection = subject::untagged();
     assert(collection);
 
-    auto id = collection->insert<signature>(std::forward<Function>(function));
-    return make_subscription(untagged(), id);
+    auto id = collection->template insert<signature>(std::forward<Function>(function));
+    return subject::make_subscription(subject::untagged(), id);
 }
 
 template <typename Tag, typename CopyPolicy>
@@ -110,16 +112,16 @@ template <typename T, typename Function>
 inline auto subject<Tag, CopyPolicy>::subscribe(T && tag, Function && function) -> subscription
 {
     using traits = detail::function_traits<Function>;
-    using signature = traits::normalized;
+    using signature = typename traits::normalized;
     detail::check_compatibility<Function>();
 
-    lock_guard lock { data_mutex() };
+    typename subject::lock_guard lock { subject::data_mutex() };
 
-    auto * collection = tagged(tag);
+    auto * collection = subject::tagged(tag);
     assert(collection);
 
-    auto id = collection->insert<signature>(std::forward<Function>(function));
-    return make_subscription(collection, id);
+    auto id = collection->template insert<signature>(std::forward<Function>(function));
+    return subject::make_subscription(collection, id);
 }
 
 template <typename Tag, typename CopyPolicy>
@@ -129,8 +131,8 @@ inline void subject<Tag, CopyPolicy>::notify(Arguments ... arguments) const
     detail::function_collection snapshot;
 
     {
-        lock_guard lock { data_mutex() };
-        snapshot = *untagged();
+        typename subject::lock_guard lock { subject::data_mutex() };
+        snapshot = *subject::untagged();
     }
 
     detail::call(snapshot, std::forward<Arguments>(arguments) ...);
@@ -143,8 +145,8 @@ inline void subject<Tag, CopyPolicy>::notify_tagged(T && tag, Arguments ... argu
     detail::function_collection snapshot;
 
     {
-        lock_guard lock { data_mutex() };
-        snapshot = *tagged(tag);
+        typename subject::lock_guard lock { subject::data_mutex() };
+        snapshot = *subject::tagged(tag);
     }
 
     detail::call(snapshot, std::forward<Arguments>(arguments) ...);

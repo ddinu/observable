@@ -49,7 +49,7 @@ public:
         collections_.erase(it);
     }
 
-    function_collection::function_id id() const { return id_; }
+    function_collection::function_id function_id() const { return id_; }
 
     //! A function handle is not copy constructible.
     function_handle(function_handle const &) =delete;

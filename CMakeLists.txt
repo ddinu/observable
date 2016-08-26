@@ -1,11 +1,10 @@
 project(observable)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set(SOURCE_FILES include/observable/observer.hpp
-                 include/observable/subject.hpp
+set(SOURCE_FILES include/observable/subject.hpp
                  include/observable/detail/subject/copy_policy.hpp
                  include/observable/detail/subject/data.hpp
                  include/observable/detail/subject/subscription.hpp
