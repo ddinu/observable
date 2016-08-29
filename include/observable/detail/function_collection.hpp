@@ -1,10 +1,9 @@
 #pragma once
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
 #include <functional>
 #include <memory>
-#include <tuple>
+#include <mutex>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
@@ -12,36 +11,34 @@
 
 namespace observable { namespace detail {
 
-//! Collection for holding and calling heterogeneous generic functions.
+//! Collection that can hold and call heterogeneous, generic functions.
 //!
 //! \note This class needs RTTI to be enabled.
-//! \warning This class is copyable but all function instances will be shared
-//!          between copies (i.e. a shallow copy).
-//! \warning None of the methods defined by this class are safe to be called
-//!          concurrently.
+//! \warning All methods can be safely called in parallel.
 class function_collection
 {
 public:
     //! Identifier for a function that has been inserted. You can use this to
-    //! remove a previously added function.
-    using function_id = std::intptr_t;
+    //! remove a previously inserted function.
+    using function_id = std::size_t;
 
     //! Insert a function into the collection.
     //!
     //! \param function The function to be inserted.
-    //! \tparam The function's _normalized_ type (i.e. not a function pointer, but
-    //!         the actual function type, for example: `int(double)` ).
+    //! \tparam Signature The function's type (i.e. not a function pointer, but
+    //!                   the actual function type, for example: ``int(double)``).
     //! \return Function id that can be used to remove the function from the
     //!         collection.
-    template <typename FunctionSignature>
-    function_id insert(std::function<FunctionSignature> function)
+    template <typename Signature>
+    auto insert(std::function<Signature> function)
     {
         assert(function);
+        function_wrapper w { std::move(function) };
+        auto id = w.id;
 
-        auto function_ptr = std::make_shared<decltype(function)>(move(function));
-        functions_.emplace(key<FunctionSignature>(), function_ptr);
-
-        return reinterpret_cast<function_id>(function_ptr.get());
+        std::lock_guard<std::mutex> lock { mutex_ };
+        functions_.emplace(key<Signature>(), std::move(w));
+        return id;
     }
 
     //! Remove a function from the collection.
@@ -52,14 +49,13 @@ public:
     //! \param id Function id returned by insert.
     //! \return True if the function was a member of the collection and has been
     //!         removed.
-    bool remove(function_id const & id)
+    auto remove(function_id const & id)
     {
+        std::lock_guard<std::mutex> lock { mutex_ };
+
         auto it = find_if(begin(functions_),
                           end(functions_),
-                          [&](auto && kv) {
-                              assert(kv.second);
-                              return reinterpret_cast<function_id>(kv.second.get()) == id;
-                          });
+                          [&](auto && kv) { return kv.second.id == id; });
 
         if(it == end(functions_))
             return false;
@@ -74,52 +70,95 @@ public:
     //! If no function with the provided signature exists, this method does
     //! nothing.
     //!
-    //! \param args The arguments to pass to all functions that will be called.
-    //! \tparam FunctionSignature The signature of the functions that will be
-    //!                           called.
+    //! \param arguments The arguments to pass to all functions that will be
+    //!                  called.
+    //! \tparam Signature The signature of the functions that will be called.
     //! \tparam Arguments Types of the function's arguments.
+    //! \note All functions will be called on the thread that calls this method.
+    //!       This method will return once all functions have been called.
     //! \warning Return values of the called functions will be ignored.
     //! \return The number of functions that were called.
-    template <typename FunctionSignature, typename ... Argument>
-    std::size_t call_all(Argument && ... argument) const
+    template <typename Signature, typename ... Arguments>
+    auto call_all(Arguments && ... arguments) const
     {
-        std::size_t call_count = 0;
-        auto range = functions_.equal_range(key<FunctionSignature>());
+        std::vector<function_wrapper> snapshot;
 
-        for(auto i = range.first; i != range.second; ++i, ++call_count)
         {
-            assert(i->second);
-            auto function = reinterpret_cast<
-                                std::function<FunctionSignature> *>(
-                                        i->second.get());
-            assert(*function);
+            std::lock_guard<std::mutex> lock { mutex_ };
 
-            (void)(*function)(std::forward<Argument>(argument) ...);
+            auto range = functions_.equal_range(key<Signature>());
+            snapshot.resize(static_cast<std::size_t>(
+                                std::distance(range.first, range.second)));
+
+            std::transform(range.first,
+                           range.second,
+                           begin(snapshot),
+                           [](auto && kv) { return kv.second; });
         }
 
-        return call_count;
+        for(auto && w : snapshot)
+            w.call<Signature>(arguments ...);
+
+        return snapshot.size();
     }
 
     //! Check if a function id belongs to this collection.
-    bool contains(function_id const & id) const
+    auto contains(function_id const & id) const
     {
+        std::lock_guard<std::mutex> lock { mutex_ };
+
         return find_if(begin(functions_),
                        end(functions_),
-                       [&](auto && kv) {
-                           return reinterpret_cast<function_id>(kv.second.get()) == id;
-                       }) != end(functions_);
+                       [&](auto && kv) { return kv.second.id == id; })
+               != end(functions_);
     }
 
     //! Retrieve the number of functions in the collection.
-    std::size_t size() const
+    auto size() const
     {
+        std::lock_guard<std::mutex> lock { mutex_ };
         return functions_.size();
     }
 
     //! Returns true if the collection is empty.
-    bool empty() const
+    auto empty() const
     {
+        std::lock_guard<std::mutex> lock { mutex_ };
         return functions_.empty();
+    }
+
+public:
+    //! Create an empty collection.
+    function_collection() =default;
+
+    //! Collections are copy constructible.
+    function_collection(function_collection const & other)
+    {
+        std::lock_guard<std::mutex> lock_other { other.mutex_ };
+        functions_ = other.functions_;
+    }
+
+    //! Collections are move constructible.
+    function_collection(function_collection && other) :
+        functions_(std::move(other.functions_))
+    {
+    }
+
+    //! Collections are copy and move assignable.
+    function_collection & operator=(function_collection other)
+    {
+        swap(*this, other);
+        return *this;
+    }
+
+    //! Swap two collections.
+    friend void swap(function_collection & a, function_collection & b)
+    {
+        std::lock_guard<std::mutex> lock_a { a.mutex_ };
+        std::lock_guard<std::mutex> lock_b { b.mutex_ };
+
+        using std::swap;
+        swap(a.functions_, b.functions_);
     }
 
 private:
@@ -127,15 +166,44 @@ private:
 
     //! Retrieve the type index of the provided type.
     template <typename FunctionSignature>
-    static constexpr auto key()
+    static auto key() -> function_key
     {
-        return std::type_index { typeid(FunctionSignature) };
+        return { typeid(FunctionSignature) };
     }
 
 private:
-    std::unordered_multimap<
-            function_key,
-            std::shared_ptr<void>> functions_; //!< Functions by type
+    //! Helper to manage stored functions.
+    struct function_wrapper
+    {
+        std::size_t id;
+        std::shared_ptr<void> function_ptr;
+
+        //! Create an invalid wrapper.
+        function_wrapper() =default;
+
+        //! Create a function wrapper.
+        template <typename Signature>
+        function_wrapper(std::function<Signature> function) :
+            function_ptr(new std::function<Signature> { std::move(function) })
+        {
+            id = reinterpret_cast<std::size_t>(function_ptr.get());
+        }
+
+        //! Call the wrapped function.
+        template <typename Signature, typename ... Arguments>
+        void call(Arguments && ... arguments)
+        {
+            auto f = reinterpret_cast<std::function<Signature> *>(function_ptr.get());
+            assert(*f);
+
+            (void)(*f)(arguments ...);
+        }
+    };
+
+    std::unordered_multimap<function_key,
+                            function_wrapper> functions_; //!< Functions by type.
+
+    mutable std::mutex mutex_;
 };
 
 } }

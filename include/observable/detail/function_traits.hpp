@@ -15,25 +15,17 @@ namespace observable { namespace detail {
 //!
 //! - return_type: The function's return type.
 //!
-//! - argument<std::size_t I>: Access to the I-th argument. I must be positive
-//!                            and less then the function's arity. Argument
-//!                            indexing is zero-based.
-//!
-//! The following static values are provided:
+//! The following static value is provided:
 //!
 //! - arity: The number of arguments.
 template <typename Functor>
 struct function_traits;
 
 namespace helper {
-    template <typename T>
-    struct norm { using type = T; };
-
-    template <typename T>
-    struct norm<T const> { using type = T; };
-
-    template <typename T>
-    struct norm<T const &> { using type = T; };
+    // Normalize an argument type.
+    template <typename T> struct norm { using type = T; };
+    template <typename T> struct norm<T const> { using type = T; };
+    template <typename T> struct norm<T const &> { using type = T; };
 
     template <typename Functor>
     struct traits;

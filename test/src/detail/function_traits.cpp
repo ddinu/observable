@@ -49,13 +49,13 @@ TEST(function_traits_test, arity_is_zero_for_no_args)
     ASSERT_EQ(arity, 0u);
 }
 
-TEST(function_traits, normalized_removes_function_pointer)
+TEST(function_traits_test, normalized_removes_function_pointer)
 {
     using normalized = typename function_traits<void(*)(int)>::normalized;
     ASSERT_TRUE((std::is_same<normalized, void(int)>::value));
 }
 
-TEST(function_traits, normalized_extracts_lambda_signature)
+TEST(function_traits_test, normalized_extracts_lambda_signature)
 {
     auto lambda = [=](int) { };
     using normalized = typename function_traits<decltype(lambda)>::normalized;

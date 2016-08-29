@@ -101,34 +101,13 @@ TEST(subject_test, observer_is_not_called_after_unsubscribing)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST(subject_test, can_call_unsubscribe_multiple_times)
-{
-    tsubject s;
-    auto sub = s.subscribe([]() {});
-    sub.unsubscribe();
-    sub.unsubscribe();
-}
-
-TEST(subject_test, can_unsubscribe_from_handle_copy)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    auto sub = s.subscribe([&]() { ++call_count; });
-    auto sub_copy = sub;
-    sub_copy.unsubscribe();
-    s.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
 TEST(subject_test, no_copy_policy_is_movable)
 {
     ASSERT_TRUE((std::is_move_constructible<subject<int, copy::none>>::value));
     ASSERT_TRUE((std::is_move_assignable<subject<int, copy::none>>::value));
 }
 
-TEST(subject_test, no_copy_policy_not_copyable)
+TEST(subject_test, no_copy_policy_is_not_copyable)
 {
     ASSERT_FALSE((std::is_copy_constructible<subject<int, copy::none>>::value));
     ASSERT_FALSE((std::is_copy_assignable<subject<int, copy::none>>::value));
@@ -144,18 +123,6 @@ TEST(subject_test, shallow_copy_policy_is_copyable)
 {
     ASSERT_TRUE((std::is_copy_constructible<subject<int, copy::shallow>>::value));
     ASSERT_TRUE((std::is_copy_assignable<subject<int, copy::shallow>>::value));
-}
-
-TEST(subject_test, deep_copy_policy_is_movable)
-{
-    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::deep>>::value));
-    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::deep>>::value));
-}
-
-TEST(subject_test, deep_copy_policy_is_copyable)
-{
-    ASSERT_TRUE((std::is_copy_constructible<subject<int, copy::deep>>::value));
-    ASSERT_TRUE((std::is_copy_assignable<subject<int, copy::deep>>::value));
 }
 
 TEST(subject_test, moved_subject_works)
@@ -183,6 +150,22 @@ TEST(subject_test, shallow_copy_policy_shares_existing_observers)
     ASSERT_EQ(call_count, 1);
 }
 
+TEST(subject_test, observers_will_be_removed_from_all_shallow_copies)
+{
+    subject<std::string, copy::shallow> s1;
+    auto call_count = 0;
+
+    auto sub = s1.subscribe([&]() { ++call_count; });
+    auto s2 = s1;
+
+    sub.unsubscribe();
+
+    s1.notify();
+    s2.notify();
+
+    ASSERT_EQ(call_count, 0);
+}
+
 TEST(subject_test, shallow_copy_policy_shares_new_observers)
 {
     subject<std::string, copy::shallow> s1;
@@ -196,157 +179,12 @@ TEST(subject_test, shallow_copy_policy_shares_new_observers)
     ASSERT_EQ(call_count, 1);
 }
 
-TEST(subject_test, unsubscribing_from_shallow_copy_takes_effect_for_all_instances)
-{
-    subject<std::string, copy::shallow> s1;
-    auto call_count = 0;
-    auto s2 = s1;
-
-    auto sub = s2.subscribe([&]() { ++call_count; });
-    sub.unsubscribe();
-    s1.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, deep_copy_policy_shares_existing_observers)
-{
-    subject<int, copy::deep> s1;
-    auto call_count = 0;
-
-    s1.subscribe([&]() { ++call_count; });
-    auto s2 = s1;
-    s2.notify();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, deep_copy_new_instance_works)
-{
-    subject<int, copy::deep> s1;
-    auto call_count = 0;
-
-    auto s2 = s1;
-    s2.subscribe([&]() { ++call_count; });
-    s2.notify();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, deep_copy_policy_does_not_share_new_observers)
-{
-    subject<int, copy::deep> s1;
-    auto call_count = 0;
-
-    auto s2 = s1;
-    s1.subscribe([&]() { ++call_count; });
-    s2.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, unsubscribing_from_deep_copied_handle_removes_observers_from_all_instances)
-{
-    subject<int, copy::deep> s1;
-    auto call_count = 0;
-
-    auto sub = s1.subscribe([&]() { ++call_count; });
-    auto s2 = s1;
-    sub.unsubscribe();
-    s2.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
 TEST(subject_test, can_use_auto_unsubscribe)
 {
     tsubject s;
     auto_unsubscribe sub = s.subscribe([]() {});
 
     ASSERT_TRUE(!!sub);
-}
-
-TEST(subject_test, auto_unsubscribe_does_not_unsubscribe_immediatly)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-    s.notify();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, auto_unsubscribe_calls_unsubscribe_when_destroyed)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    {
-        auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-    }
-
-    s.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, auto_unsubscribe_calls_unsubscribe_only_when_all_copyies_are_destroyed)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    {
-        auto_unsubscribe sub_copy;
-
-        {
-            auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-            sub_copy = sub;
-        }
-
-        s.notify();
-    }
-
-    s.notify();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, can_manually_unsubscribe_from_auto_unsubscribe_handle)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-    sub.unsubscribe();
-    s.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, can_manually_unsubscribe_from_auto_unsubscribe_handle_copy)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-    auto sub_copy = sub;
-    sub_copy.unsubscribe();
-    s.notify();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, can_call_unsubscribe_on_auto_unsubscribe_pointer)
-{
-    tsubject s;
-    auto call_count = 0;
-
-    auto_unsubscribe sub = s.subscribe([&]() { ++call_count; });
-    sub.unsubscribe();
-    s.notify();
-
-    ASSERT_EQ(call_count, 0);
 }
 
 TEST(subject_test, observer_added_from_another_observer_is_called_on_second_notification)

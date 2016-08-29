@@ -5,12 +5,10 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(SOURCE_FILES include/observable/subject.hpp
-                 include/observable/detail/subject/copy_policy.hpp
-                 include/observable/detail/subject/data.hpp
-                 include/observable/detail/subject/subscription.hpp
+                 include/observable/detail/copy_policy.hpp
                  include/observable/detail/function_collection.hpp
-                 include/observable/detail/function_handle.hpp
-                 include/observable/detail/function_traits.hpp)
+                 include/observable/detail/function_traits.hpp
+                 include/observable/detail/handle.hpp)
 
 source_group(include REGULAR_EXPRESSION include/.*)
 source_group(include\\detail REGULAR_EXPRESSION include/.*/detail/.*)

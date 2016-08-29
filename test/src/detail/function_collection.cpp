@@ -1,3 +1,4 @@
+#include <type_traits>
 #include "gtest.h"
 #include "observable/detail/function_collection.hpp"
 
@@ -45,7 +46,7 @@ TEST(function_collection_test, size_increases_after_insert)
     function_collection functions;
     functions.insert<void()>([]() {});
 
-    ASSERT_EQ(functions.size(), 1u);
+    ASSERT_GT(functions.size(), 0u);
 }
 
 TEST(function_collection_test, size_is_correct)
@@ -159,41 +160,6 @@ TEST(function_collection_test, function_return_values_are_ignored)
     ASSERT_EQ(call_count, 1u);
 }
 
-TEST(function_collection_test, functions_are_copied)
-{
-    function_collection functions;
-
-    auto call_count = 0;
-    functions.insert<void()>([&]() { ++call_count; });
-
-    auto copy = functions;
-    copy.call_all<void()>();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(function_collection_test, function_ids_are_valid_in_collection_copies)
-{
-    function_collection functions;
-    auto id = functions.insert<void()>([]() {});
-    auto copy = functions;
-
-    copy.remove(id);
-
-    ASSERT_TRUE(copy.empty());
-}
-
-TEST(function_collection_test, function_is_only_removed_from_copy)
-{
-    function_collection functions;
-    auto id = functions.insert<void()>([]() {});
-    auto copy = functions;
-
-    copy.remove(id);
-
-    ASSERT_FALSE(functions.empty());
-}
-
 TEST(function_collection_test, contains_returns_true_for_contained_id)
 {
     function_collection functions;
@@ -209,6 +175,73 @@ TEST(function_collection_test, contains_returns_false_for_uncontained_id)
     auto id = functions2.insert<void()>([]() {});
 
     ASSERT_FALSE(functions1.contains(id));
+}
+
+TEST(function_collection_test, is_copy_constructible)
+{
+    ASSERT_TRUE(std::is_copy_constructible<function_collection>::value);
+}
+
+TEST(function_collection_test, is_copy_assignable)
+{
+    ASSERT_TRUE(std::is_copy_assignable<function_collection>::value);
+}
+
+TEST(function_collection_test, is_move_constructible)
+{
+    ASSERT_TRUE(std::is_move_constructible<function_collection>::value);
+}
+
+TEST(function_collection_test, is_move_assignable)
+{
+    ASSERT_TRUE(std::is_move_assignable<function_collection>::value);
+}
+
+TEST(function_collection_test, functions_are_copied)
+{
+    function_collection functions;
+
+    auto call_count = 0;
+    functions.insert<void()>([&]() { ++call_count; });
+
+    auto copy = functions;
+    copy.call_all<void()>();
+
+    ASSERT_EQ(call_count, 1);
+}
+
+TEST(function_collection_test, functions_are_moved)
+{
+    function_collection functions;
+
+    auto call_count = 0;
+    functions.insert<void()>([&]() { ++call_count; });
+
+    auto other = std::move(functions);
+    other.call_all<void()>();
+
+    ASSERT_EQ(call_count, 1);
+}
+
+TEST(function_collection_test, id_is_contained_in_copied_collection)
+{
+    function_collection functions;
+    auto id = functions.insert<void()>([]() { });
+
+    auto copy = functions;
+
+    ASSERT_TRUE(copy.contains(id));
+}
+
+TEST(function_collection_test, function_is_not_removed_from_copied_collection)
+{
+    function_collection functions;
+    auto id = functions.insert<void()>([]() { });
+
+    auto copy = functions;
+    functions.remove(id);
+
+    ASSERT_FALSE(copy.empty());
 }
 
 } } }

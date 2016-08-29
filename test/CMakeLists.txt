@@ -1,10 +1,11 @@
 include(compile_flags)
 
 set(SOURCE_FILES include/gtest.h
-                 src/subject.cpp
+                 src/detail/auto_handle.cpp
                  src/detail/function_collection.cpp
-                 src/detail/function_handle.cpp
-                 src/detail/function_traits.cpp)
+                 src/detail/function_traits.cpp
+                 src/detail/handle.cpp
+                 src/subject.cpp)
 
 source_group(include REGULAR_EXPRESSION include/.*)
 source_group(src REGULAR_EXPRESSION src/.*)

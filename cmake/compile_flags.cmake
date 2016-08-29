@@ -5,7 +5,7 @@
 function(enable_strict_warnings target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         set(release /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd4627 /wd5026
-                    /wd5027 /wd4710 /wd4668 /wd4711)
+                    /wd5027 /wd4710 /wd4668 /wd4711 /wd4548)
         set(debug /WX)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         set(release -Wall -Wextra -pedantic -Wshadow)
@@ -13,7 +13,8 @@ function(enable_strict_warnings target_name)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
         set(release -Weverything -Wno-system-headers -Wno-c++98-compat
                     -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
-                    -Wno-global-constructors -Wno-padded)
+                    -Wno-global-constructors -Wno-missing-prototypes
+                    -Wno-padded)
         set(debug -Werror)
     else()
         message(WARNING "Custom compiler flags not set.\n"
