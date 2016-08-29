@@ -63,7 +63,7 @@ public:
     subject(subject const & other);
 
     //! Subject is move-constructible.
-    subject(subject && other);
+    subject(subject && other) noexcept;
 
     //! Subject is copy-assignable and move-assignable.
     auto operator=(subject other) -> subject &;
@@ -206,7 +206,7 @@ inline subject<Tag, CopyPolicy>::subject(subject const & other)
 }
 
 template <typename Tag, typename CopyPolicy>
-inline subject<Tag, CopyPolicy>::subject(subject && other) :
+inline subject<Tag, CopyPolicy>::subject(subject && other) noexcept :
     functions_(std::move(other.functions_))
 {
 }

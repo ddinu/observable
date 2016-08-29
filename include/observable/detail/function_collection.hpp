@@ -139,7 +139,7 @@ public:
     }
 
     //! Collections are move constructible.
-    function_collection(function_collection && other) :
+    function_collection(function_collection && other) noexcept :
         functions_(std::move(other.functions_))
     {
     }
@@ -175,11 +175,11 @@ private:
     //! Helper to manage stored functions.
     struct function_wrapper
     {
-        std::size_t id;
+        std::size_t id = 0;
         std::shared_ptr<void> function_ptr;
 
         //! Create an invalid wrapper.
-        function_wrapper() =default;
+        constexpr function_wrapper() noexcept =default;
 
         //! Create a function wrapper.
         template <typename Signature>

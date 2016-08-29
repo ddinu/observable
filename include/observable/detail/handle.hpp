@@ -38,7 +38,7 @@ public:
     }
 
     //! Create an invalid handle.
-    auto_handle() =default;
+    constexpr auto_handle() noexcept =default;
 
     //! Manually call unsubscribe.
     auto unsubscribe()
@@ -47,7 +47,7 @@ public:
     }
 
     //! Check if the handle is valid.
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     {
         return !!handle_;
     }

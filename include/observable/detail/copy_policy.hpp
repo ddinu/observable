@@ -9,11 +9,13 @@ namespace observable { namespace detail {
 //! Not copyable but movable.
 struct no_copy
 {
-    no_copy() =default;
+    constexpr no_copy() noexcept =default;
+
     no_copy(no_copy const &) =delete;
     no_copy & operator=(no_copy const &) =delete;
-    no_copy(no_copy &&) =default;
-    no_copy & operator=(no_copy &&) =default;
+
+    constexpr no_copy(no_copy &&) noexcept =default;
+    no_copy & operator=(no_copy &&) noexcept =default;
 
 protected:
     template <typename T>
