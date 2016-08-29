@@ -79,6 +79,8 @@ private:
     mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
 };
 
+//! Specialization that removes the copy constructor and copy assignment
+//! operator.
 template <typename Tag>
 class subject<Tag, copy::none> : public subject<Tag, copy::shallow>
 {
