@@ -200,8 +200,8 @@ private:
         }
     };
 
-    std::unordered_multimap<function_key,
-                            function_wrapper> functions_; //!< Functions by type.
+private:
+    std::unordered_multimap<function_key, function_wrapper> functions_;
 
     mutable std::mutex mutex_;
 };
