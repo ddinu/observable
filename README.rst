@@ -30,7 +30,7 @@ What the library can do
 -----------------------
 
 You can subscribe to notifications using generic functors, functions or
-lambdas and can fire notifications that call your subscribed 'observers'.
+lambdas and can fire notifications that call your subscribed *observers*.
 
 Only functions that have the correct number and types of parameters get called.
 
