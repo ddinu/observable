@@ -58,6 +58,17 @@ Legal and Licensing
 
 Observable is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
 
+Supported compilers
+-------------------
+
+Any relatively recent compiler with C++14 support should work.
+
+The code has been tested with the following compilers:
+
+ * MSVC 14 (Visual Studio 2015)
+ * GCC 5.4
+ * Clang 3.8
+
 Build status
 ------------
 
