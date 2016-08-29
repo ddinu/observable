@@ -73,9 +73,9 @@ public:
     friend auto swap(subject<T, C> & a, subject<T, C> & b) -> void;
 
 private:
-    using function_map = std::unordered_map<Tag, detail::function_collection>;
+    using collection_map = std::unordered_map<Tag, detail::function_collection>;
 
-    std::shared_ptr<function_map> functions_ { std::make_shared<function_map>() };
+    std::shared_ptr<collection_map> functions_ { std::make_shared<collection_map>() };
     mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
 };
 
@@ -151,7 +151,7 @@ inline auto subject<Tag, CopyPolicy>::subscribe(T && tag, Function && function) 
 
     return subscription {
             [
-                functions = std::weak_ptr<function_map> { functions_ },
+                functions = std::weak_ptr<collection_map> { functions_ },
                 mutex = std::weak_ptr<std::mutex> { mutex_ },
                 tag = Tag { tag },
                 id
