@@ -40,7 +40,7 @@ namespace helper {
 
         using return_type = Return;
 
-        static constexpr std::size_t const arity = sizeof...(Arguments);
+        static constexpr std::size_t arity = sizeof...(Arguments);
     };
 
     // Unpack function pointers.
