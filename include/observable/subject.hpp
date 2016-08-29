@@ -91,11 +91,11 @@ public:
     //! Subject is not copy-constructible.
     subject(subject const & other) =delete;
 
-    //! Subject is move-constructible.
-    subject(subject && other) =default;
-
     //! Subject is not copy-assignable.
     auto operator=(subject const & other) -> subject & =delete;
+
+    //! Subject is move-constructible.
+    subject(subject && other) =default;
 
     //! Subject is move-assignable.
     auto operator=(subject && other) -> subject & =default;
