@@ -14,7 +14,7 @@ namespace observable { namespace detail {
 //! Collection that can hold and call heterogeneous, generic functions.
 //!
 //! \note This class needs RTTI to be enabled.
-//! \warning All methods can be safely called in parallel.
+//! \warning Methods in this class cannot be safely called concurrently.
 class function_collection
 {
 public:
@@ -36,7 +36,6 @@ public:
         function_wrapper w { std::move(function) };
         auto id = w.id;
 
-        std::lock_guard<std::mutex> lock { mutex_ };
         functions_.emplace(key<Signature>(), std::move(w));
         return id;
     }
@@ -51,8 +50,6 @@ public:
     //!         removed.
     auto remove(function_id const & id)
     {
-        std::lock_guard<std::mutex> lock { mutex_ };
-
         auto it = find_if(begin(functions_),
                           end(functions_),
                           [&](auto && kv) { return kv.second.id == id; });
@@ -84,8 +81,6 @@ public:
         std::vector<function_wrapper> snapshot;
 
         {
-            std::lock_guard<std::mutex> lock { mutex_ };
-
             auto range = functions_.equal_range(key<Signature>());
             snapshot.resize(static_cast<std::size_t>(
                                 std::distance(range.first, range.second)));
@@ -105,8 +100,6 @@ public:
     //! Check if a function id belongs to this collection.
     auto contains(function_id const & id) const
     {
-        std::lock_guard<std::mutex> lock { mutex_ };
-
         return find_if(begin(functions_),
                        end(functions_),
                        [&](auto && kv) { return kv.second.id == id; })
@@ -114,16 +107,14 @@ public:
     }
 
     //! Retrieve the number of functions in the collection.
-    auto size() const
+    auto size() const noexcept
     {
-        std::lock_guard<std::mutex> lock { mutex_ };
         return functions_.size();
     }
 
     //! Returns true if the collection is empty.
-    auto empty() const
+    auto empty() const noexcept
     {
-        std::lock_guard<std::mutex> lock { mutex_ };
         return functions_.empty();
     }
 
@@ -134,7 +125,6 @@ public:
     //! Collections are copy constructible.
     function_collection(function_collection const & other)
     {
-        std::lock_guard<std::mutex> lock_other { other.mutex_ };
         functions_ = other.functions_;
     }
 
@@ -152,11 +142,8 @@ public:
     }
 
     //! Swap two collections.
-    friend void swap(function_collection & a, function_collection & b)
+    friend void swap(function_collection & a, function_collection & b) noexcept
     {
-        std::lock_guard<std::mutex> lock_a { a.mutex_ };
-        std::lock_guard<std::mutex> lock_b { b.mutex_ };
-
         using std::swap;
         swap(a.functions_, b.functions_);
     }
@@ -202,8 +189,6 @@ private:
 
 private:
     std::unordered_multimap<function_key, function_wrapper> functions_;
-
-    mutable std::mutex mutex_;
 };
 
 } }
