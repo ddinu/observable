@@ -50,7 +50,7 @@ TEST(subject_test, untagged_observers_are_called)
     auto call_count = 0;
     s.subscribe([&]() { ++call_count; });
     s.subscribe([&]() { ++call_count; });
-    s.notify();
+    s.notify_untagged();
 
     ASSERT_EQ(call_count, 2);
 }
@@ -73,7 +73,7 @@ TEST(subject_test, observer_with_const_reference_parameters_is_called)
     auto call_count = 0;
 
     s.subscribe([&](int const &) { ++call_count; });
-    s.notify(5);
+    s.notify_untagged(5);
 
     ASSERT_EQ(call_count, 1);
 }
@@ -84,7 +84,7 @@ TEST(subject_test, notify_with_const_reference_parameter_calls_observer)
     auto call_count = 0;
 
     s.subscribe([&](int) { ++call_count; });
-    s.notify<int const &>(5);
+    s.notify_untagged<int const &>(5);
 
     ASSERT_EQ(call_count, 1);
 }
@@ -96,7 +96,7 @@ TEST(subject_test, observer_is_not_called_after_unsubscribing)
 
     auto sub = s.subscribe([&]() { ++call_count; });
     sub.unsubscribe();
-    s.notify();
+    s.notify_untagged();
 
     ASSERT_EQ(call_count, 0);
 }
@@ -132,7 +132,7 @@ TEST(subject_test, moved_subject_works)
 
     s1.subscribe([&]() { ++call_count; });
     auto s2 = std::move(s1);
-    s2.notify();
+    s2.notify_untagged();
 
     ASSERT_EQ(call_count, 1);
 }
@@ -145,7 +145,7 @@ TEST(subject_test, shallow_copy_policy_shares_existing_observers)
     s1.subscribe([&]() { ++call_count; });
 
     auto s2 = s1;
-    s2.notify();
+    s2.notify_untagged();
 
     ASSERT_EQ(call_count, 1);
 }
@@ -160,8 +160,8 @@ TEST(subject_test, observers_will_be_removed_from_all_shallow_copies)
 
     sub.unsubscribe();
 
-    s1.notify();
-    s2.notify();
+    s1.notify_untagged();
+    s2.notify_untagged();
 
     ASSERT_EQ(call_count, 0);
 }
@@ -174,7 +174,7 @@ TEST(subject_test, shallow_copy_policy_shares_new_observers)
     auto s2 = s1;
     s2.subscribe([&]() { ++call_count; });
 
-    s1.notify();
+    s1.notify_untagged();
 
     ASSERT_EQ(call_count, 1);
 }
@@ -197,8 +197,8 @@ TEST(subject_test, observer_added_from_another_observer_is_called_on_second_noti
         s.subscribe([&]() { ++call_count; });
     });
 
-    s.notify();
-    s.notify();
+    s.notify_untagged();
+    s.notify_untagged();
 
     ASSERT_EQ(call_count, 3);
 }
@@ -209,7 +209,7 @@ TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
     std::thread::id other_id;
 
     s.subscribe([&]() { other_id = std::this_thread::get_id(); });
-    std::thread { [&]() { s.notify(); } }.join();
+    std::thread { [&]() { s.notify_untagged(); } }.join();
 
     ASSERT_NE(other_id, std::this_thread::get_id());
 }
@@ -223,7 +223,7 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
     for(auto i = 0; i < 10; ++i)
         s.subscribe([&]() { ++old_call_count; std::this_thread::sleep_for(5ms); });
 
-    std::thread t { [&]() { s.notify(); } };
+    std::thread t { [&]() { s.notify_untagged(); } };
 
     for(auto i = 0; i < 100 && old_call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);
@@ -250,7 +250,7 @@ TEST(subject_test, can_unsubscribe_while_notification_is_running)
                     std::this_thread::sleep_for(5ms);
                 }));
 
-    std::thread t { [&]() { s.notify(); } };
+    std::thread t { [&]() { s.notify_untagged(); } };
 
     for(auto i = 0; i < 100 && call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);

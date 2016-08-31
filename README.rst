@@ -22,8 +22,8 @@ Example:
     observable.subscribe([](double frob) { /* do stuff 2 */ }); 
     observable.subscribe("stopped", [](double last_frob) { /* do stuff 3 */ });
 
-    observable.notify(); // calls 'do stuff 1'
-    observable.notify(5.0); // calls 'do stuff 2'
+    observable.notify_untagged(); // calls 'do stuff 1'
+    observable.notify_untagged(5.0); // calls 'do stuff 2'
     observable.notify_tagged("stopped", 5.0); // calls 'do stuff 3'
 
 What the library can do

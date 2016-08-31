@@ -48,7 +48,7 @@ public:
 
     //! Notify all untagged subscriptions.
     template <typename ... Arguments>
-    auto notify(Arguments ... arguments) const -> void;
+    auto notify_untagged(Arguments ... arguments) const -> void;
 
     //! Notify all tagged subscriptions that have used the provided tag value
     //! when subscribing.
@@ -178,7 +178,7 @@ inline auto subject<Tag, CopyPolicy>::subscribe(T && tag, Function && function) 
 
 template <typename Tag, typename CopyPolicy>
 template<typename ... Arguments>
-inline void subject<Tag, CopyPolicy>::notify(Arguments ... arguments) const
+inline void subject<Tag, CopyPolicy>::notify_untagged(Arguments ... arguments) const
 {
     static Tag const no_tag { };
     return notify_tagged(no_tag, std::forward<Arguments>(arguments) ...);
