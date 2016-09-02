@@ -15,3 +15,4 @@ add_custom_target(observable SOURCES ${SOURCE_FILES})
 
 add_subdirectory(external)
 add_subdirectory(test)
+add_subdirectory(benchmark)
