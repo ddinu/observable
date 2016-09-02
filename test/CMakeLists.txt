@@ -1,4 +1,5 @@
 include(compile_flags)
+include(observable_includes)
 include(source_groups)
 
 set(SOURCE_FILES include/gtest.h
@@ -10,6 +11,7 @@ set(SOURCE_FILES include/gtest.h
 
 add_executable(observable_test ${SOURCE_FILES})
 configure_compiler(observable_test)
+add_observable_includes(observable_test)
 target_link_libraries(observable_test gtest gtest_main)
 target_include_directories(observable_test PRIVATE include)
 target_include_directories(observable_test
