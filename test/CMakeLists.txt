@@ -1,4 +1,5 @@
 include(compile_flags)
+include(source_groups)
 
 set(SOURCE_FILES include/gtest.h
                  src/detail/auto_handle.cpp
@@ -6,10 +7,6 @@ set(SOURCE_FILES include/gtest.h
                  src/detail/function_traits.cpp
                  src/detail/handle.cpp
                  src/subject.cpp)
-
-source_group(include REGULAR_EXPRESSION include/.*)
-source_group(src REGULAR_EXPRESSION src/.*)
-source_group(src\\detail REGULAR_EXPRESSION src/detail/.*)
 
 add_executable(observable_test ${SOURCE_FILES})
 configure_compiler(observable_test)
