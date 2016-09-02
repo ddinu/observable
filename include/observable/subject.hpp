@@ -95,6 +95,33 @@ namespace detail {
 
         collection.template call_all<signature>(std::forward<Arguments>(arguments) ...);
     }
+
+    template <typename Mutex, typename CollectionMap>
+    auto snapshot(std::shared_ptr<Mutex> const & mutex,
+                  std::shared_ptr<CollectionMap> & functions)
+    {
+        std::lock_guard<Mutex> lock { *mutex };
+        functions = std::make_shared<CollectionMap>(*functions);
+    }
+
+    template <typename Mutex, typename CollectionMap, typename Tag, typename Id>
+    auto unsubscribe(std::weak_ptr<Mutex> const & mutex,
+                     std::shared_ptr<CollectionMap> & functions,
+                     Tag const & tag,
+                     Id const & id)
+    {
+        auto const mutex_ptr = mutex.lock();
+        if(!mutex_ptr)
+            return;
+
+        snapshot(mutex_ptr, functions);
+
+        auto const it = functions->find(tag);
+        if(it == end(*functions))
+            return;
+
+        it->second.remove(id);
+    }
 }
 
 template <typename Tag>
@@ -113,34 +140,16 @@ inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscript
     using signature = typename traits::normalized;
     detail::check_compatibility<Function>();
 
-    std::lock_guard<std::mutex> lock { *mutex_ };
+    snapshot(mutex_, functions_);
 
-    auto && collection = (*functions_)[tag];
+    auto & collection = (*functions_)[tag];
     auto id = collection.template insert<signature>(std::forward<Function>(function));
 
     return subscription {
-            [
-                functions = std::weak_ptr<collection_map> { functions_ },
-                mutex = std::weak_ptr<std::mutex> { mutex_ },
-                tag = Tag { tag },
-                id
-            ]() {
-                auto mutex_ptr = mutex.lock();
-                if(!mutex_ptr)
-                    return;
-
-                auto functions_ptr = functions.lock();
-                if(!functions_ptr)
-                    return;
-
-                std::lock_guard<std::mutex> functions_lock { *mutex_ptr };
-
-                auto it = functions_ptr->find(tag);
-                if(it == end(*functions_ptr))
-                    return;
-
-                it->second.remove(id);
-            } };
+                [this, tag { tag }, id, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
+                    detail::unsubscribe(mutex, functions_, tag, id);
+                }
+            };
 }
 
 template <typename Tag>
@@ -155,19 +164,12 @@ template <typename Tag>
 template<typename T, typename ... Arguments>
 inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) const
 {
-    detail::function_collection snapshot;
+    std::shared_ptr<collection_map const> const functions = functions_;
+    auto const it = functions->find(tag);
+    if(it == end(*functions))
+        return;
 
-    {
-        std::lock_guard<std::mutex> lock { *mutex_ };
-        auto it = functions_->find(tag);
-        if(it != end(*functions_))
-            snapshot = it->second;
-    }
-
-    detail::call(snapshot, std::forward<Arguments>(arguments) ...);
-}
-
-
+    detail::call(it->second, std::forward<Arguments>(arguments) ...);
 }
 
 }
