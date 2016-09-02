@@ -3,7 +3,6 @@
 #include <cassert>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
@@ -33,11 +32,10 @@ public:
     auto insert(std::function<Signature> function)
     {
         assert(function);
-        function_wrapper w { std::move(function) };
-        auto id = w.id;
+        auto const ptr = std::make_shared<std::function<Signature>>(std::move(function));
 
-        functions_.emplace(key<Signature>(), std::move(w));
-        return id;
+        functions_.emplace(key<Signature>(), ptr);
+        return make_id(ptr);
     }
 
     //! Remove a function from the collection.
@@ -50,9 +48,11 @@ public:
     //!         removed.
     auto remove(function_id const & id)
     {
-        auto it = find_if(begin(functions_),
-                          end(functions_),
-                          [&](auto && kv) { return kv.second.id == id; });
+        auto const it = find_if(begin(functions_),
+                                end(functions_),
+                                [&](auto const & kv) {
+                                    return make_id(kv.second) == id;
+                                });
 
         if(it == end(functions_))
             return false;
@@ -74,27 +74,22 @@ public:
     //! \note All functions will be called on the thread that calls this method.
     //!       This method will return once all functions have been called.
     //! \warning Return values of the called functions will be ignored.
+    //! \warning Do not change the function collection while a call is in
+    //!          progress.
     //! \return The number of functions that were called.
     template <typename Signature, typename ... Arguments>
     auto call_all(Arguments && ... arguments) const
     {
-        std::vector<function_wrapper> snapshot;
-
+        std::size_t call_count = 0;
+        auto const range = functions_.equal_range(key<Signature>());
+        for(auto i = range.first; i != range.second; ++i, ++call_count)
         {
-            auto range = functions_.equal_range(key<Signature>());
-            snapshot.resize(static_cast<std::size_t>(
-                                std::distance(range.first, range.second)));
-
-            std::transform(range.first,
-                           range.second,
-                           begin(snapshot),
-                           [](auto && kv) { return kv.second; });
+            auto const f = reinterpret_cast<std::function<Signature> *>(i->second.get());
+            assert(f);
+            (void)((*f)(std::forward<Arguments>(arguments) ...));
         }
 
-        for(auto && w : snapshot)
-            w.call<Signature>(arguments ...);
-
-        return snapshot.size();
+        return call_count;
     }
 
     //! Check if a function id belongs to this collection.
@@ -102,7 +97,9 @@ public:
     {
         return find_if(begin(functions_),
                        end(functions_),
-                       [&](auto && kv) { return kv.second.id == id; })
+                       [&](auto const & kv) {
+                            return make_id(kv.second) == id;
+                        })
                != end(functions_);
     }
 
@@ -118,77 +115,24 @@ public:
         return functions_.empty();
     }
 
-public:
-    //! Create an empty collection.
-    function_collection() =default;
-
-    //! Collections are copy constructible.
-    function_collection(function_collection const & other)
-    {
-        functions_ = other.functions_;
-    }
-
-    //! Collections are move constructible.
-    function_collection(function_collection && other) noexcept :
-        functions_(std::move(other.functions_))
-    {
-    }
-
-    //! Collections are copy and move assignable.
-    function_collection & operator=(function_collection other)
-    {
-        swap(*this, other);
-        return *this;
-    }
-
-    //! Swap two collections.
-    friend void swap(function_collection & a, function_collection & b) noexcept
-    {
-        using std::swap;
-        swap(a.functions_, b.functions_);
-    }
-
 private:
     using function_key = std::type_index;
 
     //! Retrieve the type index of the provided type.
     template <typename FunctionSignature>
-    static auto key() -> function_key
+    static auto key()
     {
-        return { typeid(FunctionSignature) };
+        return function_key { typeid(FunctionSignature) };
+    }
+
+    //! Retrieve a unique id for a function pointer.
+    static auto make_id(std::shared_ptr<void> const & function) noexcept
+    {
+        return reinterpret_cast<std::size_t>(function.get());
     }
 
 private:
-    //! Helper to manage stored functions.
-    struct function_wrapper
-    {
-        std::size_t id = 0;
-        std::shared_ptr<void> function_ptr;
-
-        //! Create an invalid wrapper.
-        constexpr function_wrapper() noexcept =default;
-
-        //! Create a function wrapper.
-        template <typename Signature>
-        function_wrapper(std::function<Signature> function) :
-            function_ptr(new std::function<Signature> { std::move(function) })
-        {
-            id = reinterpret_cast<std::size_t>(function_ptr.get());
-        }
-
-        //! Call the wrapped function.
-        template <typename Signature, typename ... Arguments>
-        void call(Arguments && ... arguments)
-        {
-            auto f = reinterpret_cast<std::function<Signature> *>(function_ptr.get());
-            assert(*f);
-
-            (void)(*f)(arguments ...);
-        }
-    };
-
-private:
-    std::unordered_multimap<function_key, function_wrapper> functions_;
+    std::unordered_multimap<function_key, std::shared_ptr<void>> functions_;
 };
 
 } }
