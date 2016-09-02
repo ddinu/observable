@@ -1,12 +1,12 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <observable/subject.hpp>
 #include "timing.h"
 
 static volatile unsigned long long dummy = 0;
 void function() { ++dummy; }
 
-int main()
+void bench()
 {
     auto function_duration = benchmark::time_run(function);
 
@@ -17,12 +17,16 @@ int main()
                                 subject.notify_untagged();
                             });
 
-    std::cout << "Function run duration: "
-              << std::chrono::duration_cast<std::chrono::nanoseconds>(function_duration).count()
-              << "ns\nSubject duration: "
-              << std::chrono::duration_cast<std::chrono::nanoseconds>(subject_duration).count()
-              << "ns\n" << subject_duration / function_duration << " times slower."
-              << std::endl;
+    benchmark::print("Function", function_duration, "Subject", subject_duration);
+}
+
+int main()
+{
+    for(auto i = 0; i < 5; ++i)
+    {
+        bench();
+        std::cout << std::endl;
+    }
 
     return 0;
 }

@@ -8,7 +8,7 @@
 static volatile unsigned long long dummy = 0;
 void function() { ++dummy; }
 
-int main()
+void bench()
 {
     Sender sender;
     Receiver receiver;
@@ -30,12 +30,16 @@ int main()
                                 subject.notify_untagged();
                             });
 
-    std::cout << "Qt signal-slot run duration: "
-              << std::chrono::duration_cast<std::chrono::nanoseconds>(qt_duration).count()
-              << "ns\nSubject duration: "
-              << std::chrono::duration_cast<std::chrono::nanoseconds>(subject_duration).count()
-              << "ns\n" << subject_duration / qt_duration << " times slower."
-              << std::endl;
+    benchmark::print("Qt signal-slot", qt_duration, "Subject", subject_duration);
+}
+
+int main()
+{
+    for(auto i = 0; i < 5; ++i)
+    {
+        bench();
+        std::cout << std::endl;
+    }
 
     return 0;
 }
