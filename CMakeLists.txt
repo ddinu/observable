@@ -6,7 +6,6 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(source_groups)
 
 set(SOURCE_FILES include/observable/subject.hpp
-                 include/observable/detail/copy_policy.hpp
                  include/observable/detail/function_collection.hpp
                  include/observable/detail/function_traits.hpp
                  include/observable/detail/handle.hpp)

@@ -2,7 +2,6 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
-#include "detail/copy_policy.hpp"
 #include "detail/function_collection.hpp"
 #include "detail/function_traits.hpp"
 #include "detail/handle.hpp"
@@ -12,15 +11,6 @@ namespace observable {
 //! Handle that manages a subscription.
 using subscription = detail::handle;
 using auto_unsubscribe = detail::auto_handle;
-
-namespace copy {
-    //! The subject will not be copyable.
-    using none = detail::no_copy;
-
-    //! The subject will be copyable but all subscriptions and internal data
-    //! will be shared.
-    using shallow = detail::shallow_copy;
-}
 
 //! This class stores observers and provides a way to notify them with
 //! heterogeneous parameters.
@@ -34,8 +24,8 @@ namespace copy {
 //!
 //! \tparam Tag The type of the tag parameter for tagged subscriptions.
 //! \note All methods defined in this class are safe to be called in parallel.
-template <typename Tag=std::string, typename CopyPolicy=copy::none>
-class subject : CopyPolicy
+template <typename Tag=std::string>
+class subject
 {
 public:
     //! Subscribe to all untagged notifications.
@@ -48,42 +38,13 @@ public:
 
     //! Notify all untagged subscriptions.
     template <typename ... Arguments>
-    auto notify_untagged(Arguments ... arguments) const -> void;
+    auto notify_untagged(Arguments && ... arguments) const -> void;
 
     //! Notify all tagged subscriptions that have used the provided tag value
     //! when subscribing.
     template <typename T, typename ... Arguments>
-    auto notify_tagged(T && tag, Arguments ... arguments) const -> void;
+    auto notify_tagged(T && tag, Arguments && ... arguments) const -> void;
 
-public:
-    //! Create an empty subject.
-    subject() = default;
-
-    //! Subject is copy-constructible.
-    subject(subject const & other);
-
-    //! Subject is move-constructible.
-    subject(subject && other) noexcept;
-
-    //! Subject is copy-assignable and move-assignable.
-    auto operator=(subject other) -> subject &;
-
-    //! Swap two subjects.
-    template <typename T, typename C>
-    friend auto swap(subject<T, C> & a, subject<T, C> & b) -> void;
-
-private:
-    using collection_map = std::unordered_map<Tag, detail::function_collection>;
-
-    std::shared_ptr<collection_map> functions_ { std::make_shared<collection_map>() };
-    mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
-};
-
-//! Specialization that removes the copy constructor and copy assignment
-//! operator.
-template <typename Tag>
-class subject<Tag, copy::none> : public subject<Tag, copy::shallow>
-{
 public:
     //! Create an empty subject.
     subject() = default;
@@ -95,10 +56,16 @@ public:
     auto operator=(subject const & other) -> subject & =delete;
 
     //! Subject is move-constructible.
-    subject(subject && other) =default;
+    subject(subject && other) noexcept =default;
 
     //! Subject is move-assignable.
     auto operator=(subject && other) -> subject & =default;
+
+private:
+    using collection_map = std::unordered_map<Tag, detail::function_collection>;
+
+    std::shared_ptr<collection_map> functions_ { std::make_shared<collection_map>() };
+    mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
 };
 
 namespace detail {
@@ -130,17 +97,17 @@ namespace detail {
     }
 }
 
-template <typename Tag, typename CopyPolicy>
+template <typename Tag>
 template <typename Function>
-inline auto subject<Tag, CopyPolicy>::subscribe(Function && function) -> subscription
+inline auto subject<Tag>::subscribe(Function && function) -> subscription
 {
     static Tag const no_tag { };
     return subscribe(no_tag, std::forward<Function>(function));
 }
 
-template <typename Tag, typename CopyPolicy>
+template <typename Tag>
 template <typename T, typename Function>
-inline auto subject<Tag, CopyPolicy>::subscribe(T && tag, Function && function) -> subscription
+inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscription
 {
     using traits = detail::function_traits<Function>;
     using signature = typename traits::normalized;
@@ -176,17 +143,17 @@ inline auto subject<Tag, CopyPolicy>::subscribe(T && tag, Function && function) 
             } };
 }
 
-template <typename Tag, typename CopyPolicy>
+template <typename Tag>
 template<typename ... Arguments>
-inline void subject<Tag, CopyPolicy>::notify_untagged(Arguments ... arguments) const
+inline void subject<Tag>::notify_untagged(Arguments && ... arguments) const
 {
     static Tag const no_tag { };
     return notify_tagged(no_tag, std::forward<Arguments>(arguments) ...);
 }
 
-template <typename Tag, typename CopyPolicy>
+template <typename Tag>
 template<typename T, typename ... Arguments>
-inline void subject<Tag, CopyPolicy>::notify_tagged(T && tag, Arguments ... arguments) const
+inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) const
 {
     detail::function_collection snapshot;
 
@@ -200,36 +167,7 @@ inline void subject<Tag, CopyPolicy>::notify_tagged(T && tag, Arguments ... argu
     detail::call(snapshot, std::forward<Arguments>(arguments) ...);
 }
 
-template<typename Tag, typename CopyPolicy>
-inline subject<Tag, CopyPolicy>::subject(subject const & other)
-{
-    std::lock_guard<std::mutex> lock { *other.mutex_ };
-    CopyPolicy::copy_impl(functions_, other.functions_);
-}
 
-template <typename Tag, typename CopyPolicy>
-inline subject<Tag, CopyPolicy>::subject(subject && other) noexcept :
-    functions_(std::move(other.functions_))
-{
-}
-
-template <typename Tag, typename CopyPolicy>
-inline auto subject<Tag, CopyPolicy>::operator=(subject other) -> subject &
-{
-    using std::swap;
-    swap(*this, other);
-    return *this;
-}
-
-template <typename Tag, typename CopyPolicy>
-inline auto swap(subject<Tag, CopyPolicy> & a, subject<Tag, CopyPolicy> & b)
-{
-    using std::swap;
-
-    std::lock_guard<std::mutex> l1 { *a.mutex_ };
-    std::lock_guard<std::mutex> l2 { *b.mutex_ };
-
-    swap(a.functions_, b.functions_);
 }
 
 }

@@ -14,7 +14,7 @@ void dummy() { }
 void dummy_args(int, float) { }
 
 using namespace std::chrono_literals;
-using tsubject = subject<std::string, copy::none>;
+using tsubject = subject<std::string>;
 
 TEST(subject_test, can_create_subject)
 {
@@ -101,80 +101,26 @@ TEST(subject_test, observer_is_not_called_after_unsubscribing)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST(subject_test, no_copy_policy_is_movable)
+TEST(subject_test, is_movable)
 {
-    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::none>>::value));
-    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::none>>::value));
+    ASSERT_TRUE(std::is_move_constructible<subject<>>::value);
+    ASSERT_TRUE(std::is_move_assignable<subject<>>::value);
 }
 
-TEST(subject_test, no_copy_policy_is_not_copyable)
+TEST(subject_test, is_not_copyable)
 {
-    ASSERT_FALSE((std::is_copy_constructible<subject<int, copy::none>>::value));
-    ASSERT_FALSE((std::is_copy_assignable<subject<int, copy::none>>::value));
-}
-
-TEST(subject_test, shallow_copy_policy_is_movable)
-{
-    ASSERT_TRUE((std::is_move_constructible<subject<int, copy::shallow>>::value));
-    ASSERT_TRUE((std::is_move_assignable<subject<int, copy::shallow>>::value));
-}
-
-TEST(subject_test, shallow_copy_policy_is_copyable)
-{
-    ASSERT_TRUE((std::is_copy_constructible<subject<int, copy::shallow>>::value));
-    ASSERT_TRUE((std::is_copy_assignable<subject<int, copy::shallow>>::value));
+    ASSERT_FALSE((std::is_copy_constructible<subject<>>::value));
+    ASSERT_FALSE((std::is_copy_assignable<subject<>>::value));
 }
 
 TEST(subject_test, moved_subject_works)
 {
-    subject<int, copy::none> s1;
+    tsubject s1;
     auto call_count = 0;
 
     s1.subscribe([&]() { ++call_count; });
     auto s2 = std::move(s1);
     s2.notify_untagged();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, shallow_copy_policy_shares_existing_observers)
-{
-    subject<std::string, copy::shallow> s1;
-    auto call_count = 0;
-
-    s1.subscribe([&]() { ++call_count; });
-
-    auto s2 = s1;
-    s2.notify_untagged();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, observers_will_be_removed_from_all_shallow_copies)
-{
-    subject<std::string, copy::shallow> s1;
-    auto call_count = 0;
-
-    auto sub = s1.subscribe([&]() { ++call_count; });
-    auto s2 = s1;
-
-    sub.unsubscribe();
-
-    s1.notify_untagged();
-    s2.notify_untagged();
-
-    ASSERT_EQ(call_count, 0);
-}
-
-TEST(subject_test, shallow_copy_policy_shares_new_observers)
-{
-    subject<std::string, copy::shallow> s1;
-    auto call_count = 0;
-
-    auto s2 = s1;
-    s2.subscribe([&]() { ++call_count; });
-
-    s1.notify_untagged();
 
     ASSERT_EQ(call_count, 1);
 }
