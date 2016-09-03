@@ -98,7 +98,7 @@ namespace detail {
 
     template <typename Mutex, typename CollectionMap>
     auto snapshot(std::shared_ptr<Mutex> const & mutex,
-                  std::shared_ptr<CollectionMap> & functions)
+                  std::shared_ptr<CollectionMap> & functions) -> void
     {
         std::lock_guard<Mutex> lock { *mutex };
         functions = std::make_shared<CollectionMap>(*functions);
@@ -108,7 +108,7 @@ namespace detail {
     auto unsubscribe(std::weak_ptr<Mutex> const & mutex,
                      std::shared_ptr<CollectionMap> & functions,
                      Tag const & tag,
-                     Id const & id)
+                     Id const & id) -> void
     {
         auto const mutex_ptr = mutex.lock();
         if(!mutex_ptr)

@@ -51,7 +51,7 @@ public:
         auto const it = find_if(begin(functions_),
                                 end(functions_),
                                 [&](auto const & kv) {
-                                    return make_id(kv.second) == id;
+                                    return this->make_id(kv.second) == id;
                                 });
 
         if(it == end(functions_))
@@ -98,7 +98,7 @@ public:
         return find_if(begin(functions_),
                        end(functions_),
                        [&](auto const & kv) {
-                            return make_id(kv.second) == id;
+                            return this->make_id(kv.second) == id;
                         })
                != end(functions_);
     }
