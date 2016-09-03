@@ -3,7 +3,7 @@
 #include <observable/subject.hpp>
 #include "timing.h"
 
-static volatile unsigned long long dummy = 0;
+static unsigned long long dummy = 0;
 void function() { ++dummy; }
 
 void bench()

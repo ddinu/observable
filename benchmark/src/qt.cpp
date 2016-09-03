@@ -5,9 +5,6 @@
 #include <observable/subject.hpp>
 #include "timing.h"
 
-static volatile unsigned long long dummy = 0;
-void function() { ++dummy; }
-
 void bench()
 {
     Sender sender;
@@ -24,7 +21,7 @@ void bench()
                        });
 
     observable::subject<int> subject;
-    subject.subscribe([]() { function(); });
+    subject.subscribe([&]() { receiver.inc(); });
 
     auto subject_duration = benchmark::time_run([&]() {
                                 subject.notify_untagged();

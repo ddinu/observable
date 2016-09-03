@@ -16,5 +16,5 @@ public slots:
     void inc() { ++dummy; }
 
 private:
-    volatile unsigned long long dummy;
+    unsigned long long dummy;
 };
