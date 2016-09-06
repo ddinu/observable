@@ -110,23 +110,47 @@ TEST(function_traits_test, normalized_strips_parameter_pointer_const_reference)
     ASSERT_TRUE((std::is_same<normalized, void(int *)>::value));
 }
 
-TEST(function_traits_test, signature_removes_function_pointer)
+TEST(function_traits_test, type_removes_function_pointer)
 {
-    using signature = typename function_traits<void(*)()>::signature;
-    ASSERT_TRUE((std::is_same<signature, void()>::value));
+    using type = typename function_traits<void(*)()>::type;
+    ASSERT_TRUE((std::is_same<type, void()>::value));
 }
 
-TEST(function_traits_test, signature_is_extracted_from_lambda)
+TEST(function_traits_test, type_is_extracted_from_lambda)
 {
     auto lambda = [=](int, double) -> char { return 'a'; };
-    using signature = typename function_traits<decltype(lambda)>::signature;
-    ASSERT_TRUE((std::is_same<signature, char(int, double)>::value));
+    using type = typename function_traits<decltype(lambda)>::type;
+    ASSERT_TRUE((std::is_same<type, char(int, double)>::value));
 }
 
-TEST(function_traits_test, signature_preserves_arguments)
+TEST(function_traits_test, type_preserves_arguments)
 {
-    using signature = typename function_traits<void(int const, char const &)>::signature;
-    ASSERT_TRUE((std::is_same<signature, void(int const, char const &)>::value));
+    using type = typename function_traits<void(int const, char const &)>::type;
+    ASSERT_TRUE((std::is_same<type, void(int const, char const &)>::value));
+}
+
+TEST(function_traits_test, pointer_type_is_correct)
+{
+    using type = typename function_traits<void(int)>::pointer_type;
+    ASSERT_TRUE((std::is_same<type, void(*)(int)>::value));
+}
+
+TEST(function_traits_test, can_remove_return_type)
+{
+    using type = typename remove_return<int(double)>::type;
+    ASSERT_TRUE((std::is_same<type, void(double)>::value));
+}
+
+TEST(function_traits_test, removing_return_from_void_does_nothing)
+{
+    using type = typename remove_return<void(double)>::type;
+    ASSERT_TRUE((std::is_same<type, void(double)>::value));
+}
+
+TEST(function_traits_test, can_prepend_argument)
+{
+    using type = typename prepend_argument<double, void(int)>::type;
+    ASSERT_TRUE((std::is_same<type, void(double, int)>::value));
 }
 
 } } }

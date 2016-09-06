@@ -8,7 +8,9 @@ namespace observable { namespace detail {
 //!
 //! The following member types are provided:
 //!
-//! - signature: Function signature.
+//! - type: Function signature.
+//!
+//! - pointer_type Function pointer type.
 //!
 //! - normalized: Normalized function signature with const and references removed
 //!               from arguments.
@@ -34,7 +36,9 @@ namespace helper {
     template <typename Return, typename ... Arguments>
     struct traits<Return(Arguments ...)>
     {
-        using signature = Return(Arguments ...);
+        using type = Return(Arguments ...);
+
+        using pointer_type = Return(*)(Arguments ...);
 
         using normalized = Return(typename norm<Arguments>::type ...);
 
@@ -73,6 +77,36 @@ struct function_traits : helper::traits<
                             typename std::decay<
                                 typename std::remove_pointer<Functor>::type>::type>
 {
+};
+
+//! Remove a function type's return value.
+//!
+//! The ``type`` member type will hold the new function type.
+template <typename Functor>
+struct remove_return : remove_return<typename function_traits<Functor>::type>
+{
+};
+
+template <typename Return, typename ... Arguments>
+struct remove_return<Return(Arguments ...)>
+{
+    using type = void(Arguments ...);
+};
+
+//! Add a new argument to a function's type.
+//!
+//! The ``type`` member type will hold the new function type.
+template <typename Argument, typename Functor>
+struct prepend_argument : prepend_argument<
+                                    Argument,
+                                    typename function_traits<Functor>::type>
+{
+};
+
+template <typename Argument, typename Return, typename ... Arguments>
+struct prepend_argument<Argument, Return(Arguments ...)>
+{
+    using type = void(Argument, Arguments ...);
 };
 
 } }

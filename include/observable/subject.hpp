@@ -5,6 +5,7 @@
 #include "detail/function_collection.hpp"
 #include "detail/function_traits.hpp"
 #include "detail/handle.hpp"
+#include "detail/tagged_function.hpp"
 
 namespace observable {
 
@@ -62,9 +63,9 @@ public:
     auto operator=(subject && other) -> subject & =default;
 
 private:
-    using collection_map = std::unordered_map<Tag, detail::function_collection>;
+    using collection = detail::function_collection;
 
-    std::shared_ptr<collection_map> functions_ { std::make_shared<collection_map>() };
+    std::shared_ptr<collection> functions_ { std::make_shared<collection>() };
     mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
 };
 
@@ -80,47 +81,10 @@ namespace detail {
                       "Subscription function cannot return a value.");
 
         static_assert(std::is_convertible<
-                            std::function<typename traits::signature>,
+                            std::function<typename traits::type>,
                             std::function<typename traits::normalized>>::value,
                       "Subscription function arguments must not be non-const "
                       "references.");
-    }
-
-    //! Call the provided collection with the provided arguments.
-    template <typename Collection, typename ... Arguments>
-    auto call(Collection && collection, Arguments && ... arguments)
-    {
-        using signature = typename function_traits<void(Arguments ...)>::normalized;
-        check_compatibility<signature>(); // This should never fail.
-
-        collection.template call_all<signature>(std::forward<Arguments>(arguments) ...);
-    }
-
-    template <typename Mutex, typename CollectionMap>
-    auto snapshot(std::shared_ptr<Mutex> const & mutex,
-                  std::shared_ptr<CollectionMap> & functions) -> void
-    {
-        std::lock_guard<Mutex> lock { *mutex };
-        functions = std::make_shared<CollectionMap>(*functions);
-    }
-
-    template <typename Mutex, typename CollectionMap, typename Tag, typename Id>
-    auto unsubscribe(std::weak_ptr<Mutex> const & mutex,
-                     std::shared_ptr<CollectionMap> & functions,
-                     Tag const & tag,
-                     Id const & id) -> void
-    {
-        auto const mutex_ptr = mutex.lock();
-        if(!mutex_ptr)
-            return;
-
-        snapshot(mutex_ptr, functions);
-
-        auto const it = functions->find(tag);
-        if(it == end(*functions))
-            return;
-
-        it->second.remove(id);
     }
 }
 
@@ -128,26 +92,38 @@ template <typename Tag>
 template <typename Function>
 inline auto subject<Tag>::subscribe(Function && function) -> subscription
 {
-    static Tag const no_tag { };
-    return subscribe(no_tag, std::forward<Function>(function));
+    return subscribe(detail::no_tag { }, std::forward<Function>(function));
 }
 
 template <typename Tag>
 template <typename T, typename Function>
 inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscription
 {
-    using traits = detail::function_traits<Function>;
-    using signature = typename traits::normalized;
-    detail::check_compatibility<Function>();
+    namespace d = detail;
+    d::check_compatibility<Function>();
 
-    snapshot(mutex_, functions_);
+    using actual_tag = typename std::conditional<std::is_same<T, d::no_tag>::value,
+                                                 d::tag<d::no_tag>,
+                                                 d::tag<Tag>>::type;
+    using tagged = d::tagged<actual_tag, Function>;
 
-    auto & collection = (*functions_)[tag];
-    auto id = collection.template insert<signature>(std::forward<Function>(function));
+    std::lock_guard<std::mutex> subscribe_lock { *mutex_ };
+    functions_ = std::make_shared<collection>(*functions_);
+
+    auto id = functions_->insert<typename tagged::type>(
+                                        tagged { actual_tag { tag },
+                                                 std::forward<Function>(function) });
 
     return subscription {
-                [this, tag { tag }, id, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
-                    detail::unsubscribe(mutex, functions_, tag, id);
+                [=, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
+                    auto mutex_ptr = mutex.lock();
+                    if(!mutex_ptr)
+                        return;
+
+                    std::lock_guard<std::mutex> unsubscribe_lock { *mutex_ptr };
+                    functions_ = std::make_shared<collection>(*functions_);
+
+                    functions_->remove(id);
                 }
             };
 }
@@ -156,20 +132,28 @@ template <typename Tag>
 template<typename ... Arguments>
 inline void subject<Tag>::notify_untagged(Arguments && ... arguments) const
 {
-    static Tag const no_tag { };
-    return notify_tagged(no_tag, std::forward<Arguments>(arguments) ...);
+    return notify_tagged(detail::no_tag { },
+                         std::forward<Arguments>(arguments) ...);
 }
 
 template <typename Tag>
 template<typename T, typename ... Arguments>
 inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) const
 {
-    std::shared_ptr<collection_map const> const functions = functions_;
-    auto const it = functions->find(tag);
-    if(it == end(*functions))
-        return;
+    namespace d = detail;
+    using function_type = void(*)(Arguments ...);
+    d::check_compatibility<function_type>();
 
-    detail::call(it->second, std::forward<Arguments>(arguments) ...);
+    using actual_tag = typename std::conditional<
+                                    std::is_same<T, d::no_tag>::value,
+                                    d::tag<d::no_tag>,
+                                    d::tag<Tag>>::type;
+    using tagged = d::tagged<actual_tag, function_type>;
+
+    auto functions = functions_;
+    functions->template call_all<typename tagged::type>(
+                                        actual_tag { tag },
+                                        std::forward<Arguments>(arguments) ...);
 }
 
 }
