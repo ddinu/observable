@@ -5,7 +5,7 @@
 #include <memory>
 #include <typeindex>
 #include <typeinfo>
-#include <unordered_map>
+#include <vector>
 #include <utility>
 
 namespace observable { namespace detail {
@@ -32,10 +32,13 @@ public:
     auto insert(std::function<Signature> function)
     {
         assert(function);
-        auto const ptr = std::make_shared<std::function<Signature>>(std::move(function));
 
-        functions_.emplace(key<Signature>(), ptr);
-        return make_id(ptr);
+        functions_.emplace_back(
+            std::make_shared<std::function<Signature>>(std::move(function)),
+            &typeid(Signature)
+        );
+
+        return functions_.back().id();
     }
 
     //! Remove a function from the collection.
@@ -50,8 +53,8 @@ public:
     {
         auto const it = find_if(begin(functions_),
                                 end(functions_),
-                                [&](auto const & kv) {
-                                    return this->make_id(kv.second) == id;
+                                [&](auto const & fun) {
+                                    return fun.id() == id;
                                 });
 
         if(it == end(functions_))
@@ -80,13 +83,16 @@ public:
     template <typename Signature, typename ... Arguments>
     auto call_all(Arguments && ... arguments) const
     {
+        static auto const * type = &typeid(Signature);
+
         std::size_t call_count = 0;
-        auto const range = functions_.equal_range(key<Signature>());
-        for(auto i = range.first; i != range.second; ++i, ++call_count)
+        for(auto && fun : functions_)
         {
-            auto const f = reinterpret_cast<std::function<Signature> *>(i->second.get());
-            assert(f);
-            (void)((*f)(std::forward<Arguments>(arguments) ...));
+            if(*fun.type != *type)
+                continue;
+
+            fun.call<Signature>(arguments ...);
+            ++call_count;
         }
 
         return call_count;
@@ -97,8 +103,8 @@ public:
     {
         return find_if(begin(functions_),
                        end(functions_),
-                       [&](auto const & kv) {
-                            return this->make_id(kv.second) == id;
+                       [&](auto const & fun) {
+                            return fun.id() == id;
                         })
                != end(functions_);
     }
@@ -116,23 +122,34 @@ public:
     }
 
 private:
-    using function_key = std::type_index;
-
-    //! Retrieve the type index of the provided type.
-    template <typename FunctionSignature>
-    static auto key()
+    struct function_wrapper
     {
-        return function_key { typeid(FunctionSignature) };
-    }
+        std::shared_ptr<void> function_ptr;
+        std::type_info const * type;
 
-    //! Retrieve a unique id for a function pointer.
-    static auto make_id(std::shared_ptr<void> const & function) noexcept
-    {
-        return reinterpret_cast<std::size_t>(function.get());
-    }
+        auto id() const noexcept
+        {
+            return reinterpret_cast<std::size_t>(function_ptr.get());
+        }
+
+        template <typename Signature, typename ... Arguments>
+        void call(Arguments && ... arguments) const
+        {
+            auto const f = reinterpret_cast<std::function<Signature> *>(function_ptr.get());
+            assert(f);
+            (void)((*f)(arguments ...));
+        }
+
+        function_wrapper(std::shared_ptr<void> const & function_ptr,
+                         std::type_info const * type) :
+            function_ptr(std::move(function_ptr)),
+            type(type)
+        {
+        }
+    };
 
 private:
-    std::unordered_multimap<function_key, std::shared_ptr<void>> functions_;
+    std::vector<function_wrapper> functions_;
 };
 
 } }
