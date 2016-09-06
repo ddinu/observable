@@ -1,7 +1,18 @@
+#pragma once
 #include <algorithm>
 #include <chrono>
 #include <string>
 #include <iostream>
+
+#if defined(_MSC_VER)
+#define NOINLINE __declspec(noinline)
+#else
+    #if defined(__GNUC_)
+    #define NOINLINE __attribute__((noinline))
+    #else
+    #define NOINLINE
+    #endif
+#endif
 
 namespace benchmark {
 
@@ -11,8 +22,8 @@ namespace benchmark {
 //! \param repeat_count Number of times to call the function.
 //! \return The average time it takes for a call to return.
 template <typename Function>
-std::chrono::nanoseconds
-time_run(Function function, unsigned long const repeat_count = 1'000'000)
+inline std::chrono::nanoseconds
+time_run(Function && function, unsigned long const repeat_count = 1'000'000)
 {
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -26,7 +37,7 @@ time_run(Function function, unsigned long const repeat_count = 1'000'000)
 
 //! Compute how much slower ``slow`` is compared to ``fast``. If ``slow`` is
 //! actually faster than ``fast``, the result will be negative.
-double slowdown(std::chrono::nanoseconds fast, std::chrono::nanoseconds slow)
+inline double slowdown(std::chrono::nanoseconds fast, std::chrono::nanoseconds slow)
 {
     auto f = static_cast<long double>(fast.count());
     auto s = static_cast<long double>(slow.count());
@@ -35,8 +46,8 @@ double slowdown(std::chrono::nanoseconds fast, std::chrono::nanoseconds slow)
 }
 
 //! Print timings.
-void print(std::string first_name, std::chrono::nanoseconds first_duration,
-           std::string second_name, std::chrono::nanoseconds second_duration)
+inline void print(std::string first_name, std::chrono::nanoseconds first_duration,
+                  std::string second_name, std::chrono::nanoseconds second_duration)
 {
     std::cout << first_name << " run duration: " << first_duration.count() << "ns\n"
               << second_name << " run duration: " << second_duration.count() << "ns\n";

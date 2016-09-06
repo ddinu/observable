@@ -3,7 +3,7 @@ include(observable_includes)
 include(source_groups)
 
 # Function benchmark target.
-add_executable(function_benchmark src/timing.h
+add_executable(function_benchmark src/utility.h
                                   src/function.cpp)
 add_observable_includes(function_benchmark)
 set_cpp_standard(function_benchmark)
@@ -26,7 +26,7 @@ find_package(Qt5 QUIET OPTIONAL_COMPONENTS Core)
 if(Qt5_FOUND)
     message(STATUS "Building Qt benchmark. Qt5 found: ${QT_ROOT}")
 
-    add_executable(qt_benchmark src/timing.h
+    add_executable(qt_benchmark src/utility.h
                                 src/qt.h
                                 src/qt.cpp)
     add_observable_includes(qt_benchmark)
