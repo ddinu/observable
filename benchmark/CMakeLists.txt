@@ -3,10 +3,10 @@ include(observable_includes)
 include(source_groups)
 
 # Function benchmark target.
-add_executable(function_benchmark src/utility.h
+add_executable(benchmark_function src/utility.h
                                   src/function.cpp)
-add_observable_includes(function_benchmark)
-set_cpp_standard(function_benchmark)
+add_observable_includes(benchmark_function)
+set_cpp_standard(benchmark_function)
 
 # Qt signal-slot benchmark target.
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -26,10 +26,10 @@ find_package(Qt5 QUIET OPTIONAL_COMPONENTS Core)
 if(Qt5_FOUND)
     message(STATUS "Building Qt benchmark. Qt5 found: ${QT_ROOT}")
 
-    add_executable(qt_benchmark src/utility.h
+    add_executable(benchmark_qt src/utility.h
                                 src/qt.h
                                 src/qt.cpp)
-    add_observable_includes(qt_benchmark)
-    set_cpp_standard(qt_benchmark)
-    target_link_libraries(qt_benchmark Qt5::Core)
+    add_observable_includes(benchmark_qt)
+    set_cpp_standard(benchmark_qt)
+    target_link_libraries(benchmark_qt Qt5::Core)
 endif()
