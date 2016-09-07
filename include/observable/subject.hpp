@@ -86,6 +86,16 @@ namespace detail {
                       "Subscription function arguments must not be non-const "
                       "references.");
     }
+
+    template <typename T1, typename T2>
+    using actual_tag = typename std::conditional<
+                                    std::is_same<
+                                        typename std::remove_cv<
+                                            typename std::remove_reference<T1>::type
+                                        >::type,
+                                        no_tag>::value,
+                                    tag<no_tag>,
+                                    tag<T2>>::type;
 }
 
 template <typename Tag>
@@ -102,17 +112,15 @@ inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscript
     namespace d = detail;
     d::check_compatibility<Function>();
 
-    using actual_tag = typename std::conditional<std::is_same<T, d::no_tag>::value,
-                                                 d::tag<d::no_tag>,
-                                                 d::tag<Tag>>::type;
+    using actual_tag = detail::actual_tag<T, Tag>;
     using tagged = d::tagged<actual_tag, Function>;
 
     std::lock_guard<std::mutex> subscribe_lock { *mutex_ };
     functions_ = std::make_shared<collection>(*functions_);
 
     auto id = functions_->insert<typename tagged::type>(
-                                        tagged { actual_tag { tag },
-                                                 std::forward<Function>(function) });
+                                tagged { actual_tag { tag },
+                                            std::forward<Function>(function) });
 
     return subscription {
                 [=, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
@@ -144,10 +152,7 @@ inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) co
     using function_type = void(*)(Arguments ...);
     d::check_compatibility<function_type>();
 
-    using actual_tag = typename std::conditional<
-                                    std::is_same<T, d::no_tag>::value,
-                                    d::tag<d::no_tag>,
-                                    d::tag<Tag>>::type;
+    using actual_tag = detail::actual_tag<T, Tag>;
     using tagged = d::tagged<actual_tag, function_type>;
 
     auto functions = functions_;

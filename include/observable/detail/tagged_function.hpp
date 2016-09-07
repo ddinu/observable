@@ -5,7 +5,7 @@
 namespace observable { namespace detail {
 
 //! Dummy tag value that signifies that the function is not tagged.
-struct no_tag { };
+struct no_tag { constexpr no_tag() noexcept =default; };
 inline bool operator==(no_tag const &, no_tag const &) { return true; }
 inline bool operator!=(no_tag const &, no_tag const &) { return false; }
 
