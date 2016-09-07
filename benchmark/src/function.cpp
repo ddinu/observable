@@ -3,7 +3,7 @@
 #include <observable/subject.hpp>
 #include "utility.h"
 
-static unsigned long long dummy = 0;
+static volatile unsigned long long dummy = 0;
 NOINLINE void function1() { ++dummy; }
 NOINLINE void function2(int v) { dummy += v; }
 NOINLINE void function3(int v1, int v2, int v3, double v4) { dummy += v1 + v2 + v3 + (int)v4; }

@@ -21,5 +21,5 @@ public slots:
     NOINLINE void inc3(int v1, int v2, int v3, double v4) { dummy += v1 + v2 + v3 + (int)v4; }
 
 private:
-    unsigned long long dummy;
+    volatile unsigned long long dummy;
 };
