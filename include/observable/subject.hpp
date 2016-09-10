@@ -70,6 +70,24 @@ private:
 };
 
 namespace detail {
+    //! Choose the type that will be used to tag functions.
+    template <typename ArgTag, typename ClassTag>
+    using actual_tag = typename std::conditional<
+                                    std::is_same<
+                                        typename std::remove_cv<
+                                            typename std::remove_reference<ArgTag>::type
+                                        >::type,
+                                        no_tag>::value,
+                                    no_tag,
+                                    ClassTag>::type;
+
+    //! The type that a subscription function will have inside function
+    //! collections.
+    template <typename Function>
+    using actual_function_type = typename const_ref_args<
+                                    typename function_traits<Function>::type
+                                 >::type;
+
     //! Check if the provided function can be used as a subscription callback
     //! function.
     template <typename Function>
@@ -82,20 +100,10 @@ namespace detail {
 
         static_assert(std::is_convertible<
                             std::function<typename traits::type>,
-                            std::function<typename traits::normalized>>::value,
+                            std::function<actual_function_type<Function>>>::value,
                       "Subscription function arguments must not be non-const "
                       "references.");
     }
-
-    template <typename T1, typename T2>
-    using actual_tag = typename std::conditional<
-                                    std::is_same<
-                                        typename std::remove_cv<
-                                            typename std::remove_reference<T1>::type
-                                        >::type,
-                                        no_tag>::value,
-                                    tag<no_tag>,
-                                    tag<T2>>::type;
 }
 
 template <typename Tag>
@@ -112,15 +120,19 @@ inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscript
     namespace d = detail;
     d::check_compatibility<Function>();
 
-    using actual_tag = detail::actual_tag<T, Tag>;
-    using tagged = d::tagged<actual_tag, Function>;
+    using actual_tag = d::actual_tag<T, Tag>;
+    using tagged_function = d::tagged<actual_tag, Function>;
+    using actual_function_type = d::actual_function_type<
+                                    typename tagged_function::type>;
 
     std::lock_guard<std::mutex> subscribe_lock { *mutex_ };
     functions_ = std::make_shared<collection>(*functions_);
 
-    auto id = functions_->insert<typename tagged::type>(
-                                tagged { actual_tag { tag },
-                                            std::forward<Function>(function) });
+    auto id = functions_->insert<actual_function_type>(
+                                             tagged_function {
+                                                actual_tag { tag },
+                                                std::forward<Function>(function)
+                                             });
 
     return subscription {
                 [=, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
@@ -152,11 +164,13 @@ inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) co
     using function_type = void(*)(Arguments ...);
     d::check_compatibility<function_type>();
 
-    using actual_tag = detail::actual_tag<T, Tag>;
-    using tagged = d::tagged<actual_tag, function_type>;
+    using actual_tag = d::actual_tag<T, Tag>;
+    using tagged_function = d::tagged<actual_tag, function_type>;
+    using actual_function_type = d::actual_function_type<
+                                    typename tagged_function::type>;
 
     auto functions = functions_;
-    functions->template call_all<typename tagged::type>(
+    functions->template call_all<actual_function_type>(
                                         actual_tag { tag },
                                         std::forward<Arguments>(arguments) ...);
 }

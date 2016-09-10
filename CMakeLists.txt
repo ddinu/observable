@@ -8,11 +8,12 @@ include(source_groups)
 set(SOURCE_FILES include/observable/subject.hpp
                  include/observable/detail/function_collection.hpp
                  include/observable/detail/function_traits.hpp
+                 include/observable/detail/function_wrapper.hpp
                  include/observable/detail/handle.hpp
                  include/observable/detail/tagged_function.hpp)
 
 add_custom_target(observable SOURCES ${SOURCE_FILES})
 
 add_subdirectory(external)
-add_subdirectory(test)
+add_subdirectory(tests)
 add_subdirectory(benchmark)

@@ -1,11 +1,9 @@
 #pragma once
 #include <algorithm>
 #include <cassert>
-#include <functional>
-#include <memory>
-#include <typeinfo>
 #include <vector>
 #include <utility>
+#include "function_wrapper.hpp"
 
 namespace observable { namespace detail {
 
@@ -18,7 +16,7 @@ class function_collection
 public:
     //! Identifier for a function that has been inserted. You can use this to
     //! remove a previously inserted function.
-    using function_id = std::size_t;
+    using function_id = function_wrapper::id_type;
 
     //! Insert a function into the collection.
     //!
@@ -30,9 +28,11 @@ public:
     auto insert(std::function<FunctionType> function)
     {
         assert(function);
-        functions_.emplace_back(std::move(function), type_index<FunctionType>());
+        functions_.emplace_back(std::move(function),
+                                type_index<FunctionType>(),
+                                ++last_id);
 
-        return functions_.back().id();
+        return functions_.back().instance_id();
     }
 
     //! Remove a function from the collection.
@@ -47,7 +47,7 @@ public:
     {
         auto const it = find_if(begin(functions_),
                                 end(functions_),
-                                [&](auto && fun) { return fun.id() == id; });
+                                [&](auto && w) { return w.instance_id() == id; });
 
         if(it == end(functions_))
             return false;
@@ -75,15 +75,15 @@ public:
     template <typename FunctionType, typename ... Arguments>
     auto call_all(Arguments && ... arguments) const
     {
-        auto const ti = type_index<FunctionType>();
+        auto const type_id = type_index<FunctionType>();
 
         std::size_t call_count = 0;
-        for(auto && fun : functions_)
+        for(auto && wrapper : functions_)
         {
-            if(fun.type != ti)
+            if(wrapper.type_id() != type_id)
                 continue;
 
-            fun.call<FunctionType>(arguments ...);
+            wrapper.function<FunctionType>()(arguments ...);
             ++call_count;
         }
 
@@ -95,9 +95,7 @@ public:
     {
         return find_if(begin(functions_),
                        end(functions_),
-                       [&](auto const & fun) {
-                            return fun.id() == id;
-                        })
+                       [&](auto && w) { return w.instance_id() == id; })
                != end(functions_);
     }
 
@@ -114,37 +112,6 @@ public:
     }
 
 private:
-    //! Wrap a function and hide its type.
-    struct function_wrapper
-    {
-        std::shared_ptr<void> function;
-        std::size_t type;
-
-        //! Retrieve the wrapped function's id.
-        auto id() const noexcept ->std::size_t
-        {
-            return reinterpret_cast<std::size_t>(function.get());
-        }
-
-        //! Call the wrapped function with the provided arguments.
-        template <typename FunctionType, typename ... Arguments>
-        auto call(Arguments && ... arguments) const -> void
-        {
-            auto const f = reinterpret_cast<std::function<FunctionType> *>(
-                                                            function.get());
-            assert(f);
-            (void)((*f)(arguments ...));
-        }
-
-        //! Create a new function wrapper.
-        template <typename FunctionType>
-        function_wrapper(std::function<FunctionType> function, std::size_t ti) :
-            function(std::make_shared<std::function<FunctionType>>(std::move(function))),
-            type(ti)
-        {
-        }
-    };
-
     //! Retrieve an identifier for the specified function type.
     template <typename FunctionType>
     auto type_index() const -> std::size_t
@@ -167,6 +134,7 @@ private:
 private:
     std::vector<function_wrapper> functions_;
     mutable std::vector<std::type_info const *> types_;
+    std::size_t last_id = 0;
 };
 
 } }

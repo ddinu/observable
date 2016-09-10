@@ -1,4 +1,5 @@
 #include <type_traits>
+#include <memory>
 #include "gtest.h"
 #include "observable/detail/function_collection.hpp"
 
@@ -148,16 +149,6 @@ TEST(function_collection_test, call_all_returns_zero_if_no_function_matches)
     auto call_count = functions.call_all<void()>();
 
     ASSERT_EQ(call_count, 0u);
-}
-
-TEST(function_collection_test, function_return_values_are_ignored)
-{
-    function_collection functions;
-
-    functions.insert<int()>([]() { return 5; });
-    auto call_count = functions.call_all<int()>();
-
-    ASSERT_EQ(call_count, 1u);
 }
 
 TEST(function_collection_test, contains_returns_true_for_contained_id)

@@ -10,11 +10,6 @@ namespace observable { namespace detail {
 //!
 //! - type: Function signature.
 //!
-//! - pointer_type Function pointer type.
-//!
-//! - normalized: Normalized function signature with const and references removed
-//!               from arguments.
-//!
 //! - return_type: The function's return type.
 //!
 //! The following static value is provided:
@@ -24,11 +19,6 @@ template <typename Functor>
 struct function_traits;
 
 namespace helper {
-    // Normalize an argument type.
-    template <typename T> struct norm { using type = T; };
-    template <typename T> struct norm<T const> { using type = T; };
-    template <typename T> struct norm<T const &> { using type = T; };
-
     template <typename Functor>
     struct traits;
 
@@ -37,10 +27,6 @@ namespace helper {
     struct traits<Return(Arguments ...)>
     {
         using type = Return(Arguments ...);
-
-        using pointer_type = Return(*)(Arguments ...);
-
-        using normalized = Return(typename norm<Arguments>::type ...);
 
         using return_type = Return;
 
@@ -79,34 +65,36 @@ struct function_traits : helper::traits<
 {
 };
 
-//! Remove a function type's return value.
-//!
-//! The ``type`` member type will hold the new function type.
-template <typename Functor>
-struct remove_return : remove_return<typename function_traits<Functor>::type>
-{
-};
-
-template <typename Return, typename ... Arguments>
-struct remove_return<Return(Arguments ...)>
-{
-    using type = void(Arguments ...);
-};
-
 //! Add a new argument to a function's type.
 //!
 //! The ``type`` member type will hold the new function type.
-template <typename Argument, typename Functor>
+template <typename NewArgument, typename Functor>
 struct prepend_argument : prepend_argument<
-                                    Argument,
+                                    NewArgument,
                                     typename function_traits<Functor>::type>
 {
 };
 
-template <typename Argument, typename Return, typename ... Arguments>
-struct prepend_argument<Argument, Return(Arguments ...)>
+template <typename NewArgument, typename Return, typename ... Arguments>
+struct prepend_argument<NewArgument, Return(Arguments ...)>
 {
-    using type = void(Argument, Arguments ...);
+    using type = Return(NewArgument, Arguments ...);
+};
+
+//! Convert the function's type to one where all arguments are const references.
+template <typename Functor>
+struct const_ref_args : const_ref_args<typename function_traits<Functor>::type>
+{
+};
+
+template <typename Return, typename ... Arguments>
+struct const_ref_args<Return(Arguments ...)>
+{
+    using type = Return(typename std::add_lvalue_reference<
+                            typename std::add_const<
+                                typename std::remove_reference<Arguments>::type
+                            >::type
+                        >::type ...);
 };
 
 } }
