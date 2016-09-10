@@ -8,6 +8,12 @@ add_executable(benchmark_function src/utility.h
 add_observable_includes(benchmark_function)
 set_cpp_standard(benchmark_function)
 
+# Virtual function benchmark target.
+add_executable(benchmark_virtual src/utility.h
+                                 src/virtual.cpp)
+add_observable_includes(benchmark_virtual)
+set_cpp_standard(benchmark_virtual)
+
 # Qt signal-slot benchmark target.
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # Search for 64bit Qt
