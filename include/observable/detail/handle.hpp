@@ -11,7 +11,7 @@ class handle
 public:
     //! Create a new handle.
     explicit handle(std::function<void()> const & unsubscriber) :
-        unsubscribe_(unsubscriber)
+        unsubscribe_ { unsubscriber }
     {
     }
 
@@ -23,7 +23,7 @@ public:
 
 private:
     std::function<void()> unsubscribe_;
-    std::shared_ptr<std::once_flag> once_ { std::make_shared<std::once_flag>() };
+    std::shared_ptr<std::once_flag> once_ = std::make_shared<std::once_flag>();
 };
 
 //! Handle that automatically calls unsubscribe() when the last instance is
@@ -33,7 +33,7 @@ class auto_handle
 public:
     //! Create a new handle.
     auto_handle(handle const & h) :
-        handle_(new handle(h), [](auto * hp) { hp->unsubscribe(); delete hp; })
+        handle_ { new handle(h), [](auto * hp) { hp->unsubscribe(); delete hp; } }
     {
     }
 

@@ -10,7 +10,14 @@
 namespace observable {
 
 //! Handle that manages a subscription.
+//!
+//! Call subscription::unsubscribe() to terminate the subscription.
+//!
+//! \note The destructor of this class will not call unsubscribe.
 using subscription = detail::handle;
+
+//! Automatically call unsubscribe on a subscription handle, once the last copy
+//! of the class will be destroyed.
 using auto_unsubscribe = detail::auto_handle;
 
 //! This class stores observers and provides a way to notify them with
@@ -23,7 +30,8 @@ using auto_unsubscribe = detail::auto_handle;
 //! parameter types and have subscribed with the same tag value (in case you
 //! called notify_tagged).
 //!
-//! \tparam Tag The type of the tag parameter for tagged subscriptions.
+//! \tparam Tag The type of the tag parameter for tagged subscriptions. A tag must
+//!             satisfy the EqualityComparable concept.
 //! \note All methods defined in this class are safe to be called in parallel.
 template <typename Tag=std::string>
 class subject
@@ -60,13 +68,13 @@ public:
     subject(subject && other) noexcept =default;
 
     //! Subject is move-assignable.
-    auto operator=(subject && other) -> subject & =default;
+    auto operator=(subject && other) noexcept -> subject & =default;
 
 private:
     using collection = detail::function_collection;
 
-    std::shared_ptr<collection> functions_ { std::make_shared<collection>() };
-    mutable std::shared_ptr<std::mutex> mutex_ { std::make_shared<std::mutex>() };
+    std::shared_ptr<collection> functions_ = std::make_shared<collection>();
+    mutable std::shared_ptr<std::mutex> mutex_ = std::make_shared<std::mutex>();
 };
 
 namespace detail {
@@ -91,7 +99,7 @@ namespace detail {
     //! Check if the provided function can be used as a subscription callback
     //! function.
     template <typename Function>
-    constexpr auto check_compatibility()
+    constexpr auto check_compatibility() noexcept
     {
         using traits = function_traits<Function>;
 

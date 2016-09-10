@@ -10,6 +10,8 @@
 namespace observable { namespace detail {
 
 //! Wrap a std::function<void(...)> to hide its type.
+//!
+//! \warning None of the methods of this class can be safely called concurrently.
 class function_wrapper
 {
     static constexpr auto storage_size = sizeof(std::function<void()>);
@@ -22,14 +24,10 @@ class function_wrapper
     struct trampoline<Function, void(Arguments ...)>
     {
         explicit constexpr trampoline(Function * function) noexcept :
-            function_(function)
-        {
-        }
+            function_ { function }
+        { }
 
-        void operator()(Arguments ... arguments)
-        {
-            (*function_)(arguments ...);
-        }
+        void operator()(Arguments ... arguments) { (*function_)(arguments ...); }
 
     private:
         Function * function_;
@@ -44,8 +42,8 @@ public:
     function_wrapper(std::function<FunctionType> fun,
                      std::size_t type_id,
                      std::size_t instance_id) :
-        type_id_(type_id),
-        instance_id_(instance_id)
+        type_id_ { type_id },
+        instance_id_ { instance_id }
     {
         using function_type = std::function<FunctionType>;
         static_assert(sizeof(function_type) <= storage_size,
@@ -82,16 +80,16 @@ public:
     //! Create an invalid function wrapper.
     function_wrapper() =default;
 
-    //! Retrieve a process-unique type id for the wrapped type.
+    //! Retrieve the associated type id.
     auto type_id() const noexcept { return type_id_; }
 
-    //! Retrieve a process-unique id identifying this wrapper instance.
+    //! Retrieve the associated instance id.
     auto instance_id() const noexcept { return instance_id_; }
 
-    //! Call the wrapped function with the provided arguments.
+    //! Retrieve a functor with a signature matching the wrapped function.
     //!
-    //! \warning The provided argument types must exactly match the wrapped
-    //!          function's arguments.
+    //! When you call this functor the arguments will be forwarded to the
+    //! wrapped function and it will be called.
     template <typename FunctionType>
     auto function() const
 #if defined(NDEBUG)
@@ -117,11 +115,11 @@ public:
 
     //! Function wrappers are copy-constructible.
     function_wrapper(function_wrapper const & other) :
-        type_id_(other.type_id_),
-        instance_id_(other.instance_id_),
-        delete_(other.delete_),
-        copy_(other.copy_),
-        move_(other.move_)
+        type_id_ { other.type_id_ },
+        instance_id_ { other.instance_id_ },
+        delete_ { other.delete_ },
+        copy_ { other.copy_ },
+        move_ { other.move_ }
     {
         copy_(other.function_, function_, storage_);
 
@@ -132,11 +130,11 @@ public:
 
     //! Function wrappers are move-constructible.
     function_wrapper(function_wrapper && other) :
-        type_id_(std::move(other.type_id_)),
-        instance_id_(std::move(other.instance_id_)),
-        delete_(std::move(other.delete_)),
-        copy_(std::move(other.copy_)),
-        move_(std::move(other.move_))
+        type_id_ { std::move(other.type_id_) },
+        instance_id_ { std::move(other.instance_id_) },
+        delete_ { std::move(other.delete_) },
+        copy_ { std::move(other.copy_) },
+        move_ { std::move(other.move_) }
     {
         move_(other.function_, function_, storage_);
 

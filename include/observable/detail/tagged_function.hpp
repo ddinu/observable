@@ -4,7 +4,14 @@
 
 namespace observable { namespace detail {
 
-//! Tagged function.
+//! Tagged function. This function wraps a regular function and only calls it if
+//! the tag specified when calling it matches the tag specified when creating the
+//! function.
+//!
+//! \tparam Tag The tag type. This type must satisfy the EqualityComparable
+//!             concept.
+//! \tparam Function Type of the wrapped function. This type must satisfy the
+//!                  Callable concept.
 template <typename Tag, typename Function>
 struct tagged
 {
@@ -15,11 +22,14 @@ struct tagged
                  >::type;
 
     //! Create a new tagged function.
-    tagged(Tag tag, Function function)
-        noexcept(std::is_nothrow_move_constructible<Tag>::value &&
-                 std::is_nothrow_move_constructible<Function>::value) :
-        tag_(std::move(tag)),
-        function_(std::move(function))
+    template <typename T, typename F>
+    tagged(T && tag, F && function)
+        noexcept(
+            noexcept(Tag { std::forward<T>(tag) }) &&
+            noexcept(Function( std::forward<F>(function) ))
+        ):
+        tag_ { std::forward<T>(tag) },
+        function_( std::forward<F>(function) ) // { function }, triggers MSVC bug.
     {
     }
 

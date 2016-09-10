@@ -47,7 +47,8 @@ namespace helper {
 
     // Unpack const class methods.
     template <typename Return, typename Functor, typename ... Arguments>
-    struct traits<Return(Functor::*)(Arguments...) const> : traits<Return(Arguments...)>
+    struct traits<Return(Functor::*)(Arguments...) const> :
+        traits<Return(Arguments...)>
     {
     };
 
@@ -61,7 +62,8 @@ namespace helper {
 template <typename Functor>
 struct function_traits : helper::traits<
                             typename std::decay<
-                                typename std::remove_pointer<Functor>::type>::type>
+                                typename std::remove_pointer<Functor>::type
+                            >::type>
 {
 };
 

@@ -67,7 +67,7 @@ public:
     //! \tparam FunctionType The type of the functions that will be called.
     //! \tparam Arguments Types of the function's arguments.
     //! \note All functions will be called on the thread that calls this method.
-    //!       This method will return once all functions have been called.
+    //!       This method will return once all call functions have returned.
     //! \warning Return values of the called functions will be ignored.
     //! \warning Do not change the function collection while a call is in
     //!          progress.
@@ -90,15 +90,6 @@ public:
         return call_count;
     }
 
-    //! Check if a function id belongs to this collection.
-    auto contains(function_id const & id) const
-    {
-        return find_if(begin(functions_),
-                       end(functions_),
-                       [&](auto && w) { return w.instance_id() == id; })
-               != end(functions_);
-    }
-
     //! Retrieve the number of functions in the collection.
     auto size() const noexcept
     {
@@ -114,7 +105,7 @@ public:
 private:
     //! Retrieve an identifier for the specified function type.
     template <typename FunctionType>
-    auto type_index() const -> std::size_t
+    std::size_t type_index() const
     {
         static auto type = &typeid(FunctionType);
 

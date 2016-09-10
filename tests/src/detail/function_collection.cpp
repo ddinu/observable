@@ -151,23 +151,6 @@ TEST(function_collection_test, call_all_returns_zero_if_no_function_matches)
     ASSERT_EQ(call_count, 0u);
 }
 
-TEST(function_collection_test, contains_returns_true_for_contained_id)
-{
-    function_collection functions;
-    auto id = functions.insert<void()>([]() {});
-
-    ASSERT_TRUE(functions.contains(id));
-}
-
-TEST(function_collection_test, contains_returns_false_for_uncontained_id)
-{
-    function_collection functions1;
-    function_collection functions2;
-    auto id = functions2.insert<void()>([]() {});
-
-    ASSERT_FALSE(functions1.contains(id));
-}
-
 TEST(function_collection_test, is_copy_constructible)
 {
     ASSERT_TRUE(std::is_copy_constructible<function_collection>::value);
@@ -221,7 +204,7 @@ TEST(function_collection_test, id_is_contained_in_copied_collection)
 
     auto copy = functions;
 
-    ASSERT_TRUE(copy.contains(id));
+    ASSERT_TRUE(copy.remove(id));
 }
 
 TEST(function_collection_test, function_is_not_removed_from_copied_collection)
