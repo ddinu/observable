@@ -6,16 +6,16 @@ namespace {
 
 namespace shared {
 
-void subscribe_in_shared_lib(observable::subject<> & subject)
+void subscribe_in_shared_lib(observable::subject<void()> & subject)
 {
     subject.subscribe([&]() {
         ++count;
-    });
+    }).release();
 }
 
-void notify_void(observable::subject<> & subject)
+void notify_void(observable::subject<void()> & subject)
 {
-    subject.notify_untagged();
+    subject.notify();
 }
 
 int call_count()

@@ -4,11 +4,9 @@ include(compile_flags)
 include(observable_includes)
 include(source_groups)
 
-set(SOURCE_FILES src/detail/auto_handle.cpp
-                 src/detail/function_collection.cpp
-                 src/detail/function_traits.cpp
-                 src/detail/function_wrapper.cpp
-                 src/detail/handle.cpp
+set(SOURCE_FILES src/detail/callable_collection.cpp
+                 src/detail/unique_subscription.cpp
+                 src/detail/shared_subscription.cpp
                  src/gtest.h
                  src/shared_lib.cpp
                  src/subject.cpp)

@@ -9,37 +9,18 @@ void bench()
     Sender sender;
     Receiver receiver;
 
-    auto success = receiver.connect(&sender, &Sender::inc1,
-                                    &receiver, &Receiver::inc1,
+    auto success = receiver.connect(&sender, &Sender::inc,
+                                    &receiver, &Receiver::inc,
                                     Qt::DirectConnection);
+    (void)success;
     assert(success);
 
-    success = receiver.connect(&sender, &Sender::inc2,
-                               &receiver, &Receiver::inc2,
-                               Qt::DirectConnection);
-    assert(success);
+    auto qt_duration = benchmark::time_run([&]() { emit sender.inc(1); });
 
-    success = receiver.connect(&sender, &Sender::inc3,
-                               &receiver, &Receiver::inc3,
-                               Qt::DirectConnection);
-    assert(success);
+    observable::subject<void(int)> subject;
+    subject.subscribe([&](int v) { receiver.inc(v); }).release();
 
-    auto qt_duration = benchmark::time_run([&]() {
-                            emit sender.inc1();
-                            emit sender.inc2(1);
-                            emit sender.inc3(1, 2, 3, 4);
-                       });
-
-    observable::subject<int> subject;
-    subject.subscribe([&]() { receiver.inc1(); });
-    subject.subscribe([&](int v) { receiver.inc2(v); });
-    subject.subscribe([&](int v1, int v2, int v3, double v4) { receiver.inc3(v1, v2, v3, v4); });
-
-    auto subject_duration = benchmark::time_run([&]() {
-                                subject.notify_untagged();
-                                subject.notify_untagged(1);
-                                subject.notify_untagged(1, 2, 3, 4.0);
-                            });
+    auto subject_duration = benchmark::time_run([&]() { subject.notify(1); });
 
     benchmark::print("Qt signal-slot", qt_duration, "Subject", subject_duration);
 }

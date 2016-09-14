@@ -7,7 +7,7 @@ way to do it? This is for those times.
 Quick start
 -----------
 
-The library is header-only, just copy the ``include/observable`` directory into
+The library is header-only; just copy the ``include/observable`` directory into
 your include path and you're set.
 
 Example:
@@ -16,15 +16,10 @@ Example:
 
     #include <observable/subject.hpp>
 
-    subject<> observable;
+    subject<void(double)> observable;
 
-    observable.subscribe([]() { /* do stuff 1 */ });
-    observable.subscribe([](double frob) { /* do stuff 2 */ }); 
-    observable.subscribe("stopped", [](double last_frob) { /* do stuff 3 */ });
-
-    observable.notify_untagged(); // calls 'do stuff 1'
-    observable.notify_untagged(5.0); // calls 'do stuff 2'
-    observable.notify_tagged("stopped", 5.0); // calls 'do stuff 3'
+    observable.subscribe([](double frob) { /* do stuff */ }); 
+    observable.notify(5.1); // calls 'do stuff'
 
 What the library can do
 -----------------------
@@ -32,16 +27,11 @@ What the library can do
 You can subscribe to notifications using generic functors, functions or
 lambdas and can fire notifications that call your subscribed *observers*.
 
-Only functions that have the correct number and types of parameters get called.
-
-If you use ``notify_tagged()``, the tag used when subscribing also has to match
-the one used for the notification.
-
 What's with the CMake files?
 ----------------------------
 
-The library is using CMake to build and run the tests. You won't need CMake
-if you don't want to run the tests.
+The library is using CMake to build and run the tests and benchmarks. You won't
+need CMake if you don't want to run the tests.
 
 Warning!
 --------
@@ -56,7 +46,7 @@ Any help is welcome.
 Legal and Licensing
 -------------------
 
-Observable is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
+The library is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
 
 Supported compilers
 -------------------

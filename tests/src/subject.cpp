@@ -14,168 +14,146 @@ void dummy() { }
 void dummy_args(int, float) { }
 
 using namespace std::chrono_literals;
-using tsubject = subject<std::string>;
 
 TEST(subject_test, can_create_subject)
 {
-    tsubject { };
+    subject<void()> { };
 }
 
-TEST(subject_test, can_subscribe_to_untagged_changes)
+TEST(subject_test, can_subscribe_to_subject)
 {
-    tsubject s;
-    s.subscribe(dummy);
-    s.subscribe([=]() { });
-    s.subscribe([=]() mutable { });
-    s.subscribe(dummy_args);
-    s.subscribe([=](int, float) { });
-    s.subscribe([=](int, float) mutable { });
+    subject<void()> s1;
+    s1.subscribe(dummy);
+    s1.subscribe([=]() { });
+    s1.subscribe([=]() mutable { });
+
+    subject<void(int, float)> s2;
+    s2.subscribe(dummy_args);
+    s2.subscribe([=](int, float) { });
+    s2.subscribe([=](int, float) mutable { });
 }
 
-TEST(subject_test, can_subscribe_to_tagged_changes)
+TEST(subject_test, observers_are_called)
 {
-    tsubject s;
-    s.subscribe("tagged", dummy);
-    s.subscribe("tagged", [=]() { });
-    s.subscribe("tagged", [=]() mutable { });
-    s.subscribe("tagged", dummy_args);
-    s.subscribe("tagged", [=](int, float) { });
-    s.subscribe("tagged", [=](int, float) mutable { });
-}
-
-TEST(subject_test, untagged_observers_are_called)
-{
-    tsubject s;
+    subject<void()> s;
 
     auto call_count = 0;
-    s.subscribe([&]() { ++call_count; });
-    s.subscribe([&]() { ++call_count; });
-    s.notify_untagged();
-
-    ASSERT_EQ(call_count, 2);
-}
-
-TEST(subject_test, tagged_observers_are_called)
-{
-    tsubject s;
-
-    auto call_count = 0;
-    s.subscribe("tag", [&]() { ++call_count; });
-    s.subscribe("tag", [&]() { ++call_count; });
-    s.notify_tagged("tag");
+    s.subscribe([&]() { ++call_count; }).release();
+    s.subscribe([&]() { ++call_count; }).release();
+    s.notify();
 
     ASSERT_EQ(call_count, 2);
 }
 
 TEST(subject_test, observer_with_const_reference_parameters_is_called)
 {
-    tsubject s;
+    subject<void(int)> s;
     auto call_count = 0;
 
-    s.subscribe([&](int const &) { ++call_count; });
-    s.notify_untagged(5);
+    s.subscribe([&](int const &) { ++call_count; }).release();
+    s.notify(5);
 
     ASSERT_EQ(call_count, 1);
 }
 
 TEST(subject_test, notify_with_const_reference_parameter_calls_observer)
 {
-    tsubject s;
+    subject<void(int)> s;
     auto call_count = 0;
 
-    s.subscribe([&](int) { ++call_count; });
-    s.notify_untagged<int const &>(5);
+    s.subscribe([&](int) { ++call_count; }).release();
+    s.notify<int const &>(5);
 
     ASSERT_EQ(call_count, 1);
 }
 
 TEST(subject_test, observer_is_not_called_after_unsubscribing)
 {
-    tsubject s;
+    subject<void()> s;
     auto call_count = 0;
 
     auto sub = s.subscribe([&]() { ++call_count; });
     sub.unsubscribe();
-    s.notify_untagged();
+    s.notify();
 
     ASSERT_EQ(call_count, 0);
 }
 
-TEST(subject_test, is_movable)
+TEST(subject_test, is_move_constructible)
 {
-    ASSERT_TRUE(std::is_move_constructible<subject<>>::value);
-    ASSERT_TRUE(std::is_move_assignable<subject<>>::value);
+    ASSERT_TRUE(std::is_move_constructible<subject<void()>>::value);
 }
 
-TEST(subject_test, is_not_copyable)
+TEST(subject_test, is_move_assignable)
 {
-    ASSERT_FALSE((std::is_copy_constructible<subject<>>::value));
-    ASSERT_FALSE((std::is_copy_assignable<subject<>>::value));
+    ASSERT_TRUE(std::is_move_assignable<subject<void()>>::value);
+}
+
+TEST(subject_test, is_not_copy_constructible)
+{
+    ASSERT_FALSE((std::is_copy_constructible<subject<void()>>::value));
+}
+
+TEST(subject_test, is_not_copy_assignable)
+{
+    ASSERT_FALSE((std::is_copy_assignable<subject<void()>>::value));
 }
 
 TEST(subject_test, moved_subject_works)
 {
-    tsubject s1;
+    subject<void()> s1;
     auto call_count = 0;
 
-    s1.subscribe([&]() { ++call_count; });
+    s1.subscribe([&]() { ++call_count; }).release();
     auto s2 = std::move(s1);
-    s2.notify_untagged();
+    s2.notify();
 
     ASSERT_EQ(call_count, 1);
 }
 
-TEST(subject_test, can_use_auto_unsubscribe)
+TEST(subject_test, observer_added_from_running_observer_is_called_on_second_notification)
 {
-    tsubject s;
-    auto_unsubscribe sub = s.subscribe([]() {});
-
-    ASSERT_TRUE(!!sub);
-}
-
-TEST(subject_test, observer_added_from_another_observer_is_called_on_second_notification)
-{
-    tsubject s;
+    subject<void()> s;
     auto call_count = 0;
 
     auto sub = s.subscribe([&]() {
         ++call_count;
-        s.subscribe([&]() { ++call_count; });
+        s.subscribe([&]() { ++call_count; }).release();
     });
 
-    s.notify_untagged();
-    s.notify_untagged();
+    s.notify();
+    s.notify();
 
     ASSERT_EQ(call_count, 3);
 }
 
 TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
 {
-    tsubject s;
+    subject<void()> s;
     std::thread::id other_id;
 
     s.subscribe([&]() { other_id = std::this_thread::get_id(); });
-    std::thread { [&]() { s.notify_untagged(); } }.join();
+    std::thread { [&]() { s.notify(); } }.join();
 
     ASSERT_NE(other_id, std::this_thread::get_id());
 }
 
 TEST(subject_test, observer_added_from_other_thread_while_notification_is_running_is_not_called)
 {
-    tsubject s;
+    subject<void()> s;
     std::atomic_int old_call_count { 0 };
     std::atomic_int new_call_count { 0 };
 
     for(auto i = 0; i < 10; ++i)
-        s.subscribe([&]() { ++old_call_count; std::this_thread::sleep_for(5ms); });
+        s.subscribe([&]() { ++old_call_count; std::this_thread::sleep_for(5ms); }).release();
 
-    std::thread t { [&]() { s.notify_untagged(); } };
+    std::thread t { [&]() { s.notify(); } };
 
     for(auto i = 0; i < 100 && old_call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);
 
     for(auto i = 0; i < 10; ++i)
-        s.subscribe([&]() { ++new_call_count; });
+        s.subscribe([&]() { ++new_call_count; }).release();
 
     t.join();
 
@@ -185,18 +163,18 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
 
 TEST(subject_test, can_unsubscribe_while_notification_is_running)
 {
-    tsubject s;
+    subject<void()> s;
     std::atomic_int call_count { 0 };
-    std::vector<auto_unsubscribe> subs;
+    std::vector<shared_subscription> subs;
 
     for(auto i = 0; i < 10; ++i)
-        subs.push_back(
+        subs.emplace_back(
                 s.subscribe([&]() {
                     ++call_count;
                     std::this_thread::sleep_for(5ms);
                 }));
 
-    std::thread t { [&]() { s.notify_untagged(); } };
+    std::thread t { [&]() { s.notify(); } };
 
     for(auto i = 0; i < 100 && call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);

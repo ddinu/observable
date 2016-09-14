@@ -1,58 +1,47 @@
 #pragma once
 #include <memory>
 #include <mutex>
-#include <unordered_map>
-#include "detail/function_collection.hpp"
-#include "detail/function_traits.hpp"
-#include "detail/handle.hpp"
-#include "detail/tagged_function.hpp"
+#include <type_traits>
+#include "detail/callable_collection.hpp"
+#include "detail/subscription.hpp"
 
 namespace observable {
 
-//! Handle that manages a subscription.
-//!
-//! Call subscription::unsubscribe() to terminate the subscription.
-//!
-//! \note The destructor of this class will not call unsubscribe.
-using subscription = detail::handle;
+using unique_subscription = detail::unique_subscription;
+using shared_subscription = detail::shared_subscription;
 
-//! Automatically call unsubscribe on a subscription handle, once the last copy
-//! of the class will be destroyed.
-using auto_unsubscribe = detail::auto_handle;
-
-//! This class stores observers and provides a way to notify them with
-//! heterogeneous parameters.
+//! This class stores observers and provides a way to notify them.
 //!
-//! An observer is a generic function. Once you call subscribe(), the observer
-//! is said to be subscribed to notifications from the subject.
+//! An observer is any object that satisfies the Callable concept.
 //!
-//! A call to notify() or notify_tagged() calls all observers that have matching
-//! parameter types and have subscribed with the same tag value (in case you
-//! called notify_tagged).
+//! Once you call subscribe(), the observer is said to be subscribed to
+//! notifications from the subject.
 //!
-//! \tparam Tag The type of the tag parameter for tagged subscriptions. A tag must
-//!             satisfy the EqualityComparable concept.
+//! A call to notify(), calls all subscribed observers that have been subscribed.
+//!
+//! \tparam FunctionType Function type compatible with the callable objects that
+//!                      will be used as observers.
 //! \note All methods defined in this class are safe to be called in parallel.
-template <typename Tag=std::string>
+template <typename FunctionType>
 class subject
 {
+    static_assert(std::is_function<FunctionType>::value,
+                  "FunctionType is not defining a function.");
+
+    static_assert(std::is_same<
+                        typename std::function<FunctionType>::result_type,
+                        void
+                   >::value,
+                  "FunctionType must not return a value.");
+
 public:
-    //! Subscribe to all untagged notifications.
-    template <typename Function>
-    auto subscribe(Function && function) -> subscription;
+    //! Subscribe to notifications.
+    template <typename Callable>
+    auto subscribe(Callable && function) -> unique_subscription;
 
-    //! Subscribe to all notifications tagged with the provided tag value.
-    template <typename T, typename Function>
-    auto subscribe(T && tag, Function && fun) -> subscription;
-
-    //! Notify all untagged subscriptions.
+    //! Notify all observers.
     template <typename ... Arguments>
-    auto notify_untagged(Arguments && ... arguments) const -> void;
-
-    //! Notify all tagged subscriptions that have used the provided tag value
-    //! when subscribing.
-    template <typename T, typename ... Arguments>
-    auto notify_tagged(T && tag, Arguments && ... arguments) const -> void;
+    auto notify(Arguments && ... arguments) const -> void;
 
 public:
     //! Create an empty subject.
@@ -71,78 +60,27 @@ public:
     auto operator=(subject && other) noexcept -> subject & =default;
 
 private:
-    using collection = detail::function_collection;
+    using collection = detail::callable_collection<FunctionType>;
 
     std::shared_ptr<collection> functions_ = std::make_shared<collection>();
     mutable std::shared_ptr<std::mutex> mutex_ = std::make_shared<std::mutex>();
 };
 
-namespace detail {
-    //! Choose the type that will be used to tag functions.
-    template <typename ArgTag, typename ClassTag>
-    using actual_tag = typename std::conditional<
-                                    std::is_same<
-                                        typename std::remove_cv<
-                                            typename std::remove_reference<ArgTag>::type
-                                        >::type,
-                                        no_tag>::value,
-                                    no_tag,
-                                    ClassTag>::type;
-
-    //! The type that a subscription function will have inside function
-    //! collections.
-    template <typename Function>
-    using actual_function_type = typename const_ref_args<
-                                    typename function_traits<Function>::type
-                                 >::type;
-
-    //! Check if the provided function can be used as a subscription callback
-    //! function.
-    template <typename Function>
-    constexpr auto check_compatibility() noexcept
-    {
-        using traits = function_traits<Function>;
-
-        static_assert(std::is_same<typename traits::return_type, void>::value,
-                      "Subscription function cannot return a value.");
-
-        static_assert(std::is_convertible<
-                            std::function<typename traits::type>,
-                            std::function<actual_function_type<Function>>>::value,
-                      "Subscription function arguments must not be non-const "
-                      "references.");
-    }
-}
-
-template <typename Tag>
-template <typename Function>
-inline auto subject<Tag>::subscribe(Function && function) -> subscription
+template <typename FunctionType>
+template <typename Callable>
+inline auto subject<FunctionType>::subscribe(Callable && function) -> unique_subscription
 {
-    return subscribe(detail::no_tag { }, std::forward<Function>(function));
-}
-
-template <typename Tag>
-template <typename T, typename Function>
-inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscription
-{
-    namespace d = detail;
-    d::check_compatibility<Function>();
-
-    using actual_tag = d::actual_tag<T, Tag>;
-    using tagged_function = d::tagged<actual_tag, Function>;
-    using actual_function_type = d::actual_function_type<
-                                    typename tagged_function::type>;
+    static_assert(std::is_convertible<Callable,
+                                      std::function<FunctionType>>::value,
+                  "The provided observer object is not callable or not compatible"
+                  " with the subject's function type");
 
     std::lock_guard<std::mutex> subscribe_lock { *mutex_ };
     functions_ = std::make_shared<collection>(*functions_);
 
-    auto id = functions_->insert<actual_function_type>(
-                                             tagged_function {
-                                                actual_tag { tag },
-                                                std::forward<Function>(function)
-                                             });
+    auto id = functions_->insert(function);
 
-    return subscription {
+    return unique_subscription {
                 [=, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
                     auto mutex_ptr = mutex.lock();
                     if(!mutex_ptr)
@@ -156,31 +94,17 @@ inline auto subject<Tag>::subscribe(T && tag, Function && function) -> subscript
             };
 }
 
-template <typename Tag>
+template <typename FunctionType>
 template<typename ... Arguments>
-inline void subject<Tag>::notify_untagged(Arguments && ... arguments) const
+inline void subject<FunctionType>::notify(Arguments && ... arguments) const
 {
-    return notify_tagged(detail::no_tag { },
-                         std::forward<Arguments>(arguments) ...);
-}
-
-template <typename Tag>
-template<typename T, typename ... Arguments>
-inline void subject<Tag>::notify_tagged(T && tag, Arguments && ... arguments) const
-{
-    namespace d = detail;
-    using function_type = void(*)(Arguments ...);
-    d::check_compatibility<function_type>();
-
-    using actual_tag = d::actual_tag<T, Tag>;
-    using tagged_function = d::tagged<actual_tag, function_type>;
-    using actual_function_type = d::actual_function_type<
-                                    typename tagged_function::type>;
+    static_assert(std::is_convertible<void(Arguments && ...),
+                                      std::function<FunctionType>>::value,
+                 "The provided arguments are not compatible with the subject's "
+                 "function type.");
 
     auto functions = functions_;
-    functions->template call_all<actual_function_type>(
-                                        actual_tag { tag },
-                                        std::forward<Arguments>(arguments) ...);
+    functions->call_all(std::forward<Arguments>(arguments) ...);
 }
 
 }

@@ -5,7 +5,7 @@
 function(enable_strict_warnings target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         set(release /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd4627 /wd5026
-                    /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868)
+                    /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868 /wd4571)
         set(debug /WX)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         set(release -Wall -Wextra -pedantic -Wshadow)

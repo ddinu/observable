@@ -6,11 +6,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(source_groups)
 
 set(SOURCE_FILES include/observable/subject.hpp
-                 include/observable/detail/function_collection.hpp
-                 include/observable/detail/function_traits.hpp
-                 include/observable/detail/function_wrapper.hpp
-                 include/observable/detail/handle.hpp
-                 include/observable/detail/tagged_function.hpp)
+                 include/observable/detail/callable_collection.hpp
+                 include/observable/detail/subscription.hpp)
 
 add_custom_target(observable SOURCES ${SOURCE_FILES})
 

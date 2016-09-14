@@ -4,9 +4,9 @@
 
 namespace shared {
 
-TEST_SHARED_EXPORT void subscribe_in_shared_lib(observable::subject<> & subject);
+TEST_SHARED_EXPORT void subscribe_in_shared_lib(observable::subject<void()> & subject);
 
-TEST_SHARED_EXPORT void notify_void(observable::subject<> & subject);
+TEST_SHARED_EXPORT void notify_void(observable::subject<void()> & subject);
 
 TEST_SHARED_EXPORT int call_count();
 
