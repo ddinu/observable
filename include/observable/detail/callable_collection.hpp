@@ -13,7 +13,7 @@ namespace observable { namespace detail {
 //!                      be stored.
 //! \warning Methods in this class cannot be safely called concurrently.
 template <typename FunctionType>
-class callable_collection
+class callable_collection final
 {
 public:
     //! Identifier for a callable that has been inserted. You can use this to

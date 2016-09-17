@@ -11,7 +11,7 @@ namespace observable { namespace detail {
 //! This class is movable but not copyable.
 //!
 //! \note All methods of this class can be safely called in parallel.
-class unique_subscription
+class unique_subscription final
 {
 public:
     //! This class is default-constructible.
@@ -29,7 +29,7 @@ public:
     //! Only the first call of this method will have an effect.
     //!
     //! \note If release() has been called, this method will have no effect.
-    auto unsubscribe()
+    auto unsubscribe() &
     {
         if(!called_->test_and_set())
         {
@@ -92,7 +92,7 @@ private:
 //! This class is movable and copyable.
 //!
 //! \note All methods of this class can be safely called in parallel.
-class shared_subscription
+class shared_subscription final
 {
 public:
     //! Create a shared subscription from an unique one.
@@ -109,7 +109,7 @@ public:
     shared_subscription() = default;
 
     //! Manually call unsubscribe.
-    auto unsubscribe()
+    auto unsubscribe() &
     {
         unsubscribe_.reset();
     }

@@ -2,8 +2,8 @@
 #include <memory>
 #include <mutex>
 #include <type_traits>
-#include "detail/callable_collection.hpp"
-#include "detail/subscription.hpp"
+#include "observable/detail/callable_collection.hpp"
+#include "observable/detail/subscription.hpp"
 
 namespace observable {
 
@@ -12,16 +12,17 @@ using shared_subscription = detail::shared_subscription;
 
 //! This class stores observers and provides a way to notify them.
 //!
-//! An observer is any object that satisfies the Callable concept.
+//! An observer is any object that satisfies the Callable concept and can be
+//! stored inside a ``std::function<FunctionType>``.s
 //!
 //! Once you call subscribe(), the observer is said to be subscribed to
 //! notifications from the subject.
 //!
 //! A call to notify(), calls all subscribed observers that have been subscribed.
 //!
-//! \tparam FunctionType Function type compatible with the callable objects that
-//!                      will be used as observers.
-//! \note All methods defined in this class are safe to be called in parallel.
+//! \tparam FunctionType All observer types must be storable by a
+//!                      std::function<FunctionType>.
+//! \note All methods defined in this class can be safely called in parallel.
 template <typename FunctionType>
 class subject
 {
@@ -35,7 +36,13 @@ class subject
                   "FunctionType must not return a value.");
 
 public:
+    //! Function type of the subject.
+    using function_type = FunctionType;
+
     //! Subscribe to notifications.
+    //!
+    //! The Callable type must satisfy the Callable concept and must be storable
+    //! inside a std::function<FunctionType>.
     template <typename Callable>
     auto subscribe(Callable && function) -> unique_subscription;
 
@@ -65,6 +72,8 @@ private:
     std::shared_ptr<collection> functions_ = std::make_shared<collection>();
     mutable std::shared_ptr<std::mutex> mutex_ = std::make_shared<std::mutex>();
 };
+
+// Implementation
 
 template <typename FunctionType>
 template <typename Callable>
