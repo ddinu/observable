@@ -8,6 +8,7 @@ set(SOURCE_FILES src/detail/callable_collection.cpp
                  src/detail/unique_subscription.cpp
                  src/detail/shared_subscription.cpp
                  src/gtest.h
+                 src/compound_subject.cpp
                  src/shared_lib.cpp
                  src/subject.cpp)
 
