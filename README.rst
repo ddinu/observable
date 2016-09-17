@@ -10,16 +10,34 @@ Quick start
 The library is header-only; just copy the ``include/observable`` directory into
 your include path and you're set.
 
-Example:
+Simple subject:
 
 .. code-block:: C++
 
     #include <observable/subject.hpp>
 
-    subject<void(double)> observable;
+    observable::subject<void(double)> observable;
 
     observable.subscribe([](double frob) { /* do stuff */ }); 
-    observable.notify(5.1); // calls 'do stuff'
+    observable.notify(5.1); // Calls 'do stuff'
+
+Properties:
+
+.. code-block:: C++
+
+    #include <observable/property.hpp>
+
+    class Frobulator
+    {
+    public:
+        observable::property<int, Frobulator> my_value;
+
+        void frobulate(int value) { my_value = value; }
+    };
+
+    Frobulator frobulator;
+    frobulator.my_value.subscribe([](int newValue) { /* do stuff */ }
+    frobulator.frobulate(5); // Calls 'do stuff'.
 
 What the library can do
 -----------------------

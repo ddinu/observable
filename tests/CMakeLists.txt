@@ -9,6 +9,7 @@ set(SOURCE_FILES src/detail/callable_collection.cpp
                  src/detail/shared_subscription.cpp
                  src/gtest.h
                  src/compound_subject.cpp
+                 src/property.cpp
                  src/shared_lib.cpp
                  src/subject.cpp)
 

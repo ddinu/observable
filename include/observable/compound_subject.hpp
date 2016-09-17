@@ -48,11 +48,11 @@ inline auto compound_subject<FunctionTypes ...>::notify(Arguments const & ... ar
 {
     using namespace detail::compound_subject;
 
-    apply_all<void(Arguments ...)>(
-            [&](auto & s) { s.notify(arguments ...); },
+    apply_all<void(Arguments const & ...)>(
+            [&](auto & s) {
+                s.notify(arguments ...);
+            },
             subjects_);
 }
-
-
 
 }
