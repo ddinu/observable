@@ -16,10 +16,10 @@ Simple subject:
 
     #include <observable/subject.hpp>
 
-    observable::subject<void(double)> observable;
+    observable::subject<void(double)> subject;
 
-    observable.subscribe([](double frob) { /* do stuff */ }); 
-    observable.notify(5.1); // Calls 'do stuff'
+    subject.subscribe([](double frob) { /* do stuff */ }); 
+    subject.notify(5.1); // Calls 'do stuff'
 
 Properties:
 
