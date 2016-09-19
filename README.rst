@@ -18,7 +18,7 @@ Simple subject:
 
     observable::subject<void(double)> subject;
 
-    subject.subscribe([](double frob) { /* do stuff */ }); 
+    auto subscription = subject.subscribe([](double frob) { /* do stuff */ }); 
     subject.notify(5.1); // Calls 'do stuff'
 
 Properties:
@@ -36,7 +36,7 @@ Properties:
     };
 
     Frobulator frobulator;
-    frobulator.my_value.subscribe([](int newValue) { /* do stuff */ }
+    auto sub = frobulator.my_value.subscribe([](int newValue) { /* do stuff */ })
     frobulator.frobulate(5); // Calls 'do stuff'.
 
 What the library can do
