@@ -36,8 +36,9 @@ Properties:
     };
 
     Frobulator frobulator;
-    auto sub = frobulator.my_value.subscribe([](int newValue) { /* do stuff */ })
-    frobulator.frobulate(5); // Calls 'do stuff'.
+    auto sub = frobulator.my_value.subscribe([](int newValue) { /* do stuff */ });
+    frobulator.my_value.subscribe([]() { /* do some more stuff */ }).release();
+    frobulator.frobulate(5); // Calls 'do stuff' and 'do some more stuff'.
 
 What the library can do
 -----------------------
