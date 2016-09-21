@@ -1,6 +1,6 @@
 #include "gtest.h"
 #include "observable/subject.hpp"
-#include "src/shared_lib.h"
+#include "shared/shared_lib.h"
 
 namespace observable { namespace test {
 

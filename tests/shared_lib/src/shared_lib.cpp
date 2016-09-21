@@ -1,4 +1,4 @@
-#include "shared_lib.h"
+#include "shared/shared_lib.h"
 
 namespace {
     int count = 0;
