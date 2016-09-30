@@ -36,15 +36,18 @@ Properties:
     };
 
     Frobulator frobulator;
+
     auto sub = frobulator.my_value.subscribe([](int newValue) { /* do stuff */ });
     frobulator.my_value.subscribe([]() { /* do some more stuff */ }).release();
+
     frobulator.frobulate(5); // Calls 'do stuff' and 'do some more stuff'.
 
-What the library can do
------------------------
+Documentation
+-------------
 
-You can subscribe to notifications using generic functors, functions or
-lambdas and can fire notifications that call your subscribed *observers*.
+The project is documented using `Sphinx <http://www.sphinx-doc.org/>`_.
+
+You can `access the documentation <docs/index.rst>`_ under the docs directory.
 
 What's with the CMake files?
 ----------------------------
