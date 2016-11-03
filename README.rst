@@ -18,7 +18,9 @@ Simple subject:
 
     observable::subject<void(double)> subject;
 
-    auto subscription = subject.subscribe([](double value) { /* use value */ }); 
+    auto subscription = subject.subscribe([](double value) {
+                                              /* Use value */
+                                          }); 
     subject.notify(5.1); // Calls the lambda from above.
 
 Properties:
@@ -43,7 +45,7 @@ Properties:
                                            });
     widget_model.text.subscribe([]() { /* React to updates */ }).release();
 
-    widget_model.set_text(5); // Calls the lambdas above.
+    widget_model.set_text("Hello!"); // Calls the lambdas above.
 
 Documentation
 -------------
