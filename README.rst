@@ -18,29 +18,32 @@ Simple subject:
 
     observable::subject<void(double)> subject;
 
-    auto subscription = subject.subscribe([](double frob) { /* do stuff */ }); 
-    subject.notify(5.1); // Calls 'do stuff'
+    auto subscription = subject.subscribe([](double value) { /* use value */ }); 
+    subject.notify(5.1); // Calls the lambda from above.
 
 Properties:
 
 .. code-block:: C++
 
     #include <observable/property.hpp>
+    using namespace observable;
 
-    class Frobulator
+    class WidgetModel
     {
     public:
-        observable::property<int, Frobulator> my_value;
+        property<std::string, WidgetModel> text;
 
-        void frobulate(int value) { my_value = value; }
+        void set_text(std::string const & value) { text = value; }
     };
 
-    Frobulator frobulator;
+    WidgetModel widget_model;
 
-    auto sub = frobulator.my_value.subscribe([](int newValue) { /* do stuff */ });
-    frobulator.my_value.subscribe([]() { /* do some more stuff */ }).release();
+    auto sub = widget_model.text.subscribe([](std::string const & new_value) {
+                                                /* Update the widget. */
+                                           });
+    widget_model.text.subscribe([]() { /* React to updates */ }).release();
 
-    frobulator.frobulate(5); // Calls 'do stuff' and 'do some more stuff'.
+    widget_model.set_text(5); // Calls the lambdas above.
 
 Documentation
 -------------
@@ -55,15 +58,11 @@ What's with the CMake files?
 The library is using CMake to build and run the tests and benchmarks. You won't
 need CMake if you don't want to run the tests.
 
-Warning!
---------
-
-This is a work-in-progress. Don't use it in production.
-
 Contributing
 ------------
 
-Any help is welcome.
+Bug reports, feature requests, documentation and code contributions are welcome and
+highly appreciated.
 
 Legal and Licensing
 -------------------
