@@ -45,6 +45,8 @@ Simple property example
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
 
+Note the second template parameter for the ``text`` property above. Property setters are private and by providing the enclosing (``WidgetModel``) class as a template parameter, you'll be able to use the assignment operator.
+
 Quick description
 -----------------
 
