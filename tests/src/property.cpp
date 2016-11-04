@@ -87,7 +87,7 @@ TEST_F(property_test, setting_same_value_does_not_trigger_subscribers)
 TEST_F(property_test, copy_constructed_property_has_correct_value)
 {
     property<int> p { 123 };
-    auto c { p };
+    auto c = p;
 
     ASSERT_EQ(c.value(), 123);
 }
@@ -107,7 +107,7 @@ TEST_F(property_test, copy_constructed_property_has_no_subscribers)
     property<int, property_test> p { 123 };
     p.subscribe([&]() { ++call_count; }).release();
 
-    auto c { p };
+    auto c = p;
     set(c, 1234);
 
     ASSERT_EQ(call_count, 0);
@@ -129,7 +129,7 @@ TEST_F(property_test, copy_assigned_property_has_no_subscribers)
 TEST_F(property_test, move_constructed_property_has_correct_value)
 {
     property<std::unique_ptr<int>> p { std::make_unique<int>(123) };
-    auto c { std::move(p) };
+    auto c = std::move(p);
 
     ASSERT_EQ(*c.value(), 123);
 }
@@ -149,7 +149,7 @@ TEST_F(property_test, move_constructed_property_keeps_subscribers)
     property<std::unique_ptr<int>, property_test> p { std::make_unique<int>(123) };
     p.subscribe([&]() { ++call_count; }).release();
 
-    auto c { std::move(p) };
+    auto c = std::move(p);
     set(c, std::make_unique<int>(1234));
 
     ASSERT_EQ(call_count, 1);
