@@ -60,6 +60,18 @@ What's with the CMake files?
 The library is using CMake to build and run the tests and benchmarks. You won't
 need CMake if you don't want to run the tests.
 
+Why not just use Boost.Signals2 or Qt?
+--------------------------------------
+
+Boost.Signals2 and Qt are pretty cool libraries and do their jobs well.
+
+This library is not meant to replace signals and slots, it focuses more on 
+providing easy to use observable properties for classes that are used as models 
+in patterns like MVC.
+
+Choose whichever library works best for your case; you can even choose them
+both (for example, have your models use this library and your views use Qt). 
+
 Contributing
 ------------
 
