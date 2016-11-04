@@ -10,20 +10,7 @@ Quick start
 The library is header-only; just copy the ``include/observable`` directory into
 your include path and you're set.
 
-Simple subject:
-
-.. code-block:: C++
-
-    #include <observable/subject.hpp>
-
-    observable::subject<void(double)> subject;
-
-    auto subscription = subject.subscribe([](double value) {
-                                              /* Use value */
-                                          }); 
-    subject.notify(5.1); // Calls the lambda from above.
-
-Properties:
+Observable properties:
 
 .. code-block:: C++
 
@@ -46,6 +33,19 @@ Properties:
     widget_model.text.subscribe([]() { /* React to updates */ }).release();
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
+
+Simple subject:
+
+.. code-block:: C++
+
+    #include <observable/subject.hpp>
+
+    observable::subject<void(double)> subject;
+
+    auto subscription = subject.subscribe([](double value) {
+                                              /* Use value */
+                                          }); 
+    subject.notify(5.1); // Calls the lambda from above.
 
 Documentation
 -------------
