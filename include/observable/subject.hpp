@@ -69,8 +69,8 @@ public:
 private:
     using collection = detail::callable_collection<FunctionType>;
 
-    std::shared_ptr<collection> functions_ = std::make_shared<collection>();
-    mutable std::shared_ptr<std::mutex> mutex_ = std::make_shared<std::mutex>();
+    std::shared_ptr<collection const> functions_ = std::make_shared<collection>();
+    std::shared_ptr<std::mutex> subscribe_mutex_ = std::make_shared<std::mutex>();
 };
 
 // Implementation
@@ -84,27 +84,36 @@ inline auto subject<FunctionType>::subscribe(Callable && function) -> unique_sub
                   "The provided observer object is not callable or not compatible"
                   " with the subject's function type");
 
-    std::lock_guard<std::mutex> subscribe_lock { *mutex_ };
-    functions_ = std::make_shared<collection>(*functions_);
+    std::lock_guard<std::mutex> const subscribe_lock { *subscribe_mutex_ };
 
-    auto id = functions_->insert(function);
+    typename collection::id id;
+    {
+        auto new_functions = std::make_shared<collection>(*functions_);
+        id = new_functions->insert(function);
+        std::atomic_store_explicit(&functions_,
+                                   { new_functions },
+                                   std::memory_order_relaxed);
+    }
 
     return unique_subscription {
-                [=, mutex = std::weak_ptr<std::mutex> { mutex_ }]() mutable {
-                    auto mutex_ptr = mutex.lock();
-                    if(!mutex_ptr)
-                        return;
+        [this, id, weak_subscribe_mutex = std::weak_ptr<std::mutex> { subscribe_mutex_ }]() {
+            auto const subscribe_mutex = weak_subscribe_mutex.lock();
+            if(!subscribe_mutex)
+                return;
 
-                    std::lock_guard<std::mutex> unsubscribe_lock { *mutex_ptr };
-                    functions_ = std::make_shared<collection>(*functions_);
+            std::lock_guard<std::mutex> const unsubscribe_lock { *subscribe_mutex };
 
-                    functions_->remove(id);
-                }
-            };
+            auto new_functions = std::make_shared<collection>(*functions_);
+            new_functions->remove(id);
+            std::atomic_store_explicit(&functions_,
+                                       { new_functions },
+                                       std::memory_order_relaxed);
+            }
+    };
 }
 
 template <typename FunctionType>
-template<typename ... Arguments>
+template <typename ... Arguments>
 inline void subject<FunctionType>::notify(Arguments && ... arguments) const
 {
     static_assert(std::is_convertible<void(Arguments && ...),
@@ -112,7 +121,7 @@ inline void subject<FunctionType>::notify(Arguments && ... arguments) const
                  "The provided arguments are not compatible with the subject's "
                  "function type.");
 
-    auto functions = functions_;
+    auto const functions = atomic_load_explicit(&functions_, std::memory_order_relaxed);
     functions->call_all(std::forward<Arguments>(arguments) ...);
 }
 
