@@ -52,7 +52,7 @@ Documentation
 
 The project is documented using `Sphinx <http://www.sphinx-doc.org/>`_.
 
-You can `access the documentation <docs/index.rst>`_ under the docs directory.
+You can `access the documentation <http://observable.readthedocs.io/en/latest/>`_ here: http://observable.readthedocs.io/en/latest/.
 
 What's with the CMake files?
 ----------------------------
