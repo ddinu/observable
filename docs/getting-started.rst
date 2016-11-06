@@ -1,24 +1,12 @@
 Getting started
 ===============
 
-The library has two main classes: ``subject<>`` and ``property<>``.
+The library has two main classes: :doc:`property\<\> </reference/property>` and
+:doc:`subject\<\> </reference/subject>`.
 
-A subject is just a way to notify subscribers that an event has occured and
-a property is a way to notify subscribers that a class member has changed.
-
-Simple subject example
-----------------------
-
-.. code-block:: C++
-
-    #include <observable/subject.hpp>
-
-    observable::subject<void(double)> subject;
-
-    auto subscription = subject.subscribe([](double value) {
-                                              /* Use value */
-                                          }); 
-    subject.notify(5.1); // Calls the lambda from above.
+A property is a way to notify subscribed observers that a class member has
+changed, while a subject is just a way to notify observers that an event has
+occured.
 
 Simple property example
 -----------------------
@@ -37,27 +25,56 @@ Simple property example
     };
 
     WidgetModel widget_model;
+    WidgetView widget_view;
 
-    auto sub = widget_model.text.subscribe([](std::string const & new_value) {
-                                                /* Update the widget. */
+    auto sub = widget_model.text.subscribe([&](std::string const & new_value) {
+                                                widget_view.set_text(new_value);
                                            });
     widget_model.text.subscribe([]() { /* React to updates */ }).release();
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
 
-Note the second template parameter for the ``text`` property above. Property setters are private and by providing the enclosing (``WidgetModel``) class as a template parameter, you'll be able to use the assignment operator.
+.. NOTE::
 
-Quick description
------------------
+    The second template parameter for the ``text`` property above is the
+    enclosing class.
 
-When you subscribe to either subjects or properties, you get back a subscription
-object which you can use to unsubscribe.
+    Property setters are private and by providing the enclosing ``WidgetModel``
+    class as a template parameter, you'll be able to use the assignment operator
+    from inside your class.
 
-Subscription objects act like a shared pointer. They will unsubscribe your
-observer when the last subscription instance one is destroyed.
+Simple subject example
+----------------------
 
-If you want subscriptions that live forever, just call
-``subscription.release()``.
+.. code-block:: C++
 
-You generally don't have to worry about lifetimes, except to keep the
-subscribed callable valid for as long as the subscription is active.
+    #include <observable/subject.hpp>
+
+    observable::subject<void(double)> subject;
+
+    auto subscription = subject.subscribe([](double value) {
+                                              /* Use value */
+                                          }); 
+
+    subject.notify(5.1); // Calls the lambda from above.
+
+What's going on
+---------------
+
+When you subscribe to either subjects or properties, you get back a
+:doc:`unique_subscription </reference/unique_subscription>` object, which you
+can use to unsubscribe.
+
+:doc:`unique_subscription </reference/unique_subscription>` objects, act like a
+``unique_ptr`` but instead of deleting something, they unsubscribe your observer
+when they go out of scope.
+
+You can also create :doc:`shared_subscription </reference/shared_subscription>`
+objects (from unique ones). These behave like ``shared_ptr`` and unsubscribe
+your observer when the last instance goes out of scope.
+
+If you want subscriptions that live forever, just call ``subscription.release()``
+on the rvalue returned by the ``subscribe()`` method.
+
+You generally don't have to worry about lifetimes, except to keep the subscribed
+observer valid, for as long as there is a chance that it will be notified.
