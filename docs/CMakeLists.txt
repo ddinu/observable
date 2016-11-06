@@ -4,9 +4,11 @@ set(SOURCES conf.py
             index.rst
             developers.rst
             getting-started.rst
-            reference.rst
-            property-reference.rst
-            subject-reference.rst)
+            reference/index.rst
+            reference/property.rst
+            reference/shared_subscription.rst
+            reference/subject.rst
+            reference/unique_subscription.rst)
 
 if(Sphinx_FOUND)
     add_custom_target(docs
