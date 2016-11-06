@@ -5,7 +5,7 @@ Did you ever needed to implement the observer pattern and didn't have an easy
 way to do it? This is for those times.
 
 The library is usable on both Windows and Linux with any recent compiler that
-supports at least C++ 14.
+supports at least C++14.
 
 You don't need to compile anything, the library is header-only; so you can 
 easily integrate it into your project.
