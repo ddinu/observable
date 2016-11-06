@@ -50,7 +50,12 @@ Simple subject:
 Documentation
 -------------
 
-The project is documented using `Sphinx <http://www.sphinx-doc.org/>`_.
+.. image:: https://readthedocs.org/projects/observable/badge/?version=latest
+    :target: http://observable.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+The project is documented using `Sphinx <http://www.sphinx-doc.org/>`_ and
+the documentation is hosted on `Read the Docs <https://readthedocs.org/>`.
 
 You can `access the documentation <http://observable.readthedocs.io/en/latest/>`_ here: http://observable.readthedocs.io/en/latest/.
 
