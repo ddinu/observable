@@ -27,10 +27,11 @@ public:
     template <typename Callable>
     auto insert(Callable && callable)
     {
-        functions_.emplace_back(functions_.empty() ? 1 : functions_.back().first + 1,
+        auto callable_id = compute_id(callable);
+        functions_.emplace_back(callable_id,
                                 std::forward<Callable>(callable));
 
-        return functions_.back().first;
+        return callable_id;
     }
 
     //! Remove a previously inserted callable object from the collection.
@@ -84,7 +85,14 @@ public:
     }
 
 private:
-    std::vector<std::pair<std::size_t, std::function<FunctionType>>> functions_;
+    template <typename T>
+    id compute_id(T const &) const noexcept
+    {
+        return functions_.empty() ? 1 : reinterpret_cast<id>(&functions_.back());
+    }
+
+private:
+    std::vector<std::pair<id, std::function<FunctionType>>> functions_;
 };
 
 } }
