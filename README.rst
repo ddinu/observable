@@ -27,10 +27,10 @@ Observable properties:
 
     WidgetModel widget_model;
 
-    auto sub = widget_model.text.subscribe([](std::string const & new_value) {
+    auto sub = widget_model.text.subscribe([&](std::string const & new_value) {
                                                 /* Update the widget. */
                                            });
-    widget_model.text.subscribe([]() { /* React to updates */ }).release();
+    widget_model.text.subscribe([&]() { /* React to updates */ }).release();
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
 
