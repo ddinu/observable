@@ -16,6 +16,6 @@ class Receiver : public QObject
 public slots:
     NOINLINE void inc(int v) { dummy += v; }
 
-private:
-    volatile unsigned long long dummy;
+public:
+    volatile unsigned long long dummy = 0;
 };
