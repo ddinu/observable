@@ -8,6 +8,5 @@ way to do it? This is for those times.
     :maxdepth: 2
 
     getting-started
-    subject
-    property
+    reference/index
     developers
