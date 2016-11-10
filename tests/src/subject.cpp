@@ -56,13 +56,13 @@ TEST(subject_test, observer_with_const_reference_parameters_is_called)
     ASSERT_EQ(call_count, 1);
 }
 
-TEST(subject_test, notify_with_const_reference_parameter_calls_observer)
+TEST(subject_test, subject_with_const_reference_parameter_calls_observer)
 {
-    subject<void(int)> s;
+    subject<void(int const &)> s;
     auto call_count = 0;
 
     s.subscribe([&](int) { ++call_count; }).release();
-    s.notify<int const &>(5);
+    s.notify(5);
 
     ASSERT_EQ(call_count, 1);
 }
