@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-namespace observable { namespace detail {
+namespace observable {
 
 //! Unique subscription that will unsubscribe the associated observer when it
 //! is destroyed.
@@ -124,4 +124,4 @@ private:
     std::shared_ptr<unique_subscription> unsubscribe_;
 };
 
-} }
+}

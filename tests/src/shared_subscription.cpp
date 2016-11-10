@@ -1,9 +1,9 @@
 #include <memory>
 #include <type_traits>
 #include "gtest.h"
-#include "observable/detail/subscription.hpp"
+#include "observable/subscription.hpp"
 
-namespace observable { namespace detail { namespace test {
+namespace observable { namespace test {
 
 TEST(shared_subscription_test, can_create_shared_subscription)
 {
@@ -68,4 +68,4 @@ TEST(shared_subscription_test, unsubscribe_is_called_by_last_instance_destroyed)
     ASSERT_EQ(call_count, 1);
 }
 
-} } }
+} }

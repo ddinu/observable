@@ -1,9 +1,9 @@
 #include <type_traits>
 #include <utility>
 #include "gtest.h"
-#include "observable/detail/subscription.hpp"
+#include "observable/subscription.hpp"
 
-namespace observable { namespace detail { namespace test {
+namespace observable { namespace test {
 
 TEST(unique_subscription_test, can_create)
 {
@@ -80,4 +80,4 @@ TEST(unique_subscription_test, unsubscribing_from_moved_handle_calls_function)
     ASSERT_EQ(call_count, 1);
 }
 
-} } }
+} }

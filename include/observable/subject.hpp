@@ -3,12 +3,10 @@
 #include <mutex>
 #include <type_traits>
 #include "observable/detail/callable_collection.hpp"
-#include "observable/detail/subscription.hpp"
+#include "observable/subscription.hpp"
 
 namespace observable {
 
-using unique_subscription = detail::unique_subscription;
-using shared_subscription = detail::shared_subscription;
 
 //! This class stores observers and provides a way to notify them.
 //!
