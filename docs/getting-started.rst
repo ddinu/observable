@@ -27,9 +27,10 @@ Simple property example
     WidgetModel widget_model;
     WidgetView widget_view;
 
-    auto sub = widget_model.text.subscribe([&](std::string const & new_value) {
-                                                widget_view.set_text(new_value);
+    auto sub = widget_model.text.subscribe([&](auto const & text) {
+                                               widget_view.set_text(text);
                                            });
+
     widget_model.text.subscribe([]() { /* React to updates */ }).release();
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
