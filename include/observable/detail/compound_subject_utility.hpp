@@ -6,11 +6,11 @@
 
 namespace observable { namespace detail { namespace compound_subject {
 
-// Call a function one or more times with the Ith element of a tuple.
+//! Call a function one or more times with the Ith element of a tuple.
 template <std::size_t I, typename ... T>
 struct apply_to;
 
-// Call a function once.
+//! Call a function once.
 template <std::size_t I>
 struct apply_to<I>
 {
@@ -21,7 +21,7 @@ struct apply_to<I>
     }
 };
 
-// Recursive version. Call a function multiple times.
+//! Recursive version. Call a function multiple times.
 template <std::size_t I, typename Next>
 struct apply_to<I, Next> : Next
 {
@@ -33,7 +33,7 @@ struct apply_to<I, Next> : Next
     }
 };
 
-// Stop compilation with an error.
+//! Stop compilation with an error.
 template <typename T>
 struct fail
 {
@@ -42,8 +42,8 @@ struct fail
                   "compound subject's declared function types.");
 };
 
-// Choose the TrueType if the CallableType can be stored in a
-// std::function<FunctionType> and the FalseType otherwise.
+//! Choose the TrueType if the CallableType can be stored in a
+//! std::function<FunctionType> and the FalseType otherwise.
 template <typename CallableType,
           typename FunctionType,
           typename TrueType,
@@ -57,8 +57,8 @@ using choose_next = typename std::conditional<
                                 FalseType
                             >::type;
 
-// Provide an apply() method that will call a function once, with the first
-// subject that CallableType is compatible with.
+//! Provide an apply() method that will call a function once, with the first
+//! subject that CallableType is compatible with.
 template <typename CallableType, std::size_t I, typename ... T>
 struct apply_first_type;
 
@@ -78,8 +78,8 @@ struct apply_first_type<CallableType, I> : fail<CallableType>
 {
 };
 
-// Provide an apply() method that will call a function for all subjects that
-// CallableType is compatible with.
+//! Provide an apply() method that will call a function for all subjects that
+//! CallableType is compatible with.
 template <typename CallableType,
           std::size_t I,
           bool FoundSubject,
@@ -110,16 +110,16 @@ struct apply_all_type<CallableType, I, true>
     static constexpr auto apply(T && ...) { }
 };
 
-// Wrapper around apply_first_type. Will call ``fun`` with the first compatible
-// subject and return the result.
+//! Wrapper around apply_first_type. Will call ``fun`` with the first compatible
+//! subject and return the result.
 template <typename CallableType, typename Fun, typename ... Subjects>
 constexpr auto apply_first(Fun && fun, std::tuple<Subjects ...> & subjects)
 {
     return apply_first_type<CallableType, 0, Subjects ...>::apply(fun, subjects);
 }
 
-// Wrapper around apply_all_type. Will call ``fun`` with all compatible
-// subjects.
+//! Wrapper around apply_all_type. Will call ``fun`` with all compatible
+//! subjects.
 template <typename CallableType, typename Fun, typename ... Subjects>
 constexpr auto apply_all(Fun && fun, std::tuple<Subjects ...> const & subjects)
 {
