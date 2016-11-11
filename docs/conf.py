@@ -3,12 +3,6 @@ import os
 import os.path as path
 import subprocess
 
-try:
-    from StringIO import StringIO
-except:
-    # Try the Python 3 one
-    from io import StringIO
-
 doxygen_output_dir = path.abspath(
                         os.environ.get('DOXYGEN_OUTPUT_DIR', './doxygen'))
 
@@ -57,8 +51,7 @@ def run_doxygen(app):
 
     proc = subprocess.Popen(['doxygen', '-'],
                             stdin=subprocess.PIPE,
-                            universal_newlines=True,
-                            shell=True)
+                            universal_newlines=True)
     proc.communicate('\n'.join(doxygen_conf))
     proc.wait()
 
