@@ -24,8 +24,8 @@ class subject;
 //!
 //! All methods can be safely called from multiple threads.
 //!
-//! \tparam FunctionType Observer signature. All observer types must be storable
-//!                      inside a ``std::function<void(Args ...)>``.
+//! \tparam Args Observer arguments. All observer types must be storable
+//!              inside a ``std::function<void(Args ...)>``.
 //!
 //! \warning Even though subjects themselves are safe to use in parallel,
 //!          observers need to handle being called from multiple threads too.
@@ -33,7 +33,6 @@ template <typename ... Args>
 class subject<void(Args ...)>
 {
 public:
-    //! \internal
     using function_type = void(Args ...);
 
     //! Subscribe an observer to notifications.
