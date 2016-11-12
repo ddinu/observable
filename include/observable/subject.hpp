@@ -122,7 +122,20 @@ inline auto subject<void(Args ...)>::subscribe(Callable && function) -> unique_s
     static_assert(std::is_convertible<Callable,
                                       std::function<void(Args ...)>>::value,
                   "The provided observer object is not callable or not compatible"
-                  " with the subject's function type");
+                  " with the subject");
+
+    // We'll implement a kind of copy-on-write mechanism for subscribing and
+    // unsubscribing:
+    //
+    // - All inserts and removes are locked, so you cannot add subscribers
+    //   concurrently.
+    // - The functions_ collection is immutable, we always copy it and create
+    //   a new pointer before inserts and erasures.
+    // - The new functions_ collection pointer is stored atomically.
+    //
+    // This way, the notify() method will only need to load the pointer
+    // atomically and it can be sure that the version of the collection that
+    // it holds will not be changed from another thread.
 
     std::lock_guard<std::mutex> const subscribe_lock { *subscribe_mutex_ };
 
