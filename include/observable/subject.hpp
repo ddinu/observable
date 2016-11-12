@@ -168,6 +168,11 @@ inline auto subject<void(Args ...)>::subscribe(Callable && function) -> unique_s
 template <typename ... Args>
 inline void subject<void(Args ...)>::notify(Args ... arguments) const
 {
+    // The current version of the functions_ collection will not be mutated,
+    // so once we load the pointer and have a strong reference to it, we're
+    // safe from whatever other threads are doing. See the subscribe() method
+    // for details.
+
     auto const functions = atomic_load_explicit(&functions_, std::memory_order_relaxed);
     functions->call_all(arguments ...);
 }
