@@ -25,7 +25,7 @@ public:
     //! \param unsubscribe This functor will be called when the unique
     //!                    subscription goes out of scope or when unsubscribe()
     //!                    has been called.
-    //! \internal
+    //! \private
     explicit unique_subscription(std::function<void()> const & unsubscribe) :
         unsubscribe_ { unsubscribe }
     {
