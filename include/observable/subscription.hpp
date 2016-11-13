@@ -5,26 +5,33 @@
 
 namespace observable {
 
-//! Unique subscription that will unsubscribe the associated observer when it
-//! is destroyed.
+//! Unique subscriptions will unsubscribe the associated observer when they
+//! are destroyed.
 //!
-//! This class is movable but not copyable.
+//! This class is movable but not copyable.s
 //!
-//! \note All methods of this class can be safely called in parallel.
+//! All methods of this class can be safely called in parallel from multiple
+//! threads.
 class unique_subscription final
 {
 public:
-    //! This class is default-constructible.
+    //! Create an empty subscription.
+    //!
+    //! Calling unsubscribe on an empty subscription will have no effect.
     unique_subscription() = default;
 
-    //! Create an unique subscription with the specified unsubscribe function.
-    explicit unique_subscription(std::function<void()> const & unsubscriber) :
-        unsubscribe_ { unsubscriber }
+    //! Create a subscription with the specified unsubscribe functor.
+    //!
+    //! \param unsubscribe This functor will be called when the unique
+    //!                    subscription goes out of scope or when unsubscribe()
+    //!                    has been called.
+    //! \internal
+    explicit unique_subscription(std::function<void()> const & unsubscribe) :
+        unsubscribe_ { unsubscribe }
     {
     }
 
-    //! Call the associated unsubscribe function to unsubscribe the associated
-    //! observer.
+    //! Unsubscribe the associated observer from receiving notifications.
     //!
     //! Only the first call of this method will have an effect.
     //!
@@ -42,11 +49,15 @@ public:
         }
     }
 
-    //! Disassociate the subscription from the stored unsubscribe function and
-    //! return the unsubscribe function without calling it.
+    //! Disassociate the subscription from the subscribed observer.
     //!
-    //! After calling this method, unsubscribe() or destroying the subscription
-    //! instance will have no effect.
+    //! After calling this method, calling unsubscribe() or destroying the
+    //! subscription instance will have no effect.
+    //!
+    //! \return Functor taking no parameters that will perform the unsubscribe
+    //!         when called.
+    //!         For example: ``subscription.release()()`` is equivalent to
+    //!         ``subscription.unsubscribe()``.
     auto release() &&
     {
         using std::swap;
@@ -58,7 +69,7 @@ public:
 
     //! Destructor. Will call unsubscribe().
     //!
-    //! \note If release() has been called, this method will have no effect.
+    //! \note If release() has been called, this will have no effect.
     ~unique_subscription()
     {
         if(called_ && unsubscribe_)
@@ -86,35 +97,38 @@ private:
     std::unique_ptr<std::atomic_flag> called_ = std::make_unique<std::atomic_flag>();
 };
 
-//! Shared subscription that will unsubscribe the associated observer when the
-//! last instance of the class is destroyed.
+//! Shared subscriptions will unsubscribe the associated observer when the last
+//! instance of the class is destroyed.
 //!
-//! This class is movable and copyable.
+//! This class is both movable and copyable.
 //!
-//! \note All methods of this class can be safely called in parallel.
+//! All methods of this class can be safely called in parallel from multiple
+//! threads.
 class shared_subscription final
 {
 public:
-    //! Create a shared subscription from an unique one.
+    //! Create a shared subscription from a r-value unique subscription.
     //!
-    //! The unique subscription will be released.
-    shared_subscription(unique_subscription && subscription) :
+    //! \note The unique subscription will be released.
+    explicit shared_subscription(unique_subscription && subscription) :
         unsubscribe_ { std::make_shared<unique_subscription>(std::move(subscription)) }
     {
     }
 
-    //! Create an invalid shared handle.
+    //! Create an empty shared subscription.
     //!
-    //! Calling unsubscribe on this handle will have no effect.
+    //! Calling unsubscribe on an empty shared subscription will have no effect.
     shared_subscription() = default;
 
-    //! Manually call unsubscribe.
+    //! Unsubscribe the associated observer from receiving notifications.
+    //!
+    //! Only the first call of this method will have an effect.
     auto unsubscribe() &
     {
         unsubscribe_.reset();
     }
 
-    //! Check if the handle is valid.
+    //! Return true if the subscription is not empty.
     explicit operator bool() const noexcept
     {
         return !!unsubscribe_;

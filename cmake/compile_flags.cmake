@@ -14,7 +14,7 @@ function(enable_strict_warnings target_name)
         set(release -Weverything -Wno-system-headers -Wno-c++98-compat
                     -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
                     -Wno-global-constructors -Wno-missing-prototypes
-                    -Wno-padded)
+                    -Wno-padded -Wno-documentation-unknown-command)
         set(debug -Werror)
     else()
         message(WARNING "Custom compiler flags not set.\n"
