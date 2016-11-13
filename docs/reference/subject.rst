@@ -9,5 +9,5 @@ Observers can be any callable object (functors, function pointers or lambdas).
 Class reference
 ---------------
 
-.. doxygenclass:: observable::subject< void(Args ...)>
+.. doxygenclass:: observable::subject< void(Args...)>
     :members:
