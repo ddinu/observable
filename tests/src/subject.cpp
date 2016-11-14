@@ -31,6 +31,8 @@ TEST(subject_test, can_subscribe_to_subject)
     s2.subscribe(dummy_args);
     s2.subscribe([=](int, float) { });
     s2.subscribe([=](int, float) mutable { });
+    s2.subscribe([=](auto, auto) { });
+    s2.subscribe([=](auto, auto) mutable { });
 }
 
 TEST(subject_test, observers_are_called)
