@@ -33,6 +33,21 @@ Observable properties:
     widget_model.text.subscribe([&]() { /* React to updates */ }).release();
 
     widget_model.set_text("Hello!"); // Calls the lambdas above.
+    
+Observable values:
+
+.. code-block:: C++
+
+    #include <observable/value.hpp>
+    using namespace observable;
+    
+    value<std::string> text;
+    
+    auto sub = text.subscribe([&](std::string const & new_value) {
+                                  /* React to the text change. */
+                              });
+                              
+    text = "foo"; // Will call the lambda above.
 
 Simple subject:
 
