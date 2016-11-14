@@ -47,6 +47,10 @@ def run_doxygen(app):
         'GENERATE_HTML = NO',
         'GENERATE_LATEX = NO',
         'QUIET = YES',
+        'INLINE_INHERITED_MEMB = YES',
+        'BUILTIN_STL_SUPPORT = YES',
+        'EXTRACT_PRIVATE = YES',
+        'WARN_IF_UNDOCUMENTED = NO',
     ]
 
     proc = subprocess.Popen(['doxygen', '-'],

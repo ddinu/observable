@@ -80,9 +80,6 @@ both (for example, have your models use this library and your views use Qt).
 What's happening next
 ---------------------
 
- * Improved documentation.
- * Observable values (what properties are now, but with public setters). Properties
-   will be based on them.
  * Observable collections (wrappers around the standard collections).
  * More complex code examples.
 

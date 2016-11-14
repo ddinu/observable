@@ -7,6 +7,7 @@ Reference for all public classes.
     :maxdepth: 1
 
     property
-    subject
     shared_subscription
+    subject
     unique_subscription
+    value

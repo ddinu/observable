@@ -11,7 +11,8 @@ set(SOURCE_FILES src/detail/callable_collection.cpp
                  src/shared_lib.cpp
                  src/shared_subscription.cpp
                  src/subject.cpp
-                 src/unique_subscription.cpp)
+                 src/unique_subscription.cpp
+                 src/value.cpp)
 
 add_executable(tests ${SOURCE_FILES})
 

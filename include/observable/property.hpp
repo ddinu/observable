@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <utility>
 #include <type_traits>
-#include "observable/compound_subject.hpp"
+#include "observable/value.hpp"
 
 namespace observable {
 
@@ -30,39 +30,10 @@ namespace observable {
 template <typename ValueType,
           typename EnclosingType=void,
           typename EqualityComparator=std::equal_to<ValueType>>
-class property
+class property : public value<ValueType, EqualityComparator>
 {
 public:
-    //! Create a default-constructed property.
-    //!
-    //! Depending on the value type, the property's value will be either
-    //! uninitialized or it will be default constructed.
-    property() =default;
-
-    //! Create a property that has a value initialized with the one provided.
-    //!
-    //! \param initial_value The property will be initialized with this value.
-    explicit property(ValueType initial_value);
-
-    //! Convert the property to its stored value.
-    operator ValueType() const;
-
-    //! Retrieve the stored value.
-    auto value() const -> ValueType const &;
-
-    //! Subscribe to changes to the property's value.
-    //!
-    //! These subscriptions will be triggered whenever the stored value changes.
-    //!
-    //! \tparam Callable A callable taking no parameters or a callable taking one
-    //!                  parameter that will be called with the new value:
-    //!                  - ``void()`` -- will be called when the value changes but
-    //!                    will not receive the new value.
-    //!                  - ``void(T const &)`` or ``void(T)`` -- will be called
-    //!                    with the new value. The expression
-    //!                    ``T { property.value() }`` must be correct.
-    template <typename Callable>
-    auto subscribe(Callable && callable) -> unique_subscription;
+    using value<ValueType, EqualityComparator>::value;
 
 private:
     //! Set a new value for the property.
@@ -71,114 +42,20 @@ private:
     //! effect. The comparison is performed using the EqualityComparator.
     //!
     //! \note This method will be accessible from inside the EnclosingType class.
-    auto set(ValueType new_value) -> void;
+    auto set(ValueType new_value)
+    {
+        value<ValueType, EqualityComparator>::set(std::move(new_value));
+    }
 
     //! Set a new value for the property. Just calls set().
     //!
     //! \note This method will be accessible from inside the EnclosingType class.
-    auto operator=(ValueType value) -> property &;
+    auto operator=(ValueType new_value)
+    {
+        return value<ValueType, EqualityComparator>::operator=(std::move(new_value));
+    }
 
     friend EnclosingType;
-
-private:
-    class data
-    {
-        ValueType value;
-        compound_subject<void(), void(ValueType const &)> value_change;
-
-        data() =default;
-
-        data(ValueType initial_value) : value { std::move(initial_value) }
-        { }
-
-        data(data const & other) : value { other.value }
-        { }
-
-        auto operator=(data const & other) -> data &
-        {
-            if(this != &other)
-                value = other.value;
-
-            return *this;
-        }
-
-        data(data && other) =default;
-
-        auto operator=(data && other) -> data & =default;
-
-        friend class property;
-    } data_;
 };
-
-// Implementation
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-inline property<ValueType,
-                EnclosingType,
-                EqualityComparator>::property(ValueType initial_value) :
-    data_ { std::move(initial_value) }
-{
-}
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-inline property<ValueType,
-                EnclosingType,
-                EqualityComparator>::operator ValueType() const
-{
-    return data_.value;
-}
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-inline auto property<ValueType,
-                     EnclosingType,
-                     EqualityComparator>::value() const -> ValueType const &
-{
-    return data_.value;
-}
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-inline auto property<ValueType,
-                     EnclosingType,
-                     EqualityComparator>::set(ValueType new_value) -> void
-{
-    static EqualityComparator eq;
-
-    if(eq(new_value, data_.value))
-        return;
-
-    data_.value = std::move(new_value);
-    data_.value_change.notify();
-    data_.value_change.notify(value());
-}
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-inline auto property<ValueType,
-                     EnclosingType,
-                     EqualityComparator>::operator=(ValueType value) -> property &
-{
-    set(std::move(value));
-    return *this;
-}
-
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator>
-template <typename Callable>
-inline auto property<ValueType,
-                     EnclosingType,
-                     EqualityComparator>::subscribe(Callable && callable) -> unique_subscription
-{
-    return data_.value_change.subscribe(callable);
-}
 
 }
