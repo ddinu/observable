@@ -8,7 +8,7 @@ namespace observable {
 //! Unique subscriptions will unsubscribe the associated observer when they
 //! are destroyed.
 //!
-//! This class is movable but not copyable.s
+//! This class is movable but not copyable.
 //!
 //! All methods of this class can be safely called in parallel from multiple
 //! threads.
