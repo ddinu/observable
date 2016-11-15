@@ -96,8 +96,8 @@ What's happening next
 ---------------------
 
  * Observable collections (wrappers around the standard collections).
- * Operations for observable values (``value<int> a; value<int> b; value<int> c = a + b;``, 
-   where ``c`` updates when ``a`` and ``b`` change).
+ * Operations (+, -, /, *, etc.) for observable values (``value<int> a; value<int> b; value<int> c = a + b;``, 
+   where ``c`` updates when ``a`` or ``b`` change).
  * More complex code examples.
 
 Contributing
