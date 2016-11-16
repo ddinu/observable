@@ -1,3 +1,8 @@
+# Visual Studio Code
 .vscode/
+
+# CLion/IDEA
 .idea/
+
+# The default out of source build folder
 build/
