@@ -67,7 +67,7 @@ template <typename CallableType,
           typename Head, typename ... Tail>
 struct apply_first_type<CallableType, I, Head, Tail...> :
     choose_next<CallableType,
-                typename Head::function_type,
+                typename Head::observer_type,
                 apply_to<I>,
                 apply_first_type<CallableType, I + 1, Tail...>>
 {
@@ -92,7 +92,7 @@ template <typename CallableType,
           typename Head, typename ... Tail>
 struct apply_all_type<CallableType, I, FoundSubject, Head, Tail...> :
     choose_next<CallableType,
-                typename Head::function_type,
+                typename Head::observer_type,
                 apply_to<I, apply_all_type<CallableType, I + 1, true, Tail...>>,
                 apply_all_type<CallableType, I + 1, FoundSubject, Tail...>>
 {

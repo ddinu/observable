@@ -23,8 +23,8 @@ class value
 public:
     //! Create a default-constructed observable value.
     //!
-    //! Depending on the value type, the stored value will be either
-    //! uninitialized or it will be default constructed.
+    //! Depending on the value type, the stored value will be either uninitialized
+    //! or it will be default constructed.
     value() =default;
 
     //! Create an initialized observable value.
@@ -49,6 +49,8 @@ public:
     //!                  - ``void(T const &)`` or ``void(T)`` -- will be called
     //!                    with the new value. The expression
     //!                    ``T { value.get() }`` must be correct.
+    //!
+    //! \see subject::subscribe()
     template <typename Callable>
     auto subscribe(Callable && callable) -> unique_subscription;
 
@@ -56,9 +58,13 @@ public:
     //!
     //! If the new value compares equal to the existing value, this method has no
     //! effect. The comparison is performed using the EqualityComparator.
+    //!
+    //! \see subject::notify()
     auto set(ValueType new_value) -> void;
 
     //! Set a new value. Will just call set().
+    //!
+    //! \see set()
     auto operator=(ValueType new_value) -> value &;
 
 private:

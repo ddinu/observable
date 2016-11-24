@@ -4,8 +4,8 @@
 #include <iostream>
 #include <observable/subject.hpp>
 
-static auto const repeat_count = 100'000;
-static auto const sub_count = 100;
+static auto const repeat_count = 1'000'000;
+static auto const sub_count = 10;
 
 void bench()
 {

@@ -124,8 +124,9 @@ TEST(subject_test, observer_added_from_running_observer_is_called_on_second_noti
     });
 
     s.notify();
-    s.notify();
+    ASSERT_EQ(call_count, 1);
 
+    s.notify();
     ASSERT_EQ(call_count, 3);
 }
 
@@ -184,7 +185,7 @@ TEST(subject_test, can_unsubscribe_while_notification_is_running)
     subs.clear();
     t.join();
 
-    ASSERT_EQ(call_count, 10);
+    ASSERT_EQ(1, call_count);
 }
 
 } }

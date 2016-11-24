@@ -4,7 +4,7 @@ include(compile_flags)
 include(observable_includes)
 include(source_groups)
 
-set(SOURCE_FILES src/detail/callable_collection.cpp
+set(SOURCE_FILES src/detail/collection.cpp
                  src/gtest.h
                  src/compound_subject.cpp
                  src/property.cpp
