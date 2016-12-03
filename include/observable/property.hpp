@@ -55,7 +55,7 @@ private:
     //!
     //! \note This method will be accessible from inside the EnclosingType class.
     template <typename ValueType_>
-    auto operator=(ValueType_ && new_value)
+    auto operator=(ValueType_ && new_value) -> property &
     {
         set(std::forward<ValueType_>(new_value));
         return *this;
