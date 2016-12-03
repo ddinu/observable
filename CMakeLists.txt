@@ -5,13 +5,12 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(source_groups)
 
-set(SOURCE_FILES include/observable/compound_subject.hpp
-                 include/observable/property.hpp
+set(SOURCE_FILES include/observable/property.hpp
                  include/observable/subject.hpp
                  include/observable/subscription.hpp
                  include/observable/value.hpp
                  include/observable/detail/collection.hpp
-                 include/observable/detail/compound_subject_utility.hpp)
+                 include/observable/detail/type_traits.hpp)
 
 add_custom_target(observable SOURCES ${SOURCE_FILES})
 

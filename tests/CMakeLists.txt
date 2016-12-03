@@ -5,8 +5,8 @@ include(observable_includes)
 include(source_groups)
 
 set(SOURCE_FILES src/detail/collection.cpp
+                 src/detail/type_traits.cpp
                  src/gtest.h
-                 src/compound_subject.cpp
                  src/property.cpp
                  src/shared_lib.cpp
                  src/shared_subscription.cpp

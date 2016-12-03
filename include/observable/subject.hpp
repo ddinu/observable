@@ -3,6 +3,7 @@
 #include <memory>
 #include <type_traits>
 #include "observable/detail/collection.hpp"
+#include "observable/detail/type_traits.hpp"
 #include "observable/subscription.hpp"
 
 namespace observable {
@@ -114,8 +115,7 @@ template <typename ... Args>
 template <typename Callable>
 inline auto subject<void(Args ...)>::subscribe(Callable && observer) -> unique_subscription
 {
-    static_assert(std::is_convertible<Callable,
-                                      std::function<void(Args ...)>>::value,
+    static_assert(detail::is_compatible_with_observer<Callable, observer_type>::value,
                   "The provided observer object is not callable or not compatible"
                   " with the subject");
 

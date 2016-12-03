@@ -65,46 +65,24 @@ TEST(value_test, setting_same_value_does_not_trigger_subscribers)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST(value_test, copy_constructed_value_is_correct)
+TEST(value_test, values_are_not_copy_constructible)
 {
-    value<int> val { 123 };
-    value<int> val_copy { val };
-
-    ASSERT_EQ(val_copy.get(), 123);
+    ASSERT_FALSE(std::is_copy_constructible<value<int>>::value);
 }
 
-TEST(value_test, copy_assigned_value_is_correct)
+TEST(value_test, values_are_not_copy_assignable)
 {
-    value<int> val { 123 };
-    value<int> val_copy = val;
-
-    ASSERT_EQ(val_copy.get(), 123);
+    ASSERT_FALSE(std::is_copy_assignable<value<int>>::value);
 }
 
-TEST(value_test, copy_constructed_value_has_no_subscribers)
+TEST(value_test, values_are_move_constructible)
 {
-    auto call_count = 0;
-
-    value<int> val { 123 };
-    val.subscribe([&]() { ++call_count; }).release();
-
-    value<int> val_copy { val };
-    val_copy.set(1234);
-
-    ASSERT_EQ(call_count, 0);
+    ASSERT_TRUE(std::is_move_constructible<value<int>>::value);
 }
 
-TEST(value_test, copy_assigned_value_has_no_subscribers)
+TEST(value_test, values_are_move_assignable)
 {
-    auto call_count = 0;
-
-    value<int> val { 123 };
-    val.subscribe([&]() { ++call_count; }).release();
-
-    value<int> val_copy = val;
-    val_copy.set(1234);
-
-    ASSERT_EQ(call_count, 0);
+    ASSERT_TRUE(std::is_move_assignable<value<int>>::value);
 }
 
 TEST(value_test, move_constructed_value_is_correct)

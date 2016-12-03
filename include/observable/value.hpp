@@ -1,8 +1,10 @@
 #pragma once
 #include <algorithm>
-#include <utility>
 #include <type_traits>
-#include "observable/compound_subject.hpp"
+#include <utility>
+#include "observable/subject.hpp"
+#include "observable/subscription.hpp"
+#include "observable/detail/type_traits.hpp"
 
 namespace observable {
 
@@ -36,7 +38,7 @@ public:
     explicit value(ValueType_ && initial_value);
 
     //! Convert the observable value to its stored value type.
-    operator ValueType() const;
+    operator ValueType const &() const;
 
     //! Retrieve the stored value.
     auto get() const noexcept -> ValueType const &;
@@ -76,33 +78,31 @@ public:
     auto operator=(ValueType_ && new_value) -> value &;
 
 private:
-    class data
+    using void_subject = subject<void()>;
+    using value_subject = subject<void(ValueType const &)>;
+
+    template <typename Callable>
+    auto subscribe_impl(Callable && observer) ->
+        std::enable_if_t<detail::is_compatible_with_subject<Callable,
+                                                            void_subject>::value,
+                         unique_subscription>
     {
-        ValueType stored_value;
-        compound_subject<void(), void(ValueType const &)> value_changed;
+        return void_observers_.subscribe(std::forward<Callable>(observer));
+    }
 
-        data() =default;
+    template <typename Callable>
+    auto subscribe_impl(Callable && observer) ->
+        std::enable_if_t<detail::is_compatible_with_subject<Callable,
+                                                            value_subject>::value,
+                         unique_subscription>
+    {
+        return value_observers_.subscribe(std::forward<Callable>(observer));
+    }
 
-        data(ValueType initial_value) : stored_value { std::move(initial_value) }
-        { }
-
-        data(data const & other) : stored_value { other.stored_value }
-        { }
-
-        auto operator=(data const & other) -> data &
-        {
-            if(this != &other)
-                stored_value = other.stored_value;
-
-            return *this;
-        }
-
-        data(data && other) =default;
-
-        auto operator=(data && other) -> data & =default;
-
-        friend class value;
-    } data_;
+private:
+    ValueType value_;
+    void_subject void_observers_;
+    value_subject value_observers_;
 };
 
 // Implementation
@@ -110,34 +110,34 @@ private:
 template <typename ValueType, typename EqualityComparator>
 template <typename ValueType_>
 inline value<ValueType, EqualityComparator>::value(ValueType_ && initial_value) :
-    data_ { std::forward<ValueType_>(initial_value) }
+    value_ { std::forward<ValueType_>(initial_value) }
 {
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::operator ValueType() const
+inline value<ValueType, EqualityComparator>::operator ValueType const &() const
 {
-    return data_.stored_value;
+    return value_;
 }
 
 template <typename ValueType, typename EqualityComparator>
 inline auto value<ValueType, EqualityComparator>::get() const noexcept -> ValueType const &
 {
-    return data_.stored_value;
+    return value_;
 }
 
 template <typename ValueType, typename EqualityComparator>
 template <typename ValueType_>
 inline auto value<ValueType, EqualityComparator>::set(ValueType_ && new_value) -> void
 {
-    static EqualityComparator const eq { };
+    thread_local EqualityComparator const eq { };
 
-    if(eq(new_value, data_.stored_value))
+    if(eq(new_value, value_))
         return;
 
-    data_.stored_value = std::forward<ValueType_>(new_value);
-    data_.value_changed.notify();
-    data_.value_changed.notify(get());
+    value_ = std::forward<ValueType_>(new_value);
+    void_observers_.notify();
+    value_observers_.notify(value_);
 }
 
 template <typename ValueType, typename EqualityComparator>
@@ -152,7 +152,12 @@ template <typename ValueType, typename EqualityComparator>
 template <typename Callable>
 inline auto value<ValueType, EqualityComparator>::subscribe(Callable && callable) -> unique_subscription
 {
-    return data_.value_changed.subscribe(callable);
+    static_assert(detail::is_compatible_with_subject<Callable, void_subject>::value ||
+                  detail::is_compatible_with_subject<Callable, value_subject>::value,
+                  "Observer is not valid. Please provide a void observer or an "
+                  "observer that takes a ValueType as its only argument.");
+
+    return subscribe_impl(std::forward<Callable>(callable));
 }
 
 }

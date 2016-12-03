@@ -75,46 +75,24 @@ TEST_F(property_test, setting_same_value_does_not_trigger_subscribers)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST_F(property_test, copy_constructed_property_has_correct_value)
+TEST_F(property_test, properties_are_not_copy_constructible)
 {
-    property<int> prop { 123 };
-    property<int> prop_copy { prop };
-
-    ASSERT_EQ(prop_copy.get(), 123);
+    ASSERT_FALSE(std::is_copy_constructible<property<int>>::value);
 }
 
-TEST_F(property_test, copy_assigned_property_has_correct_value)
+TEST_F(property_test, properties_are_not_copy_assignable)
 {
-    property<int> prop { 123 };
-    property<int> prop_copy = prop;
-
-    ASSERT_EQ(prop_copy.get(), 123);
+    ASSERT_FALSE(std::is_copy_assignable<property<int>>::value);
 }
 
-TEST_F(property_test, copy_constructed_property_has_no_subscribers)
+TEST_F(property_test, properties_are_move_constructible)
 {
-    auto call_count = 0;
-
-    property<int, property_test> prop { 123 };
-    prop.subscribe([&]() { ++call_count; }).release();
-
-    property<int, property_test> prop_copy { prop };
-    set(prop_copy, 1234);
-
-    ASSERT_EQ(call_count, 0);
+    ASSERT_TRUE(std::is_move_constructible<property<int>>::value);
 }
 
-TEST_F(property_test, copy_assigned_property_has_no_subscribers)
+TEST_F(property_test, properties_are_move_assignable)
 {
-    auto call_count = 0;
-
-    property<int, property_test> prop { 123 };
-    prop.subscribe([&]() { ++call_count; }).release();
-
-    property<int, property_test> prop_copy = prop;
-    set(prop_copy, 1234);
-
-    ASSERT_EQ(call_count, 0);
+    ASSERT_TRUE(std::is_move_assignable<property<int>>::value);
 }
 
 TEST_F(property_test, move_constructed_property_has_correct_value)
