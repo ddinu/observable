@@ -30,13 +30,16 @@ public:
     //! Create an initialized observable value.
     //!
     //! \param initial_value The observable's initial value.
-    explicit value(ValueType initial_value);
+    //! \tparam ValueType_ Initial value type. Must be convertible to the value's
+    //!                    ValueType.
+    template <typename ValueType_>
+    explicit value(ValueType_ && initial_value);
 
     //! Convert the observable value to its stored value type.
     operator ValueType() const;
 
     //! Retrieve the stored value.
-    auto get() const -> ValueType const &;
+    auto get() const noexcept -> ValueType const &;
 
     //! Subscribe to changes to the observable value.
     //!
@@ -59,13 +62,18 @@ public:
     //! If the new value compares equal to the existing value, this method has no
     //! effect. The comparison is performed using the EqualityComparator.
     //!
+    //! \param new_value The new value to set.
+    //! \tparam ValueType_ The new value's actual type. Must be convertible to
+    //!                    the value's ValueType.
     //! \see subject::notify()
-    auto set(ValueType new_value) -> void;
+    template <typename ValueType_>
+    auto set(ValueType_ && new_value) -> void;
 
     //! Set a new value. Will just call set().
     //!
     //! \see set()
-    auto operator=(ValueType new_value) -> value &;
+    template <typename ValueType_>
+    auto operator=(ValueType_ && new_value) -> value &;
 
 private:
     class data
@@ -100,8 +108,9 @@ private:
 // Implementation
 
 template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::value(ValueType initial_value) :
-    data_ { std::move(initial_value) }
+template <typename ValueType_>
+inline value<ValueType, EqualityComparator>::value(ValueType_ && initial_value) :
+    data_ { std::forward<ValueType_>(initial_value) }
 {
 }
 
@@ -112,28 +121,30 @@ inline value<ValueType, EqualityComparator>::operator ValueType() const
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline auto value<ValueType, EqualityComparator>::get() const -> ValueType const &
+inline auto value<ValueType, EqualityComparator>::get() const noexcept -> ValueType const &
 {
     return data_.stored_value;
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline auto value<ValueType, EqualityComparator>::set(ValueType new_value) -> void
+template <typename ValueType_>
+inline auto value<ValueType, EqualityComparator>::set(ValueType_ && new_value) -> void
 {
     static EqualityComparator const eq { };
 
     if(eq(new_value, data_.stored_value))
         return;
 
-    data_.stored_value = std::move(new_value);
+    data_.stored_value = std::forward<ValueType_>(new_value);
     data_.value_changed.notify();
     data_.value_changed.notify(get());
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline auto value<ValueType, EqualityComparator>::operator=(ValueType new_value) -> value &
+template <typename ValueType_>
+inline auto value<ValueType, EqualityComparator>::operator=(ValueType_ && new_value) -> value &
 {
-    set(std::move(new_value));
+    set(std::forward<ValueType_>(new_value));
     return *this;
 }
 

@@ -22,6 +22,9 @@ public:
     //! remove a previously inserted object.
     using id = std::size_t;
 
+    //! Create an empty collection.
+    collection() noexcept = default;
+
     //! Insert a new element into the collection.
     //!
     //! \param element The object to be inserted.
@@ -69,7 +72,7 @@ public:
     //! \note Any apply() call running concurrently with a remove() call,
     //!       that has not already called its functor with the removed element,
     //!       is guaranteed to not call the functor with the removed element.
-    auto remove(id const & element_id)
+    auto remove(id const & element_id) noexcept
     {
         auto deleted = false;
         {
@@ -102,7 +105,7 @@ public:
     //! \param fun A functor that will be called with each element of the
     //!            collection.
     template <typename UnaryFunctor>
-    auto apply(UnaryFunctor && fun) const
+    auto apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType())))
     {
         gc_blocker const block { this };
 
@@ -116,7 +119,7 @@ public:
     }
 
     //! Check if the collection is empty.
-    auto empty() const
+    auto empty() const noexcept
     {
         gc_blocker const block { this };
         auto const h = head_.load();
@@ -124,7 +127,7 @@ public:
     }
 
     //! Destructor.
-    ~collection()
+    ~collection() noexcept
     {
         for(auto n = head_.load(); n; n = n->next)
             n->deleted.store(true);
@@ -134,7 +137,7 @@ public:
 
 private:
     //! Delete any nodes marked as deleted.
-    void gc()
+    void gc() noexcept
     {
         if(block_gc_.load() > 0 || gc_active_.exchange(true))
             return;
@@ -163,14 +166,15 @@ private:
     //! lifetime.
     struct gc_blocker
     {
-        gc_blocker(collection<ValueType> const * c) : collection_(c)
+        gc_blocker(collection<ValueType> const * c) noexcept :
+            collection_{ c }
         {
             ++collection_->block_gc_;
             while(collection_->gc_active_.load())
                 ;
         }
 
-        ~gc_blocker()
+        ~gc_blocker() noexcept
         {
             --collection_->block_gc_;
         }

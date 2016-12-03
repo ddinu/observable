@@ -41,18 +41,24 @@ private:
     //! If the new value compares equal to the old value, this method has no
     //! effect. The comparison is performed using the EqualityComparator.
     //!
+    //! \param new_value The new value to set.
+    //! \tparam ValueType_ The new value's actual type. Must be convertible to
+    //!                    the value's ValueType.
     //! \note This method will be accessible from inside the EnclosingType class.
-    auto set(ValueType new_value)
+    template <typename ValueType_>
+    auto set(ValueType_ && new_value)
     {
-        value<ValueType, EqualityComparator>::set(std::move(new_value));
+        value<ValueType, EqualityComparator>::set(std::forward<ValueType_>(new_value));
     }
 
     //! Set a new value for the property. Just calls set().
     //!
     //! \note This method will be accessible from inside the EnclosingType class.
-    auto operator=(ValueType new_value)
+    template <typename ValueType_>
+    auto operator=(ValueType_ && new_value) -> value &
     {
-        return value<ValueType, EqualityComparator>::operator=(std::move(new_value));
+        set(std::forward<ValueType_>(new_value));
+        return *this;
     }
 
     friend EnclosingType;
