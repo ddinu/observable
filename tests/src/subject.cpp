@@ -15,9 +15,11 @@ void dummy_args(int, float) { }
 
 using namespace std::chrono_literals;
 
-TEST(subject_test, can_create_subject)
+TEST(subject_test, is_default_constructible)
 {
     subject<void()> { };
+
+    ASSERT_TRUE(std::is_default_constructible<subject<void()>>::value);
 }
 
 TEST(subject_test, can_subscribe_to_subject)
@@ -81,27 +83,27 @@ TEST(subject_test, observer_is_not_called_after_unsubscribing)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST(subject_test, is_move_constructible)
+TEST(subject_test, is_nothrow_move_constructible)
 {
-    ASSERT_TRUE(std::is_move_constructible<subject<void()>>::value);
+    ASSERT_TRUE(std::is_nothrow_move_constructible<subject<void()>>::value);
 }
 
-TEST(subject_test, is_move_assignable)
+TEST(subject_test, is_nothrow_move_assignable)
 {
-    ASSERT_TRUE(std::is_move_assignable<subject<void()>>::value);
+    ASSERT_TRUE(std::is_nothrow_move_assignable<subject<void()>>::value);
 }
 
 TEST(subject_test, is_not_copy_constructible)
 {
-    ASSERT_FALSE((std::is_copy_constructible<subject<void()>>::value));
+    ASSERT_FALSE(std::is_copy_constructible<subject<void()>>::value);
 }
 
 TEST(subject_test, is_not_copy_assignable)
 {
-    ASSERT_FALSE((std::is_copy_assignable<subject<void()>>::value));
+    ASSERT_FALSE(std::is_copy_assignable<subject<void()>>::value);
 }
 
-TEST(subject_test, moved_subject_works)
+TEST(subject_test, moved_subject_keeps_subscribed_observers)
 {
     subject<void()> s1;
     auto call_count = 0;
@@ -113,7 +115,7 @@ TEST(subject_test, moved_subject_works)
     ASSERT_EQ(call_count, 1);
 }
 
-TEST(subject_test, observer_added_from_running_observer_is_called_on_second_notification)
+TEST(subject_test, observer_added_from_running_notify_is_called_on_second_notification)
 {
     subject<void()> s;
     auto call_count = 0;

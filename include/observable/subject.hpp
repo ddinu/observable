@@ -31,7 +31,7 @@ class subject;
 //! \warning Even though subjects themselves are safe to use in parallel,
 //!          observers need to handle being called from multiple threads too.
 template <typename ... Args>
-class subject<void(Args ...)>
+class subject<void(Args ...)> final
 {
 public:
     using observer_type = void(Args ...);
@@ -89,19 +89,19 @@ public:
 
 public:
     //! Constructor. Will create an empty subject.
-    subject() = default;
+    subject() =default;
 
     //! Subjects are **not** copy-constructible.
-    subject(subject const & other) =delete;
+    subject(subject const &) =delete;
 
     //! Subjects are **not** copy-assignable.
-    auto operator=(subject const & other) -> subject & =delete;
+    auto operator=(subject const &) -> subject & =delete;
 
     //! Subjects are move-constructible.
-    subject(subject && other) noexcept =default;
+    subject(subject &&) noexcept =default;
 
     //! Subjects are move-assignable.
-    auto operator=(subject && other) noexcept -> subject & =default;
+    auto operator=(subject &&) noexcept -> subject & =default;
 
 private:
     using collection = detail::collection<std::function<observer_type>>;

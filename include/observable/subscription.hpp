@@ -18,7 +18,7 @@ public:
     //! Create an empty subscription.
     //!
     //! Calling unsubscribe on an empty subscription will have no effect.
-    unique_subscription() = default;
+    unique_subscription() =default;
 
     //! Create a subscription with the specified unsubscribe functor.
     //!
@@ -77,16 +77,16 @@ public:
     }
 
     //! This class is not copy-constructible.
-    unique_subscription(unique_subscription const & ) = delete;
+    unique_subscription(unique_subscription const & ) =delete;
 
     //! This class is not copy-assignable.
-    unique_subscription & operator=(unique_subscription const &) = delete;
+    unique_subscription & operator=(unique_subscription const &) =delete;
 
     //! This class is move-constructible.
     unique_subscription(unique_subscription &&) = default;
 
     //! This class is move-assignable.
-    unique_subscription & operator=(unique_subscription &&) = default;
+    unique_subscription & operator=(unique_subscription &&) =default;
 
 private:
     std::function<void()> unsubscribe_ = []() { };
@@ -118,7 +118,7 @@ public:
     //! Create an empty shared subscription.
     //!
     //! Calling unsubscribe on an empty shared subscription will have no effect.
-    shared_subscription() = default;
+    shared_subscription() noexcept =default;
 
     //! Unsubscribe the associated observer from receiving notifications.
     //!

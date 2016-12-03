@@ -14,9 +14,19 @@ struct property_test : testing::Test
 
 property_test::~property_test() { } // To shut up clang.
 
-TEST_F(property_test, can_create_property)
+struct throwing_value
+{
+    throwing_value() noexcept(false) { }
+    throwing_value(throwing_value const &) noexcept(false) { }
+    auto operator=(throwing_value const &) noexcept(false) { }
+    throwing_value(throwing_value &&) noexcept(false) { }
+    auto operator=(throwing_value &&) noexcept(false) { }
+};
+
+TEST_F(property_test, is_default_constructible)
 {
     property<int> { };
+    ASSERT_TRUE(std::is_default_constructible<property<int>>::value);
 }
 
 TEST_F(property_test, can_create_initialized_property)
@@ -31,12 +41,24 @@ TEST_F(property_test, can_get_property_value)
     ASSERT_EQ(prop.get(), 123);
 }
 
+TEST_F(property_test, getter_is_nothrow)
+{
+    property<int> prop;
+    ASSERT_TRUE(noexcept(prop.get()));
+}
+
 TEST_F(property_test, can_convert_to_value_type)
 {
     property<int> prop { 123 };
     int val = prop;
 
     ASSERT_EQ(val, 123);
+}
+
+TEST_F(property_test, conversion_operator_is_nothrow)
+{
+    property<int> prop;
+    ASSERT_TRUE(noexcept(static_cast<int>(prop)));
 }
 
 TEST_F(property_test, can_subscribe_to_value_changes)
@@ -75,24 +97,36 @@ TEST_F(property_test, setting_same_value_does_not_trigger_subscribers)
     ASSERT_EQ(call_count, 0);
 }
 
-TEST_F(property_test, properties_are_not_copy_constructible)
+TEST_F(property_test, is_not_copy_constructible)
 {
     ASSERT_FALSE(std::is_copy_constructible<property<int>>::value);
 }
 
-TEST_F(property_test, properties_are_not_copy_assignable)
+TEST_F(property_test, is_not_copy_assignable)
 {
     ASSERT_FALSE(std::is_copy_assignable<property<int>>::value);
 }
 
-TEST_F(property_test, properties_are_move_constructible)
+TEST_F(property_test, is_nothrow_move_constructible)
 {
-    ASSERT_TRUE(std::is_move_constructible<property<int>>::value);
+    ASSERT_TRUE(std::is_nothrow_move_constructible<property<int>>::value);
 }
 
-TEST_F(property_test, properties_are_move_assignable)
+TEST_F(property_test, is_not_nothrow_move_constructible_if_value_type_throws)
 {
-    ASSERT_TRUE(std::is_move_assignable<property<int>>::value);
+    ASSERT_TRUE(std::is_move_constructible<property<throwing_value>>::value);
+    ASSERT_FALSE(std::is_nothrow_move_constructible<property<throwing_value>>::value);
+}
+
+TEST_F(property_test, is_nothrow_move_assignable)
+{
+    ASSERT_TRUE(std::is_nothrow_move_assignable<property<int>>::value);
+}
+
+TEST_F(property_test, is_not_nothrow_move_assignable_if_value_type_throws)
+{
+    ASSERT_TRUE(std::is_move_assignable<property<throwing_value>>::value);
+    ASSERT_FALSE(std::is_nothrow_move_assignable<property<throwing_value>>::value);
 }
 
 TEST_F(property_test, move_constructed_property_has_correct_value)

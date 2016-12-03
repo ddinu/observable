@@ -5,7 +5,12 @@
 
 namespace observable { namespace test {
 
-TEST(unique_subscription_test, can_create)
+TEST(unique_subscription_test, is_default_constructible)
+{
+    ASSERT_TRUE(std::is_default_constructible<unique_subscription>::value);
+}
+
+TEST(unique_subscription_test, can_create_initialized_subscription)
 {
     unique_subscription { []() {} };
 }
@@ -40,11 +45,6 @@ TEST(unique_subscription_test, calling_unsubscribe_multiple_times_calls_function
     sub.unsubscribe();
 
     ASSERT_EQ(call_count, 1);
-}
-
-TEST(unique_subscription_test, is_default_constructible)
-{
-    ASSERT_TRUE(std::is_default_constructible<unique_subscription>::value);
 }
 
 TEST(unique_subscription_test, is_not_copy_constructible)

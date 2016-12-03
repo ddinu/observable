@@ -38,7 +38,7 @@ public:
     explicit value(ValueType_ && initial_value);
 
     //! Convert the observable value to its stored value type.
-    operator ValueType const &() const;
+    operator ValueType const &() const noexcept;
 
     //! Retrieve the stored value.
     auto get() const noexcept -> ValueType const &;
@@ -76,6 +76,22 @@ public:
     //! \see set()
     template <typename ValueType_>
     auto operator=(ValueType_ && new_value) -> value &;
+
+public:
+    //! Observable values are **not** copy-constructible.
+    value(value const &) =delete;
+
+    //! Observable values are **not** copy-assignable.
+    auto operator=(value const &) -> value & =delete;
+
+    //! Observable values are move-constructible.
+    value(value &&)
+        noexcept(std::is_nothrow_move_constructible<ValueType>::value) =default;
+
+    //! Observable values are move-assignable.
+    auto operator=(value &&)
+        noexcept(std::is_nothrow_move_assignable<ValueType>::value)
+        -> value & =default;
 
 private:
     using void_subject = subject<void()>;
@@ -115,7 +131,7 @@ inline value<ValueType, EqualityComparator>::value(ValueType_ && initial_value) 
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::operator ValueType const &() const
+inline value<ValueType, EqualityComparator>::operator ValueType const &() const noexcept
 {
     return value_;
 }

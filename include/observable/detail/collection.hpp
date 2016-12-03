@@ -135,6 +135,19 @@ public:
         gc();
     }
 
+public:
+    //! Collections are not copy-constructible.
+    collection(collection const &) =delete;
+
+    //! Collections are not copy-assignable.
+    auto operator=(collection const &) -> collection & =delete;
+
+    //! Collections are move-constructible.
+    collection(collection &&) =delete;
+
+    //! Collections are move-assignable.
+    auto operator=(collection &&) -> collection & =delete;
+
 private:
     //! Delete any nodes marked as deleted.
     void gc() noexcept

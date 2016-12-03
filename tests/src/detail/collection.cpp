@@ -10,9 +10,11 @@
 
 namespace observable { namespace detail { namespace test {
 
-TEST(collection_test, can_default_construct)
+TEST(collection_test, is_default_constructible)
 {
-    collection<int> col;
+    collection<int> { };
+
+    ASSERT_TRUE(std::is_nothrow_default_constructible<collection<int>>::value);
 }
 
 TEST(collection_test, default_constructed_collection_is_empty)
@@ -27,7 +29,14 @@ TEST(collection_test, can_insert)
     col.insert(5);
 }
 
-TEST(collection_test, can_apply_to_elements)
+TEST(collection_test, is_not_empty_after_insert)
+{
+    collection<int> col;
+    col.insert(5);
+    ASSERT_FALSE(col.empty());
+}
+
+TEST(collection_test, can_apply_functor_to_elements)
 {
     collection<int> col;
     auto call_count = 0;
@@ -49,6 +58,32 @@ TEST(collection_test, apply_does_nothing_for_empty_collection)
     ASSERT_EQ(call_count, 0);
 }
 
+TEST(collection_test, elements_are_passed_to_the_apply_functor)
+{
+    collection<int> col;
+    auto result = 0;
+
+    col.insert(11);
+    col.insert(7);
+    col.apply([&](auto v) { result += v; });
+
+    ASSERT_EQ(result, 11 + 7);
+}
+
+TEST(collection_test, apply_is_nothrow_for_nothrow_functor)
+{
+    collection<int> col;
+    auto fun = [](auto) noexcept(true) { };
+    ASSERT_TRUE(noexcept(col.apply(fun)));
+}
+
+TEST(collection_test, apply_is_not_nothrow_for_throwing_functor)
+{
+    collection<int> col;
+    auto fun = [](auto) noexcept(false) { };
+    ASSERT_FALSE(noexcept(col.apply(fun)));
+}
+
 TEST(collection_test, can_remove)
 {
     collection<int> col;
@@ -64,18 +99,6 @@ TEST(collection_test, can_remove)
     col.apply([&](auto) { ++call_count; });
 
     ASSERT_EQ(call_count, 0);
-}
-
-TEST(collection_test, elements_are_passed_to_the_apply_functor)
-{
-    collection<int> col;
-    auto result = 0;
-
-    col.insert(11);
-    col.insert(7);
-    col.apply([&](auto v) { result += v; });
-
-    ASSERT_EQ(result, 11 + 7);
 }
 
 TEST(collection_test, removed_element_during_apply_is_not_applied)
@@ -110,6 +133,12 @@ TEST(collection_test, can_remove_applied_element)
     });
 
     ASSERT_TRUE(col.empty());
+}
+
+TEST(collection_test, remove_is_nothrow)
+{
+    collection<int> col;
+    ASSERT_TRUE(noexcept(col.remove(collection<int>::id { })));
 }
 
 TEST(collection_test, can_insert_while_applying)
@@ -241,6 +270,26 @@ TEST(collection_test, can_remove_same_node_in_parallel)
         t.join();
 
     ASSERT_TRUE(col.empty());
+}
+
+TEST(collection_test, is_not_copy_constructible)
+{
+    ASSERT_FALSE(std::is_copy_constructible<collection<int>>::value);
+}
+
+TEST(collection_test, is_not_copy_assignable)
+{
+    ASSERT_FALSE(std::is_copy_assignable<collection<int>>::value);
+}
+
+TEST(collection_test, is_not_move_constructible)
+{
+    ASSERT_FALSE(std::is_move_constructible<collection<int>>::value);
+}
+
+TEST(collection_test, is_not_move_assignable)
+{
+    ASSERT_FALSE(std::is_move_assignable<collection<int>>::value);
 }
 
 } } }

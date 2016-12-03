@@ -5,6 +5,11 @@
 
 namespace observable { namespace test {
 
+TEST(shared_subscription_test, is_default_constructible)
+{
+    ASSERT_TRUE(std::is_nothrow_default_constructible<shared_subscription>::value);
+}
+
 TEST(shared_subscription_test, can_create_shared_subscription)
 {
     shared_subscription { unique_subscription { []() {} } };

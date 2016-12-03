@@ -4,9 +4,52 @@
 
 namespace observable { namespace test {
 
-TEST(value_test, can_create_value)
+struct throwing_value
+{
+    throwing_value() noexcept(false) { }
+    throwing_value(throwing_value const &) noexcept(false) { }
+    auto operator=(throwing_value const &) noexcept(false) { }
+    throwing_value(throwing_value &&) noexcept(false) { }
+    auto operator=(throwing_value &&) noexcept(false) { }
+};
+
+TEST(value_test, is_default_constructible)
 {
     value<int> { };
+
+    ASSERT_TRUE(std::is_default_constructible<value<int>>::value);
+}
+
+TEST(value_test, is_not_copy_constructible)
+{
+    ASSERT_FALSE(std::is_copy_constructible<value<int>>::value);
+}
+
+TEST(value_test, is_not_copy_assignable)
+{
+    ASSERT_FALSE(std::is_copy_assignable<value<int>>::value);
+}
+
+TEST(value_test, is_nothrow_move_constructible)
+{
+    ASSERT_TRUE(std::is_nothrow_move_constructible<value<int>>::value);
+}
+
+TEST(value_test, is_not_nothrow_move_constructible_if_value_type_throws)
+{
+    ASSERT_TRUE(std::is_move_constructible<value<throwing_value>>::value);
+    ASSERT_FALSE(std::is_nothrow_move_constructible<value<throwing_value>>::value);
+}
+
+TEST(value_test, is_nothrow_move_assignable)
+{
+    ASSERT_TRUE(std::is_nothrow_move_assignable<value<int>>::value);
+}
+
+TEST(value_test, is_not_nothrow_move_assignable_if_value_type_throws)
+{
+    ASSERT_TRUE(std::is_move_assignable<value<throwing_value>>::value);
+    ASSERT_FALSE(std::is_nothrow_move_assignable<value<throwing_value>>::value);
 }
 
 TEST(value_test, can_create_initialized_value)
@@ -21,12 +64,24 @@ TEST(value_test, can_get_value)
     ASSERT_EQ(val.get(), 123);
 }
 
+TEST(value_test, getter_is_nothrow)
+{
+    value<int> val;
+    ASSERT_TRUE(noexcept(val.get()));
+}
+
 TEST(value_test, can_convert_to_value_type)
 {
     value<int> val { 123 };
     int v = val;
 
     ASSERT_EQ(v, 123);
+}
+
+TEST(value_test, conversion_operator_is_nothrow)
+{
+    value<int> val;
+    ASSERT_TRUE(noexcept(static_cast<int>(val)));
 }
 
 TEST(value_test, can_subscribe_to_value_changes)
@@ -63,26 +118,6 @@ TEST(value_test, setting_same_value_does_not_trigger_subscribers)
     val.set(123);
 
     ASSERT_EQ(call_count, 0);
-}
-
-TEST(value_test, values_are_not_copy_constructible)
-{
-    ASSERT_FALSE(std::is_copy_constructible<value<int>>::value);
-}
-
-TEST(value_test, values_are_not_copy_assignable)
-{
-    ASSERT_FALSE(std::is_copy_assignable<value<int>>::value);
-}
-
-TEST(value_test, values_are_move_constructible)
-{
-    ASSERT_TRUE(std::is_move_constructible<value<int>>::value);
-}
-
-TEST(value_test, values_are_move_assignable)
-{
-    ASSERT_TRUE(std::is_move_assignable<value<int>>::value);
 }
 
 TEST(value_test, move_constructed_value_is_correct)
