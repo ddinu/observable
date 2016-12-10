@@ -136,9 +136,9 @@ Visual Studio 2015 builds:
 .. |win64 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
 .. _win64 build: https://ci.appveyor.com/project/ddinu/observable/branch/master
 
-Clang and GCC (Linux) builds:
+Linux (GCC, Clang) and OS X (Clang) builds:
 
- * |linux build|_ (64 bit)
+ * |travis build|_ (64 bit)
 
-.. |linux build| image:: https://travis-ci.org/ddinu/observable.svg?branch=master
-.. _linux build: https://travis-ci.org/ddinu/observable
+.. |travis build| image:: https://travis-ci.org/ddinu/observable.svg?branch=master
+.. _travis build: https://travis-ci.org/ddinu/observable
