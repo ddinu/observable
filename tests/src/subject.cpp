@@ -190,4 +190,20 @@ TEST(subject_test, can_unsubscribe_while_notification_is_running)
     ASSERT_EQ(1, call_count);
 }
 
+TEST(subject_test, can_use_subject_enclosed_in_class)
+{
+    struct Foo
+    {
+        subject<void(), Foo> test;
+
+        void notify_test() { test.notify(); }
+    } foo;
+
+    auto called = false;
+    foo.test.subscribe([&]() { called = true; }).release();
+    foo.notify_test();
+
+    ASSERT_TRUE(called);
+}
+
 } }

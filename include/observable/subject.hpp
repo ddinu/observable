@@ -8,7 +8,7 @@
 
 namespace observable {
 
-template <typename T>
+template <typename ...>
 class subject;
 
 //! A subject stores observers and provides a way to notify them when events
@@ -31,7 +31,7 @@ class subject;
 //! \warning Even though subjects themselves are safe to use in parallel,
 //!          observers need to handle being called from multiple threads too.
 template <typename ... Args>
-class subject<void(Args ...)> final
+class subject<void(Args ...)>
 {
 public:
     using observer_type = void(Args ...);
@@ -107,6 +107,30 @@ private:
     using collection = detail::collection<std::function<observer_type>>;
 
     std::shared_ptr<collection> observers_ { std::make_shared<collection>() };
+};
+
+//! This subject specialization can be used inside a class, as a member to
+//! prevent external code from calling notify() but still allow anyone to
+//! subscribe.
+//!
+//! \see subject<void(Args ...)>
+//!
+//! \tparam ObserverType The function type of the observers that will subscribe
+//!                      to notifications.
+//!
+//! \tparam EnclosingType This type will be declared a friend of the subject and
+//!                       will have access to the notify() method.
+template <typename ObserverType, typename EnclosingType>
+class subject<ObserverType, EnclosingType> : public subject<ObserverType>
+{
+public:
+    using subject<ObserverType>::subject;
+
+private:
+    //! \see subject<void(Args...)>::notify
+    using subject<ObserverType>::notify;
+
+    friend EnclosingType;
 };
 
 // Implementation

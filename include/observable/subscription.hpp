@@ -38,14 +38,14 @@ public:
     //! \note If release() has been called, this method will have no effect.
     auto unsubscribe() &
     {
-        if(!called_->test_and_set())
-        {
-            try {
-                unsubscribe_();
-            } catch(...) {
-                called_.reset();
-                throw;
-            }
+        if(!called_ || !unsubscribe_ || called_->test_and_set())
+            return;
+
+        try {
+            if(unsubscribe_) unsubscribe_();
+        } catch(...) {
+            called_->clear();
+            throw;
         }
     }
 
@@ -72,8 +72,7 @@ public:
     //! \note If release() has been called, this will have no effect.
     ~unique_subscription()
     {
-        if(called_ && unsubscribe_)
-            unsubscribe();
+        unsubscribe();
     }
 
     //! This class is not copy-constructible.
