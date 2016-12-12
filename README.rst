@@ -10,11 +10,11 @@ Quick start
 The library is header-only; just copy the ``include/observable`` directory into
 your include path and you're set.
 
-Observable properties:
+Observable properties (member values):
 
 .. code-block:: C++
 
-    #include <observable/property.hpp>
+    #include <observable/value.hpp>
     using namespace observable;
 
     class WidgetModel
