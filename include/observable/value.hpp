@@ -8,6 +8,11 @@
 
 namespace observable {
 
+template <typename ValueType,
+          typename EqualityComparator=std::equal_to<>,
+          typename ...>
+class value;
+
 //! Observable values provide a way to get notified when a value-type changes.
 //!
 //! When setting a new value, if the new value is different than the existing one,
@@ -19,8 +24,8 @@ namespace observable {
 //! \tparam ValueType The value-type that will be stored inside the observable.
 //! \tparam EqualityComparator A comparator to use when checking if new values
 //!                            are different than the stored value.
-template <typename ValueType, typename EqualityComparator=std::equal_to<ValueType>>
-class value
+template <typename ValueType, typename EqualityComparator>
+class value<ValueType, EqualityComparator>
 {
 public:
     //! Create a default-constructed observable value.
@@ -120,6 +125,36 @@ private:
     void_subject void_observers_;
     value_subject value_observers_;
 };
+
+//! Observable values provide a way to get notified when a value-type changes.
+//!
+//! \see value<ValueType, EqualityComparator>
+//!
+//! This specialization is exactly the same as the main value specialization, but
+//! its setters are only accessible from inside the EnclosingType.
+//!
+//! \tparam ValueType The value-type that will be stored inside the observable.
+//! \tparam EqualityComparator A comparator to use when checking if new values
+//!                            are different than the stored value.
+//! \tparam EnclosingType A type that will have access to the value's setters.
+template <typename ValueType, typename EqualityComparator, typename EnclosingType>
+class value<ValueType, EqualityComparator, EnclosingType> : public value<ValueType, EqualityComparator>
+{
+public:
+    using value<ValueType, EqualityComparator>::value;
+
+private:
+    using value<ValueType, EqualityComparator>::set;
+    using value<ValueType, EqualityComparator>::operator=;
+
+    friend EnclosingType;
+};
+
+//! Convenience alias.
+template <typename ValueType,
+          typename EnclosingType,
+          typename EqualityComparator=std::equal_to<>>
+using property = value<ValueType, EqualityComparator, EnclosingType>;
 
 // Implementation
 

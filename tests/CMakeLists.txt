@@ -7,7 +7,6 @@ include(source_groups)
 set(SOURCE_FILES src/detail/collection.cpp
                  src/detail/type_traits.cpp
                  src/gtest.h
-                 src/property.cpp
                  src/shared_lib.cpp
                  src/shared_subscription.cpp
                  src/subject.cpp

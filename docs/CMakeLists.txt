@@ -9,7 +9,6 @@ set(SOURCES conf.py
             developers.rst
             getting-started.rst
             reference/index.rst
-            reference/property.rst
             reference/shared_subscription.rst
             reference/subject.rst
             reference/unique_subscription.rst)

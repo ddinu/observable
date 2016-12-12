@@ -162,4 +162,20 @@ TEST(value_test, move_assigned_value_keeps_subscribers)
     ASSERT_EQ(call_count, 1);
 }
 
+TEST(value_test, can_use_value_enclosed_in_class)
+{
+    struct Foo
+    {
+        value<int, std::equal_to<>, Foo> val { 0 };
+        void set_value(int v) { val = v; }
+    } foo;
+
+    auto called = false;
+    foo.val.subscribe([&]() { called = true; }).release();
+    foo.set_value(5);
+
+    ASSERT_EQ(foo.val.get(), 5);
+    ASSERT_TRUE(called);
+}
+
 } }
