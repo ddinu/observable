@@ -11,8 +11,8 @@ namespace observable {
 template <typename ...>
 class subject;
 
-//! A subject stores observers and provides a way to notify them when events
-//! occur.
+//! A subject stores observers and provides a way to notify them when the notify()
+//! method is called.
 //!
 //! Observers are objects that satisfy the Callable concept and can be stored
 //! inside a ``std::function<void(Args ...)>``.
@@ -74,7 +74,7 @@ public:
     //! \note Observers removed during the notify call, before they themselves
     //!       have been called, will not be called.
     //!
-    //! The method is reentrant, you can call notify() from inside a running
+    //! The method is reentrant; you can call notify() from inside a running
     //! observer.
     //!
     //! \param[in] arguments Arguments that will be forwarded to the subscribed
@@ -113,6 +113,9 @@ private:
 //! prevent external code from calling notify() but still allow anyone to
 //! subscribe.
 //!
+//! \note Except for the notify() method being private, this specialization is
+//!       exactly the same as a regular subject.
+//!
 //! \see subject<void(Args ...)>
 //!
 //! \tparam ObserverType The function type of the observers that will subscribe
@@ -132,6 +135,10 @@ private:
 
     friend EnclosingType;
 };
+
+//! Convenience alias.
+template <typename ObserverType, typename EnclosingType>
+using event = subject<ObserverType, EnclosingType>;
 
 // Implementation
 

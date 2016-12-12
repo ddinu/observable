@@ -25,5 +25,8 @@ Example
 Class reference
 ---------------
 
-.. doxygenclass:: observable::value
+.. doxygenclass:: observable::value< ValueType, EqualityComparator >
+    :members:
+
+.. doxygenclass:: observable::value< ValueType, EqualityComparator, EnclosingType >
     :members:

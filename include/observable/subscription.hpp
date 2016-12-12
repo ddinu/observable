@@ -10,8 +10,8 @@ namespace observable {
 //!
 //! This class is movable but not copyable.
 //!
-//! All methods of this class can be safely called in parallel from multiple
-//! threads.
+//! \note All methods of this class can be safely called in parallel from multiple
+//!       threads.
 class unique_subscription final
 {
 public:
@@ -22,10 +22,10 @@ public:
 
     //! Create a subscription with the specified unsubscribe functor.
     //!
-    //! \param unsubscribe This functor will be called when the unique
-    //!                    subscription goes out of scope or when unsubscribe()
-    //!                    has been called.
-    //! \private
+    //! \param[in] unsubscribe This functor will be called when the unique
+    //!                        subscription goes out of scope or when
+    //!                        unsubscribe() has been called.
+    //! \internal
     explicit unique_subscription(std::function<void()> const & unsubscribe) :
         unsubscribe_ { unsubscribe }
     {
@@ -36,7 +36,7 @@ public:
     //! Only the first call of this method will have an effect.
     //!
     //! \note If release() has been called, this method will have no effect.
-    auto unsubscribe() &
+    auto unsubscribe()
     {
         if(!called_ || !unsubscribe_ || called_->test_and_set())
             return;
@@ -58,7 +58,7 @@ public:
     //!         when called.
     //!         For example: ``subscription.release()()`` is equivalent to
     //!         ``subscription.unsubscribe()``.
-    auto release() &&
+    auto release()
     {
         using std::swap;
         decltype(unsubscribe_) unsub = []() { };
@@ -75,6 +75,7 @@ public:
         unsubscribe();
     }
 
+public:
     //! This class is not copy-constructible.
     unique_subscription(unique_subscription const & ) =delete;
 
@@ -101,8 +102,8 @@ private:
 //!
 //! This class is both movable and copyable.
 //!
-//! All methods of this class can be safely called in parallel from multiple
-//! threads.
+//! \note All methods of this class can be safely called in parallel from multiple
+//!       threads.
 class shared_subscription final
 {
 public:
@@ -122,7 +123,7 @@ public:
     //! Unsubscribe the associated observer from receiving notifications.
     //!
     //! Only the first call of this method will have an effect.
-    auto unsubscribe() &
+    auto unsubscribe()
     {
         unsubscribe_.reset();
     }

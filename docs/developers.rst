@@ -4,8 +4,8 @@ Developers
 Anyone is welcome to contribute code, bug reports, feature requests or just ask
 questions.
 
-What code should look like
---------------------------
+How the code should look like
+-----------------------------
 
 Please try to follow the `C++ Core Guidelines
 <http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines>`_ as much as
@@ -16,8 +16,10 @@ for class names to be lowercase and generally, names to be
 separated_by_underscores. Try to match the code in the file that you're editing
 and everything should be fine.
 
-Also try to keep files under 200 lines and definetly keep files under 500 lines;
-and within reason, limit yourself to 80 characters per line if possible.
+Try to keep files under a couple hundred lines. Definetly keep them under 500
+lines (comments, includes and all).
+
+Also, within reason, limit yourself to 80 characters per line.
 
 Testing
 -------

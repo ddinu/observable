@@ -12,17 +12,21 @@ Example
 .. code-block:: C++
 
     #include <observable/subject.hpp>
+    using namespace observable;
 
-    observable::subject<void(double)> subject;
+    subject<void(double)> some_event;
 
-    auto subscription = subject.subscribe([](double new_value) {
-                                              // React to the notifcation.
-                                          }); 
+    auto sub = some_event.subscribe([](double new_value) {
+                                        // React to the notifcation.
+                                    }); 
 
-    subject.notify(5.1);
+    some_event.notify(5.1);
 
 Class reference
 ---------------
 
 .. doxygenclass:: observable::subject< void(Args...)>
+    :members:
+
+.. doxygenclass:: observable::subject< ObserverType, EnclosingType >
     :members:

@@ -27,13 +27,13 @@ public:
 
     //! Insert a new element into the collection.
     //!
-    //! \param element The object to be inserted.
+    //! \param[in] element The object to be inserted.
     //! \tparam ValueType_ Type of the inserted element. Must be convertible to
     //!                    the collection's ValueType.
     //!
     //! \return An id that can be used to remove the inserted element.
-    //!         This id is stable, meaning that you can use it even after mutating
-    //!         the collection.
+    //!         This id is stable; you can use it even after mutating the
+    //!         collection.
     //!
     //! \note Any apply() call running concurrently with an insert(), that has
     //!       already called its functor for at least one element, is guaranteed
@@ -64,7 +64,7 @@ public:
     //!
     //! If no element with the provided id exists, this method does nothing.
     //!
-    //! \param element_id Id returned by insert.
+    //! \param[in] element_id Id returned by insert.
     //!
     //! \return True if an element of the collection was removed, false if no
     //!         element has been removed.
@@ -96,16 +96,16 @@ public:
     //!
     //! The functor will be called with each element, in an unspecified order.
     //!
-    //! \note This method is reentrant, meaning you can call insert and remove
-    //!       on the same collection from inside this functor.
+    //! \note This method is reentrant; you can call insert and remove on the
+    //!       collection from inside the functor.
     //!
-    //! \note It is well defined and supported to remove() the element currently
-    //!       passed to the functor, even before the functor returns.
+    //! \note It is well defined and supported to remove() the element passed
+    //!       to the functor, even before the functor returns.
     //!
-    //! \param fun A functor that will be called with each element of the
+    //! \param[in] fun A functor that will be called with each element of the
     //!            collection.
     template <typename UnaryFunctor>
-    auto apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType())))
+    auto apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
     {
         gc_blocker const block { this };
 
