@@ -2,7 +2,7 @@ add_subdirectory(shared_lib)
 
 include(compile_flags)
 include(observable_includes)
-include(source_groups)
+include(default_source_groups)
 
 set(SOURCE_FILES src/detail/collection.cpp
                  src/detail/type_traits.cpp

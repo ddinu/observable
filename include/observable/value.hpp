@@ -22,6 +22,7 @@ class value;
 //! threads.
 //!
 //! \tparam ValueType The value-type that will be stored inside the observable.
+//!                   This type will need to be at least movable.
 //! \tparam EqualityComparator A comparator to use when checking if new values
 //!                            are different than the stored value.
 template <typename ValueType, typename EqualityComparator>

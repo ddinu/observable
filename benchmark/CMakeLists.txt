@@ -1,6 +1,6 @@
 include(compile_flags)
 include(observable_includes)
-include(source_groups)
+include(default_source_groups)
 
 # Function benchmark target.
 add_executable(bench_function src/utility.h

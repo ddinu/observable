@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 include(compile_flags)
 include(observable_includes)
-include(source_groups)
+include(default_source_groups)
 
 set(SOURCE_FILES include/shared/shared_lib.h
                  src/shared_lib.cpp)
