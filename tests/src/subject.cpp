@@ -37,6 +37,12 @@ TEST(subject_test, can_subscribe_to_subject)
     s2.subscribe([=](auto, auto) mutable { });
 }
 
+TEST(subject_test, can_notify_subject_with_no_subscribed_observers)
+{
+    subject<void()> s;
+    s.notify();
+}
+
 TEST(subject_test, observers_are_called)
 {
     subject<void()> s;

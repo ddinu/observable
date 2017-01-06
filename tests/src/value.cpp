@@ -84,6 +84,13 @@ TEST(value_test, conversion_operator_is_nothrow)
     ASSERT_TRUE(noexcept(static_cast<int>(val)));
 }
 
+TEST(value_test, can_change_value_with_no_subscribed_observers)
+{
+    value<int> val { 5 };
+    val.set(7);
+    ASSERT_EQ(7, val.get());
+}
+
 TEST(value_test, can_subscribe_to_value_changes)
 {
     auto call_count = 0;
