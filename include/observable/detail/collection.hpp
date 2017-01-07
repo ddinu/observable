@@ -47,7 +47,7 @@ public:
         n->element = std::forward<ValueType_>(element);
 
         {
-            gc_blocker const block { this };
+            auto const block_gc = gc_blocker { this };
 
             n->next = head_.load();
             while(!head_.compare_exchange_weak(n->next, n.get()))
@@ -76,7 +76,7 @@ public:
     {
         auto deleted = false;
         {
-            gc_blocker const block { this };
+            auto const block_gc = gc_blocker { this };
 
             for(auto n = head_.load(); n; n = n->next)
             {
@@ -107,7 +107,7 @@ public:
     template <typename UnaryFunctor>
     auto apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
     {
-        gc_blocker const block { this };
+        auto const block_gc = gc_blocker { this };
 
         for(auto n = head_.load(); n; n = n->next)
         {
@@ -121,7 +121,7 @@ public:
     //! Check if the collection is empty.
     auto empty() const noexcept
     {
-        gc_blocker const block { this };
+        auto const block_gc = gc_blocker { this };
         auto const h = head_.load();
         return !h || h->deleted;
     }
@@ -179,7 +179,7 @@ private:
     //! lifetime.
     struct gc_blocker
     {
-        gc_blocker(collection<ValueType> const * c) noexcept :
+        explicit gc_blocker(collection<ValueType> const * c) noexcept :
             collection_{ c }
         {
             ++collection_->block_gc_;
@@ -191,6 +191,12 @@ private:
         {
             --collection_->block_gc_;
         }
+
+        gc_blocker() =delete;
+        gc_blocker(gc_blocker const &) =delete;
+        auto operator=(gc_blocker const &) -> gc_blocker & =delete;
+        gc_blocker(gc_blocker &&) =default;
+        auto operator=(gc_blocker &&) -> gc_blocker & =default;
 
     private:
         collection<ValueType> const * collection_;

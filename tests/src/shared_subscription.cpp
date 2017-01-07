@@ -30,7 +30,7 @@ TEST(shared_subscription_test, can_manually_call_unsubscribe)
 {
     auto call_count = 0;
 
-    shared_subscription sub { unique_subscription { [&]() { ++call_count; } } };
+    auto sub = shared_subscription { unique_subscription { [&]() { ++call_count; } } };
     sub.unsubscribe();
 
     ASSERT_EQ(call_count, 1);
@@ -61,10 +61,10 @@ TEST(shared_subscription_test, unsubscribe_is_called_by_last_instance_destroyed)
     auto call_count = 0;
 
     {
-        shared_subscription sub { unique_subscription { [&]() { ++call_count; } } };
+        auto sub = shared_subscription { unique_subscription { [&]() { ++call_count; } } };
 
         {
-            shared_subscription copy = sub;
+            auto copy = sub;
         }
 
         ASSERT_EQ(call_count, 0);

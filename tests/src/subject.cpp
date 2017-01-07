@@ -24,12 +24,12 @@ TEST(subject_test, is_default_constructible)
 
 TEST(subject_test, can_subscribe_to_subject)
 {
-    subject<void()> s1;
+    auto s1 = subject<void()> { };
     s1.subscribe(dummy);
     s1.subscribe([=]() { });
     s1.subscribe([=]() mutable { });
 
-    subject<void(int, float)> s2;
+    auto s2 = subject<void(int, float)> { };
     s2.subscribe(dummy_args);
     s2.subscribe([=](int, float) { });
     s2.subscribe([=](int, float) mutable { });
@@ -39,13 +39,13 @@ TEST(subject_test, can_subscribe_to_subject)
 
 TEST(subject_test, can_notify_subject_with_no_subscribed_observers)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
     s.notify();
 }
 
 TEST(subject_test, observers_are_called)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
 
     auto call_count = 0;
     s.subscribe([&]() { ++call_count; }).release();
@@ -57,7 +57,7 @@ TEST(subject_test, observers_are_called)
 
 TEST(subject_test, observer_with_const_reference_parameters_is_called)
 {
-    subject<void(int)> s;
+    auto s = subject<void(int)> { };
     auto call_count = 0;
 
     s.subscribe([&](int const &) { ++call_count; }).release();
@@ -68,7 +68,7 @@ TEST(subject_test, observer_with_const_reference_parameters_is_called)
 
 TEST(subject_test, subject_with_const_reference_parameter_calls_observer)
 {
-    subject<void(int const &)> s;
+    auto s = subject<void(int const &)> { };
     auto call_count = 0;
 
     s.subscribe([&](int) { ++call_count; }).release();
@@ -79,7 +79,7 @@ TEST(subject_test, subject_with_const_reference_parameter_calls_observer)
 
 TEST(subject_test, observer_is_not_called_after_unsubscribing)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
     auto call_count = 0;
 
     auto sub = s.subscribe([&]() { ++call_count; });
@@ -111,7 +111,7 @@ TEST(subject_test, is_not_copy_assignable)
 
 TEST(subject_test, moved_subject_keeps_subscribed_observers)
 {
-    subject<void()> s1;
+    auto s1 = subject<void()> { };
     auto call_count = 0;
 
     s1.subscribe([&]() { ++call_count; }).release();
@@ -123,7 +123,7 @@ TEST(subject_test, moved_subject_keeps_subscribed_observers)
 
 TEST(subject_test, observer_added_from_running_notify_is_called_on_second_notification)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
     auto call_count = 0;
 
     auto sub = s.subscribe([&]() {
@@ -140,8 +140,8 @@ TEST(subject_test, observer_added_from_running_notify_is_called_on_second_notifi
 
 TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
 {
-    subject<void()> s;
-    std::thread::id other_id;
+    auto s = subject<void()> { };
+    auto other_id = std::thread::id { };
 
     s.subscribe([&]() { other_id = std::this_thread::get_id(); });
     std::thread { [&]() { s.notify(); } }.join();
@@ -151,14 +151,14 @@ TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
 
 TEST(subject_test, observer_added_from_other_thread_while_notification_is_running_is_not_called)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
     std::atomic_int old_call_count { 0 };
     std::atomic_int new_call_count { 0 };
 
     for(auto i = 0; i < 10; ++i)
         s.subscribe([&]() { ++old_call_count; std::this_thread::sleep_for(5ms); }).release();
 
-    std::thread t { [&]() { s.notify(); } };
+    auto t = std::thread { [&]() { s.notify(); } };
 
     for(auto i = 0; i < 100 && old_call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);
@@ -174,9 +174,9 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
 
 TEST(subject_test, can_unsubscribe_while_notification_is_running)
 {
-    subject<void()> s;
+    auto s = subject<void()> { };
     std::atomic_int call_count { 0 };
-    std::vector<shared_subscription> subs;
+    auto subs = std::vector<shared_subscription> { };
 
     for(auto i = 0; i < 10; ++i)
         subs.emplace_back(
@@ -185,7 +185,7 @@ TEST(subject_test, can_unsubscribe_while_notification_is_running)
                     std::this_thread::sleep_for(5ms);
                 }));
 
-    std::thread t { [&]() { s.notify(); } };
+    auto t = std::thread { [&]() { s.notify(); } };
 
     for(auto i = 0; i < 100 && call_count == 0; ++i)
         std::this_thread::sleep_for(1ms);

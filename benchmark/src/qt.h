@@ -17,5 +17,5 @@ public slots:
     NOINLINE void inc(int v) { dummy += v; }
 
 public:
-    volatile unsigned long long dummy = 0;
+    volatile unsigned long long dummy { 0 };
 };

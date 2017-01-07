@@ -5,7 +5,7 @@
 #include "utility.h"
 
 static auto const repeat_count = 1'000'000;
-static volatile unsigned long long dummy = 0;
+static volatile auto dummy = 0ull;
 NOINLINE void function(int v) { dummy += v; }
 
 struct Base
@@ -20,15 +20,14 @@ struct Derived : Base
 
 void bench()
 {
-    std::unique_ptr<Base> base = std::make_unique<Derived>();
+    auto base = std::unique_ptr<Base> { std::make_unique<Derived>() };
 
-    auto virtual_duration = benchmark::time_run([&]() { base->function(1); },
-                                                repeat_count);
+    auto virtual_duration = benchmark::time_run([&]() { base->function(1); }, repeat_count);
 
     assert(dummy == repeat_count);
     dummy = 0;
 
-    observable::subject<void(int)> subject;
+    auto subject = observable::subject<void(int)> { };
     subject.subscribe(function).release();
 
     auto subject_duration = benchmark::time_run([&]() { subject.notify(1); },

@@ -105,7 +105,7 @@ TEST(collection_test, removed_element_during_apply_is_not_applied)
 {
     collection<unsigned int> col;
 
-    std::array<collection<unsigned int>::id, 3> ids;
+    auto ids = std::array<collection<unsigned int>::id, 3> { };
     for(auto i = 0u; i < ids.size(); ++i)
         ids[i] = col.insert(i);
 
@@ -124,13 +124,11 @@ TEST(collection_test, can_remove_applied_element)
 {
     collection<unsigned int> col;
 
-    std::array<collection<unsigned int>::id, 3> ids;
+    auto ids = std::array<collection<unsigned int>::id, 3> { };
     for(auto i = 0u; i < ids.size(); ++i)
         ids[i] = col.insert(i);
 
-    col.apply([&](auto i) {
-        col.remove(ids[i]);
-    });
+    col.apply([&](auto i) { col.remove(ids[i]); });
 
     ASSERT_TRUE(col.empty());
 }
@@ -165,7 +163,7 @@ TEST(collection_test, can_insert_elements_in_parallel)
     // This test seems evil, but it fails with a decent probability.
     collection<int> col;
 
-    std::vector<std::thread> ts;
+    auto ts = std::vector<std::thread> { };
     auto ref_sum = 0;
     std::atomic<bool> wait { true };
 
@@ -183,8 +181,8 @@ TEST(collection_test, can_insert_elements_in_parallel)
     for(auto && t : ts)
         t.join();
 
-    std::unordered_set<int> ref_els { 1, 2, 3, 4, 5, 6, 7, 8 };
-    std::unordered_set<int> els;
+    auto ref_els = std::unordered_set<int> { 1, 2, 3, 4, 5, 6, 7, 8 };
+    auto els = std::unordered_set<int> { };
     col.apply([&](auto i) { els.insert(i); });
 
     ASSERT_EQ(ref_els, els);
@@ -195,7 +193,7 @@ TEST(collection_test, can_remove_elements_in_parallel)
     // This test seems evil, but it fails with a decent probability.
     collection<unsigned int> col;
 
-    std::vector<std::thread> ts;
+    auto ts = std::vector<std::thread> { };
     std::array<std::atomic<collection<unsigned int>::id>, 8> ids;
     std::atomic<bool> wait { true };
 
@@ -221,7 +219,7 @@ TEST(collection_test, can_insert_and_remove_in_parallel)
     // This test seems evil, but it fails with a decent probability.
     collection<unsigned int> col;
 
-    std::vector<std::thread> ts;
+    auto ts = std::vector<std::thread> { };
     std::array<
         std::array<std::atomic<collection<unsigned int>::id>, 8>,
         4> ids;
@@ -256,7 +254,7 @@ TEST(collection_test, can_remove_same_node_in_parallel)
         ids[i] = col.insert(i);
 
     std::atomic<bool> wait { true };
-    std::vector<std::thread> ts;
+    auto ts = std::vector<std::thread> { };
     for(auto j = 0; j < 8; ++j)
         ts.emplace_back([&]() {
             while(wait)

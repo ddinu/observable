@@ -89,12 +89,12 @@ public:
     unique_subscription & operator=(unique_subscription &&) =default;
 
 private:
-    std::function<void()> unsubscribe_ = []() { };
+    std::function<void()> unsubscribe_ { []() { } };
 
     // std::call_once with a std::once_flag would have worked, but it requires
     // pthreads on Linux. We're using this in order not to bring in that
     // dependency.
-    std::unique_ptr<std::atomic_flag> called_ = std::make_unique<std::atomic_flag>();
+    std::unique_ptr<std::atomic_flag> called_ { std::make_unique<std::atomic_flag>() };
 };
 
 //! Shared subscriptions will unsubscribe the associated observer when the last

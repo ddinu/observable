@@ -21,19 +21,17 @@ void bench()
         assert(success);
     }
 
-    auto qt_duration = benchmark::time_run([&]() { emit sender.inc(1); },
-                                           repeat_count);
+    auto qt_duration = benchmark::time_run([&]() { emit sender.inc(1); }, repeat_count);
 
     assert(receiver.dummy == repeat_count * sub_count);
     receiver.dummy = 0;
 
-    observable::subject<void(int)> subject;
+    auto subject = observable::subject<void(int)> { };
 
     for(auto i = 0; i < sub_count; ++i)
         subject.subscribe([&](int v) { receiver.inc(v); }).release();
 
-    auto subject_duration = benchmark::time_run([&]() { subject.notify(1); },
-                                                repeat_count);
+    auto subject_duration = benchmark::time_run([&]() { subject.notify(1); }, repeat_count);
 
     assert(receiver.dummy == repeat_count * sub_count);
     receiver.dummy = 0;

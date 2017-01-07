@@ -18,7 +18,7 @@ TEST(unique_subscription_test, can_create_initialized_subscription)
 TEST(unique_subscription_test, unsubscribe_function_is_called)
 {
     auto call_count = 0;
-    unique_subscription sub { [&]() { ++call_count; } };
+    auto sub = unique_subscription { [&]() { ++call_count; } };
 
     sub.unsubscribe();
 
@@ -40,7 +40,7 @@ TEST(unique_subscription_test, calling_unsubscribe_multiple_times_calls_function
 {
     auto call_count = 0;
 
-    unique_subscription sub { [&]() { ++call_count; } };
+    auto sub = unique_subscription { [&]() { ++call_count; } };
     sub.unsubscribe();
     sub.unsubscribe();
 
@@ -72,8 +72,8 @@ TEST(unique_subscription_test, unsubscribing_from_moved_handle_calls_function)
     auto call_count = 0;
 
     {
-        unique_subscription sub { [&]() { ++call_count; } };
-        unique_subscription other = std::move(sub);
+        auto sub = unique_subscription { [&]() { ++call_count; } };
+        auto other = std::move(sub);
         other.unsubscribe();
     }
 

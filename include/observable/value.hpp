@@ -182,7 +182,7 @@ template <typename ValueType, typename EqualityComparator>
 template <typename ValueType_>
 inline auto value<ValueType, EqualityComparator>::set(ValueType_ && new_value) -> void
 {
-    thread_local EqualityComparator const eq { };
+    thread_local auto const eq = EqualityComparator { };
 
     if(eq(new_value, value_))
         return;

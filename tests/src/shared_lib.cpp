@@ -6,7 +6,7 @@ namespace observable { namespace test {
 
 TEST(shared_lib_test, can_subscribe_to_subject_from_inside_shared_lib)
 {
-    subject<void()> s { };
+    auto s = subject<void()> { };
 
     shared::reset_call_count();
     shared::subscribe_in_shared_lib(s);
@@ -17,8 +17,8 @@ TEST(shared_lib_test, can_subscribe_to_subject_from_inside_shared_lib)
 
 TEST(shared_lib_test, can_notify_subject_from_inside_shared_lib)
 {
-    subject<void()> s { };
-    int call_count = 0;
+    auto s = subject<void()> { };
+    auto call_count = 0;
 
     s.subscribe([&]() { ++call_count; }).release();
     shared::notify_void(s);
