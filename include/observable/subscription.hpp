@@ -80,13 +80,13 @@ public:
     unique_subscription(unique_subscription const & ) =delete;
 
     //! This class is not copy-assignable.
-    unique_subscription & operator=(unique_subscription const &) =delete;
+    auto operator=(unique_subscription const &) -> unique_subscription & =delete;
 
     //! This class is move-constructible.
     unique_subscription(unique_subscription &&) = default;
 
     //! This class is move-assignable.
-    unique_subscription & operator=(unique_subscription &&) =default;
+    auto operator=(unique_subscription &&) -> unique_subscription & =default;
 
 private:
     std::function<void()> unsubscribe_ { []() { } };

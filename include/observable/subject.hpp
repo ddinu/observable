@@ -150,7 +150,7 @@ inline auto subject<void(Args ...)>::subscribe(Callable && observer) -> unique_s
                   "The provided observer object is not callable or not compatible"
                   " with the subject");
 
-    auto id = observers_->insert(observer);
+    auto const id = observers_->insert(observer);
 
     return unique_subscription {
         [this, id, weak_observers = std::weak_ptr<collection> { observers_ }]() {
