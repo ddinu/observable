@@ -7,8 +7,8 @@ way to do it? This is for those times.
 Quick start
 -----------
 
-The library is header-only; just copy the ``include/observable`` directory into
-your include path and you're set.
+The library is header-only and has no dependencies; just copy the
+``include/observable`` directory into your include path and you're set.
 
 Observable properties (member values):
 
@@ -91,14 +91,6 @@ for patterns like MVC and reactive programming in general.
 
 Choose whichever library works best for your case; you can even choose them
 both (for example, have your models use this library and your views use Qt). 
-
-What's happening next
----------------------
-
- * Observable collections (wrappers around the standard collections).
- * Operations (+, -, /, *, etc.) for observable values (``value<int> a; value<int> b; value<int> c = a + b;``, 
-   where ``c`` updates when ``a`` or ``b`` change).
- * More complex code examples.
 
 Contributing
 ------------
