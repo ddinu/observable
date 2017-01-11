@@ -5,6 +5,7 @@ include(observable_includes)
 include(default_source_groups)
 
 set(SOURCE_FILES src/detail/collection.cpp
+                 src/detail/expression.cpp
                  src/detail/expression_tree.cpp
                  src/detail/type_traits.cpp
                  src/gtest.h

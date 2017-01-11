@@ -9,6 +9,7 @@ set(SOURCE_FILES include/observable/subject.hpp
                  include/observable/subscription.hpp
                  include/observable/value.hpp
                  include/observable/detail/collection.hpp
+                 include/observable/detail/expression.hpp
                  include/observable/detail/expression_tree.hpp
                  include/observable/detail/type_traits.hpp)
 
