@@ -62,7 +62,7 @@ private:
 //!                   just a subset of expressions.
 //! \warning None of the methods in this class can be safely called concurrently.
 template <typename ValueType, typename UpdateTag>
-class expression
+class expression : public value_updater<ValueType>
 {
     static_assert(std::is_base_of<update_tag, UpdateTag>::value,
                   "UpdateTag needs to be derived from observable::update_tag.");
@@ -81,14 +81,26 @@ public:
 
     //! Evaluate the expression. This will ensure that the expression's result
     //! is up-to-date.
-    void eval() { root_.eval(); }
+    void eval()
+    {
+        root_.eval();
+        value_notifier_(root_.get());
+    }
 
     //! Get the expression's result. If update has not been called, the result
     //! might be stale.
-    auto get() const { return root_.get(); }
+    //!
+    //! \see value_updater<ValueType>::get
+    virtual auto get() const -> ValueType override { return root_.get(); }
+
+    //! \see value_updater<ValueType>::set_value_notifier
+    virtual void set_value_notifier(std::function<void(ValueType &&)> const & notifier) override
+    {
+        value_notifier_ = notifier;
+    }
 
     //! Destructor.
-    ~expression() { update_tag_.remove(expression_id_); }
+    virtual ~expression() { update_tag_.remove(expression_id_); }
 
 public:
     //! Expressions are default-constructible.
@@ -101,10 +113,10 @@ public:
     auto operator=(expression const &) -> expression & =delete;
 
     //! Expressions are move-constructible.
-    expression(expression &&) noexcept =default;
+    expression(expression &&) =default;
 
     //! Expressions are move-assignable.
-    auto operator=(expression &&) noexcept -> expression & =default;
+    auto operator=(expression &&) -> expression & =default;
 
 protected:
     //! Return the expression tree's root node.
@@ -114,6 +126,7 @@ private:
     expression_node<ValueType> root_;
     UpdateTag update_tag_;
     typename UpdateTag::id expression_id_;
+    std::function<void(ValueType &&)> value_notifier_ { [](auto &&) { } };
 };
 
 //! Update tag used for expressions that are updated immediately whenever
@@ -142,7 +155,7 @@ public:
     explicit expression(expression_node<ValueType> && root) :
         expression<ValueType, dummy_update_tag>(std::move(root), get_dummy_tag_())
     {
-        sub = root_node().subscribe([this]() { eval(); });
+        sub = root_node().subscribe([&]() { eval(); });
     }
 
 public:

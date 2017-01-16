@@ -45,15 +45,20 @@ public:
     //! Create an initialized observable value.
     //!
     //! \param initial_value The observable's initial value.
-    //! \tparam ValueType_ Initial value type. Must be convertible to the value's
-    //!                    ValueType.
-    template <typename ValueType_>
-    explicit value(ValueType_ && initial_value);
+    explicit value(ValueType initial_value);
 
     //! Create an initialized value that will be updated by the provided updater.
     //!
     //! \param A value updater that will be stored by the value.
-    explicit value(std::unique_ptr<value_updater<ValueType>> && updater);
+    template <typename UpdaterType>
+    explicit value(std::unique_ptr<UpdaterType> && updater) :
+        updater_ { std::move(updater) }
+    {
+        using namespace std::placeholders;
+
+        updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
+        set(updater_->get());
+    }
 
     //! Convert the observable value to its stored value type.
     operator ValueType const &() const noexcept;
@@ -103,11 +108,13 @@ public:
     auto operator=(value const &) -> value & =delete;
 
     //! Observable values are move-constructible.
-    value(value &&)
+    template <typename OtherEqualityComparator>
+    value(value<ValueType, OtherEqualityComparator> && other)
         noexcept(std::is_nothrow_move_constructible<ValueType>::value);
 
     //! Observable values are move-assignable.
-    auto operator=(value &&)
+    template <typename OtherEqualityComparator>
+    auto operator=(value<ValueType, OtherEqualityComparator> && other)
         noexcept(std::is_nothrow_move_assignable<ValueType>::value)
         -> value &;
 
@@ -191,20 +198,9 @@ using property = value<ValueType, EqualityComparator, EnclosingType>;
 // Implementation
 
 template <typename ValueType, typename EqualityComparator>
-template <typename ValueType_>
-inline value<ValueType, EqualityComparator>::value(ValueType_ && initial_value) :
-    value_ { std::forward<ValueType_>(initial_value) }
+inline value<ValueType, EqualityComparator>::value(ValueType initial_value) :
+    value_ { std::move(initial_value) }
 {
-}
-
-template<typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::value(std::unique_ptr<value_updater<ValueType>> && updater) :
-    updater_ { std::move(updater) }
-{
-    using namespace std::placeholders;
-
-    updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
-    set(updater_->get());
 }
 
 template <typename ValueType, typename EqualityComparator>
@@ -252,7 +248,8 @@ inline auto value<ValueType, EqualityComparator>::subscribe(Callable && callable
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::value(value<ValueType, EqualityComparator> && other)
+template <typename OtherEqualityComparator>
+inline value<ValueType, EqualityComparator>::value(value<ValueType, OtherEqualityComparator> && other)
     noexcept(std::is_nothrow_move_constructible<ValueType>::value) :
     value_ { std::move(other.value_) },
     void_observers_ { std::move(other.void_observers_) },
@@ -265,7 +262,8 @@ inline value<ValueType, EqualityComparator>::value(value<ValueType, EqualityComp
 }
 
 template <typename ValueType, typename EqualityComparator>
-inline auto value<ValueType, EqualityComparator>::operator=(value<ValueType, EqualityComparator> && other)
+template <typename OtherEqualityComparator>
+inline auto value<ValueType, EqualityComparator>::operator=(value<ValueType, OtherEqualityComparator> && other)
         noexcept(std::is_nothrow_move_assignable<ValueType>::value)
         -> value<ValueType, EqualityComparator> &
 {

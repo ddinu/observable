@@ -15,9 +15,13 @@ struct throwing_value
 
 struct mock_updater : value_updater<int>
 {
-    mock_updater(int initial) : v_ { initial } { }
+    mock_updater(int initial) : v_ { initial }
+    { }
+
     auto get() const -> int override { return v_; }
+
     void set_value_notifier(std::function<void(int &&)> const & f) { fun_ = f; }
+
     void set(int v) { v_ = v; fun_(std::move(v_)); }
 
 private:
@@ -202,9 +206,7 @@ TEST(value_test, can_use_value_enclosed_in_class)
 
 TEST(value_test, can_create_value_from_updater)
 {
-    auto val = value<int> {
-                   std::unique_ptr<value_updater<int>> { new mock_updater { 5 } }
-               };
+    auto val = value<int> { std::make_unique<mock_updater>(5) };
 
     ASSERT_EQ(5, val.get());
 }
@@ -212,7 +214,7 @@ TEST(value_test, can_create_value_from_updater)
 TEST(value_test, value_is_updated_by_the_updater)
 {
     auto updater = new mock_updater { 5 };
-    auto val = value<int> { std::unique_ptr<value_updater<int>> { updater } };
+    auto val = value<int> { std::unique_ptr<mock_updater> { updater } };
     updater->set(7);
 
     ASSERT_EQ(7, val.get());
@@ -221,7 +223,7 @@ TEST(value_test, value_is_updated_by_the_updater)
 TEST(value_test, change_notification_is_triggered_by_the_updater)
 {
     auto updater = new mock_updater { 5 };
-    auto val = value<int> { std::unique_ptr<value_updater<int>> { updater } };
+    auto val = value<int> { std::unique_ptr<mock_updater> { updater } };
 
     auto call_count = 0;
     val.subscribe([&]() { ++call_count; }).release();
@@ -234,7 +236,7 @@ TEST(value_test, change_notification_is_triggered_by_the_updater)
 TEST(value_test, value_is_updated_by_updater_after_move)
 {
     auto updater = new mock_updater { 5 };
-    auto val = value<int> { std::unique_ptr<value_updater<int>> { updater } };
+    auto val = value<int> { std::unique_ptr<mock_updater> { updater } };
 
     auto new_val = std::move(val);
     updater->set(7);

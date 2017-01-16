@@ -1,3 +1,5 @@
+#include <memory>
+#include <utility>
 #include "gtest.h"
 #include "observable/detail/expression.hpp"
 
@@ -104,6 +106,44 @@ TEST(expression_test, can_globally_update_multiple_expressions)
 
     ASSERT_EQ(7, e1.get());
     ASSERT_EQ(17, e2.get());
+}
+
+TEST(expression_test, can_create_value_from_expression)
+{
+    auto val = value<int> {
+                   std::make_unique<expression<int, immediate_update_tag>>(
+                       expression_node<int> { 5 }
+                   )
+               };
+
+    ASSERT_EQ(5, val.get());
+}
+
+TEST(expression_test, expression_change_updates_value)
+{
+    auto val1 = value<int> { 5 };
+    auto val2 = value<int> {
+                    std::make_unique<expression<int, immediate_update_tag>>(
+                        expression_node<int> { val1 }
+                    )
+                };
+
+    val1 = 7;
+
+    ASSERT_EQ(7, val2.get());
+}
+
+TEST(expression_test, can_convert_expression_to_value)
+{
+    auto val1 = value<int> { 5 };
+    auto val2 = value<int> {
+                    std::make_unique<expression<int, immediate_update_tag>>(
+                        expression_node<int> { val1 }
+                    )
+                };
+    val1 = 7;
+
+    ASSERT_EQ(7, val2.get());
 }
 
 } } }
