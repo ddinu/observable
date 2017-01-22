@@ -61,7 +61,7 @@ public:
     }
 
     //! Convert the observable value to its stored value type.
-    operator ValueType const &() const noexcept;
+    explicit operator ValueType const &() const noexcept;
 
     //! Retrieve the stored value.
     auto get() const noexcept -> ValueType const &;

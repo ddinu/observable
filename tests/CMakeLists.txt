@@ -6,9 +6,11 @@ include(default_source_groups)
 
 set(SOURCE_FILES src/detail/collection.cpp
                  src/detail/expression.cpp
+                 src/detail/expression_ops.cpp
                  src/detail/expression_tree.cpp
                  src/detail/type_traits.cpp
                  src/gtest.h
+                 src/observe.cpp
                  src/shared_lib.cpp
                  src/shared_subscription.cpp
                  src/subject.cpp
@@ -16,6 +18,11 @@ set(SOURCE_FILES src/detail/collection.cpp
                  src/value.cpp)
 
 add_executable(tests ${SOURCE_FILES})
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+    set_source_files_properties(src/detail/expression_ops.cpp PROPERTIES
+                                COMPILE_FLAGS /bigobj)
+endif()
 
 configure_compiler(tests)
 add_observable_includes(tests)

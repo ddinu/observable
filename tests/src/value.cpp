@@ -90,7 +90,7 @@ TEST(value_test, getter_is_nothrow)
 TEST(value_test, can_convert_to_value_type)
 {
     auto val = value<int> { 123 };
-    int v = val;
+    auto v = static_cast<int>(val);
 
     ASSERT_EQ(v, 123);
 }

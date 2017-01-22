@@ -12,7 +12,7 @@ TEST(expression_test, can_create_immediate_expression)
 
 TEST(expression_test, can_create_manual_update_expression)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
     auto e = expression<int, some_tag> { expression_node<int> { 5 }, tag };
 }
 
@@ -25,7 +25,7 @@ TEST(expression_test, can_get_immediate_expression_value)
 
 TEST(expression_test, can_get_manual_update_expression_value)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
     auto e = expression<int, some_tag> { expression_node<int> { 5 }, tag };
 
     ASSERT_EQ(5, e.get());
@@ -50,7 +50,7 @@ TEST(expression_test, immediate_update_expression_can_be_manually_updated)
 
 TEST(expression_test, manual_update_expression_is_not_updated_on_change)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
 
     auto val = value<int> { 5 };
     auto e = expression<int, some_tag> { expression_node<int> { val }, tag };
@@ -61,7 +61,7 @@ TEST(expression_test, manual_update_expression_is_not_updated_on_change)
 
 TEST(expression_test, manual_update_expression_can_be_updated)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
 
     auto val = value<int> { 5 };
     auto e = expression<int, some_tag> { expression_node<int> { val }, tag };
@@ -73,13 +73,13 @@ TEST(expression_test, manual_update_expression_can_be_updated)
 
 TEST(expression_test, can_globally_update_arbitrary_empty_tag)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
     tag.eval_all();
 }
 
 TEST(expression_test, can_globally_update_expression)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
 
     auto val = value<int> { 5 };
     auto e = expression<int, some_tag> { expression_node<int> { val }, tag };
@@ -91,7 +91,7 @@ TEST(expression_test, can_globally_update_expression)
 
 TEST(expression_test, can_globally_update_multiple_expressions)
 {
-    struct some_tag : update_tag { } tag;
+    struct some_tag : expression_updater { } tag;
 
     auto val1 = value<int> { 5 };
     auto e1 = expression<int, some_tag> { expression_node<int> { val1 }, tag };

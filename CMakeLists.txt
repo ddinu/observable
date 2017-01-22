@@ -5,11 +5,14 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(default_source_groups)
 
-set(SOURCE_FILES include/observable/subject.hpp
+set(SOURCE_FILES include/observable/observe.hpp
+                 include/observable/subject.hpp
                  include/observable/subscription.hpp
                  include/observable/value.hpp
                  include/observable/detail/collection.hpp
                  include/observable/detail/expression.hpp
+                 include/observable/detail/expression_ops.hpp
+                 include/observable/detail/expression_ops_utility.hpp
                  include/observable/detail/expression_tree.hpp
                  include/observable/detail/type_traits.hpp)
 

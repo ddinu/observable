@@ -14,7 +14,7 @@ namespace observable { namespace detail {
 //!
 //! An update tag will allow you to group expressions so that they can be upgraded
 //! globally for each group.
-class update_tag
+class expression_updater
 {
 public:
     //! Evaluate all expressions registered to be updated by this tag.
@@ -23,7 +23,7 @@ public:
     void eval_all() const { funs_->apply([](auto && f) { f(); }); }
 
     //! Destructor.
-    virtual ~update_tag() { }
+    virtual ~expression_updater() { }
 
 private:
     using eval_collection = collection<std::function<void()>>;
@@ -50,7 +50,7 @@ private:
 private:
     std::shared_ptr<eval_collection> funs_ { std::make_shared<eval_collection>() };
 
-    template <typename ValueType, typename UpdateTag>
+    template <typename ValueType, typename UpdaterType>
     friend class expression;
 };
 
@@ -58,21 +58,21 @@ private:
 //!
 //! \tparam ValueType The expression's result value type. This is what `get()`
 //!                   returns.
-//! \tparam UpdateTag An arbitrary type that will serve to allow globally updating
-//!                   just a subset of expressions.
+//! \tparam UpdaterType An arbitrary type that will serve to allow globally
+//!                     updating just a subset of expressions.
 //! \warning None of the methods in this class can be safely called concurrently.
-template <typename ValueType, typename UpdateTag>
+template <typename ValueType, typename UpdaterType>
 class expression : public value_updater<ValueType>
 {
-    static_assert(std::is_base_of<update_tag, UpdateTag>::value,
-                  "UpdateTag needs to be derived from observable::update_tag.");
+    static_assert(std::is_base_of<expression_updater, UpdaterType>::value,
+                  "UpdaterType needs to be derived from observable::expression_updater.");
 
 public:
     //! Create a new expression from the root of an expression tree.
     //!
     //! \param root Expression tree root.
     //! \param tag Update tag to be used for globally updating the expression.
-    expression(expression_node<ValueType> && root, UpdateTag const & tag) :
+    expression(expression_node<ValueType> && root, UpdaterType const & tag) :
         root_ { std::move(root) },
         update_tag_ { tag }
     {
@@ -124,8 +124,8 @@ protected:
 
 private:
     expression_node<ValueType> root_;
-    UpdateTag update_tag_;
-    typename UpdateTag::id expression_id_;
+    UpdaterType update_tag_;
+    typename UpdaterType::id expression_id_;
     std::function<void(ValueType &&)> value_notifier_ { [](auto &&) { } };
 };
 
@@ -136,7 +136,7 @@ private:
 //! update calls will not do anything.
 struct immediate_update_tag;
 
-struct dummy_update_tag : update_tag { };
+struct dummy_update_tag : expression_updater { };
 
 inline auto get_dummy_tag_()
 {
@@ -146,7 +146,7 @@ inline auto get_dummy_tag_()
 
 //! Specialized expression that is updated immediately.
 //!
-//! \see expression<ValueType, UpdateTag>
+//! \see expression<ValueType, UpdaterType>
 template <typename ValueType>
 class expression<ValueType, immediate_update_tag> :
     public expression<ValueType, dummy_update_tag>
@@ -155,7 +155,7 @@ public:
     explicit expression(expression_node<ValueType> && root) :
         expression<ValueType, dummy_update_tag>(std::move(root), get_dummy_tag_())
     {
-        sub = root_node().subscribe([&]() { eval(); });
+        sub = this->root_node().subscribe([&]() { this->eval(); });
     }
 
 public:

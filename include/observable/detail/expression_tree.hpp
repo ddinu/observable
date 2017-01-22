@@ -9,7 +9,7 @@
 #include "observable/subscription.hpp"
 #include "observable/value.hpp"
 
-namespace observable { namespace detail {
+namespace observable { inline namespace expr {
 
 //! An expression tree can evaluate an arbitrary expression.
 //!
@@ -55,8 +55,8 @@ public:
     //!
     //! Nodes created with this constructor are called value nodes. These nodes
     //! notify their subscribers of value changes as long as the value is alive.
-    template <typename ValueType>
-    explicit expression_node(value<ValueType> & value)
+    template <typename ValueType, typename ... Rest>
+    explicit expression_node(value<ValueType, Rest ...> & value)
     {
         static_assert(std::is_convertible<ValueType, ResultType>::value,
                       "ValueType must be convertible to ResultType.");
