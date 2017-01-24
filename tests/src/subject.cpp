@@ -5,8 +5,8 @@
 #include <type_traits>
 #include <chrono>
 #include <vector>
-#include "gtest.h"
 #include "observable/subject.hpp"
+#include "gtest.h"
 
 namespace observable { namespace test {
 

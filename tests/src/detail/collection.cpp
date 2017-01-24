@@ -1,12 +1,11 @@
 #include <array>
 #include <atomic>
 #include <type_traits>
-#include <memory>
 #include <thread>
 #include <vector>
 #include <unordered_set>
-#include "gtest.h"
 #include "observable/detail/collection.hpp"
+#include "gtest.h"
 
 namespace observable { namespace detail { namespace test {
 

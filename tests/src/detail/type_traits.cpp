@@ -1,6 +1,7 @@
-#include "gtest.h"
+#include <type_traits>
 #include "observable/subject.hpp"
 #include "observable/detail/type_traits.hpp"
+#include "gtest.h"
 
 namespace observable { namespace detail { namespace test {
 

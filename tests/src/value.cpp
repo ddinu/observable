@@ -1,6 +1,6 @@
 #include <type_traits>
-#include "gtest.h"
 #include "observable/value.hpp"
+#include "gtest.h"
 
 namespace observable { namespace test {
 

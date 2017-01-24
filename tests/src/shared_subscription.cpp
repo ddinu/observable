@@ -1,7 +1,7 @@
 #include <memory>
 #include <type_traits>
-#include "gtest.h"
 #include "observable/subscription.hpp"
+#include "gtest.h"
 
 namespace observable { namespace test {
 
