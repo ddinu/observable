@@ -13,9 +13,10 @@ namespace observable { inline namespace expr {
 
 //! An expression tree can evaluate an arbitrary expression.
 //!
-//! The term expression, is intentionally vague as it can be anything. Expressions
-//! are formed from n-ary user-supplied operators and operands that can be
-//! constants, observable values or other nodes.
+//! The term expression, is intentionally vague as it can be anything.
+//!
+//! Expressions are formed from n-ary, user-supplied operators and operands that
+//! can be constants, observable values or other expression nodes.
 //!
 //! The tree will propagate change notifications upwards, so any change
 //! to any value<> contained in the expression will be propagated to the root

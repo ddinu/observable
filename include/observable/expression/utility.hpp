@@ -1,6 +1,6 @@
 #include <type_traits>
 #include "observable/value.hpp"
-#include "observable/detail/expression_tree.hpp"
+#include "observable/expression/tree.hpp"
 
 namespace observable { inline namespace expr { namespace op {
 

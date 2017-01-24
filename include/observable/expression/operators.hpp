@@ -1,6 +1,6 @@
 #pragma once
-#include "observable/detail/expression_ops_utility.hpp"
-#include "observable/detail/expression_tree.hpp"
+#include "observable/expression/utility.hpp"
+#include "observable/expression/tree.hpp"
 
 namespace observable { inline namespace expr {
 

@@ -1,13 +1,13 @@
-#include "gtest.h"
 #include "observable/value.hpp"
-#include "observable/detail/expression_ops.hpp"
-#include "observable/detail/expression_tree.hpp"
+#include "observable/expression/operators.hpp"
+#include "observable/expression/tree.hpp"
+#include "gtest.h"
 
 using observable::value;
 using observable::expression_node;
 
 #define MAKE_UNARY_OP_TEST(NAME, OP, V) \
-TEST(expression_ops_test, NAME) \
+TEST(expression_operators_test, NAME) \
 { \
     auto v = value<decltype(V)> { V }; \
 \
@@ -23,7 +23,7 @@ MAKE_UNARY_OP_TEST(unary_plus, +, 5)
 MAKE_UNARY_OP_TEST(unary_minus, -, 5)
 
 #define MAKE_BINARY_OP_TEST(NAME, A, OP, B) \
-TEST(expression_ops_test, NAME) \
+TEST(expression_operators_test, NAME) \
 { \
     auto va = value<decltype(A)> { A }; \
     auto vb = value<decltype(B)> { B }; \
@@ -59,7 +59,7 @@ MAKE_BINARY_OP_TEST(bitwise_or, 0x1, |, 0x2)
 MAKE_BINARY_OP_TEST(and, true, &&, true)
 MAKE_BINARY_OP_TEST(or, true, ||, false)
 
-TEST(expression_ops_test, node_is_updated)
+TEST(expression_operators_test, node_is_updated)
 {
     auto a = value<int> { 5 };
     auto b = value<int> { 9 };

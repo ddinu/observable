@@ -1,5 +1,5 @@
 #include "observable/value.hpp"
-#include "observable/detail/expression_tree.hpp"
+#include "observable/expression/tree.hpp"
 #include "gtest.h"
 
 namespace observable { namespace detail { namespace test {

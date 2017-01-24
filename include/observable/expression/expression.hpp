@@ -5,33 +5,34 @@
 #include <type_traits>
 #include <utility>
 #include "observable/subscription.hpp"
+#include "observable/value.hpp"
 #include "observable/detail/collection.hpp"
-#include "observable/detail/expression_tree.hpp"
+#include "observable/expression/tree.hpp"
 
-namespace observable { namespace detail {
+namespace observable { inline namespace expr {
 
-//! Extend this type to create a custom update tag.
+//! Expression evaluators can be used to manually evaluate multiple expressions at
+//! the same time.
 //!
-//! An update tag will allow you to group expressions so that they can be upgraded
-//! globally for each group.
-class expression_updater
+//! You can use this type as-is or extend it.
+class expression_evaluator
 {
 public:
-    //! Evaluate all expressions registered to be updated by this tag.
+    //! Evaluate all expressions associated with this evaluator instance.
     //!
     //! \warning This method cannot be safely called concurrently.
     void eval_all() const { funs_->apply([](auto && f) { f(); }); }
 
     //! Destructor.
-    virtual ~expression_updater() { }
+    virtual ~expression_evaluator() { }
 
 private:
-    using eval_collection = collection<std::function<void()>>;
+    using eval_collection = detail::collection<std::function<void()>>;
     using id = eval_collection::id;
 
-    //! Register a new expression to be updated by this tag.
+    //! Register a new expression to be evaluated by this evaluator.
     //!
-    //! \return Id that can be used to unregister the expression.
+    //! \return Instance id that can be used to unregister the expression.
     //! \note This method can be safely called in parallel, from multiple threads.
     template <typename ExpressionType>
     auto insert(ExpressionType * expr)
@@ -40,12 +41,11 @@ private:
         return funs_->insert([=]() { expr->eval(); });
     }
 
-    //! Unregister a previously registered expression from being updated by this
-    //! tag.
+    //! Unregister a previously registered expression.
     //!
-    //! \param i Id that has been returned by `insert()`.
+    //! \param[in] instance_id Id that has been returned by `insert()`.
     //! \note This method can be safely called in parallel, from multiple threads.
-    void remove(id i) { funs_->remove(i); }
+    void remove(id instance_id) { funs_->remove(instance_id); }
 
 private:
     std::shared_ptr<eval_collection> funs_ { std::make_shared<eval_collection>() };
@@ -58,25 +58,27 @@ private:
 //!
 //! \tparam ValueType The expression's result value type. This is what `get()`
 //!                   returns.
-//! \tparam UpdaterType An arbitrary type that will serve to allow globally
-//!                     updating just a subset of expressions.
+//! \tparam EvaluatorType An instance of expression_evaluator or a type derived
+//!                       from it.
 //! \warning None of the methods in this class can be safely called concurrently.
-template <typename ValueType, typename UpdaterType>
+template <typename ValueType, typename EvaluatorType=expression_evaluator>
 class expression : public value_updater<ValueType>
 {
-    static_assert(std::is_base_of<expression_updater, UpdaterType>::value,
-                  "UpdaterType needs to be derived from observable::expression_updater.");
+    static_assert(std::is_base_of<expression_evaluator, EvaluatorType>::value,
+                  "EvaluatorType needs to be derived from expression_evaluator.");
 
 public:
     //! Create a new expression from the root of an expression tree.
     //!
-    //! \param root Expression tree root.
-    //! \param tag Update tag to be used for globally updating the expression.
-    expression(expression_node<ValueType> && root, UpdaterType const & tag) :
+    //! \param[in] root Expression tree root.
+    //! \param[in] evaluator Expression evaluator to be used for globally updating
+    //!                      the expression.
+    expression(expression_node<ValueType> && root,
+               EvaluatorType const & evaluator) :
         root_ { std::move(root) },
-        update_tag_ { tag }
+        evaluator_ { evaluator }
     {
-        expression_id_ = update_tag_.insert(this);
+        expression_id_ = evaluator_.insert(this);
     }
 
     //! Evaluate the expression. This will ensure that the expression's result
@@ -87,8 +89,9 @@ public:
         value_notifier_(root_.get());
     }
 
-    //! Get the expression's result. If update has not been called, the result
-    //! might be stale.
+    //! Get the expression's result.
+    //!
+    //! If eval() has not been called, the result might be stale.
     //!
     //! \see value_updater<ValueType>::get
     virtual auto get() const -> ValueType override { return root_.get(); }
@@ -100,7 +103,7 @@ public:
     }
 
     //! Destructor.
-    virtual ~expression() { update_tag_.remove(expression_id_); }
+    virtual ~expression() { evaluator_.remove(expression_id_); }
 
 public:
     //! Expressions are default-constructible.
@@ -124,36 +127,41 @@ protected:
 
 private:
     expression_node<ValueType> root_;
-    UpdaterType update_tag_;
-    typename UpdaterType::id expression_id_;
+    EvaluatorType evaluator_;
+    typename EvaluatorType::id expression_id_;
     std::function<void(ValueType &&)> value_notifier_ { [](auto &&) { } };
 };
 
-//! Update tag used for expressions that are updated immediately whenever
-//! an expression node changes.
+//! Evaluator used for expressions that are updated immediately, whenever an
+//! expression node changes.
 //!
-//! Expressions tagged with this type do not need manual updates. Any manual
+//! Expressions associated with this type do not need manual updates. Any manual
 //! update calls will not do anything.
-struct immediate_update_tag;
+struct immediate_evaluator : expression_evaluator { };
 
-struct dummy_update_tag : expression_updater { };
-
-inline auto get_dummy_tag_()
+//! \cond
+inline auto get_dummy_evaluator_()
 {
-    static dummy_update_tag dummy_tag;
-    return dummy_tag;
+    static expression_evaluator ev;
+    return ev;
 }
+//! \endcond
 
-//! Specialized expression that is updated immediately.
+//! Specialized expression that is updated immediately, whenever an expression
+//! node changes.
 //!
-//! \see expression<ValueType, UpdaterType>
+//! \see expression<ValueType, EvaluatorType>
 template <typename ValueType>
-class expression<ValueType, immediate_update_tag> :
-    public expression<ValueType, dummy_update_tag>
+class expression<ValueType, immediate_evaluator> :
+    public expression<ValueType, expression_evaluator>
 {
 public:
+    //! Create a new expression from an expression node.
+    //!
+    //! \param[in] root Expression node that is the root of an expression tree.
     explicit expression(expression_node<ValueType> && root) :
-        expression<ValueType, dummy_update_tag>(std::move(root), get_dummy_tag_())
+        expression<ValueType, expression_evaluator>(std::move(root),
+                                                    get_dummy_evaluator_())
     {
         sub = this->root_node().subscribe([&]() { this->eval(); });
     }
