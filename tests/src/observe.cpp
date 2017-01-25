@@ -199,4 +199,54 @@ TEST(observe_test, expression_with_manual_update_does_not_trigger_change_notific
     ASSERT_EQ(0, call_count);
 }
 
+TEST(observe_test, chained_values_with_immediate_update_are_updated)
+{
+    auto a = value<int> { 1 };
+    auto v1 = observe(a);
+    auto v2 = observe(v1);
+
+    a = 3;
+
+    ASSERT_TRUE(3, v2.get());
+}
+
+TEST(observe_test, chained_expressions_with_immediate_update_are_updated)
+{
+    auto a = value<int> { 1 };
+    auto v1 = observe(a + 2);
+    auto v2 = observe(v1 + 2);
+
+    a = 3;
+
+    ASSERT_TRUE(7, v2.get());
+}
+
+TEST(observe_test, chained_values_with_manual_update_are_updated)
+{
+    auto test_updater = updater { };
+
+    auto a = value<int> { 1 };
+    auto v1 = observe(test_updater, a);
+    auto v2 = observe(test_updater, v1);
+
+    a = 3;
+    test_updater.update();
+
+    ASSERT_TRUE(3, v2.get());
+}
+
+TEST(observe_test, chained_expressions_with_manual_update_are_updated)
+{
+    auto test_updater = updater { };
+
+    auto a = value<int> { 1 };
+    auto v1 = observe(test_updater, a + 2);
+    auto v2 = observe(test_updater, v1 + 2);
+
+    a = 3;
+    test_updater.update();
+
+    ASSERT_TRUE(7, v2.get());
+}
+
 } }
