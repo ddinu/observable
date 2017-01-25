@@ -70,7 +70,7 @@ TEST(expression_test, manual_update_expression_can_be_updated)
     ASSERT_EQ(7, e.get());
 }
 
-TEST(expression_test, can_globally_update_arbitrary_empty_tag)
+TEST(expression_test, can_globally_update_arbitrary_empty_evaluator)
 {
     auto ev = expression_evaluator { };
     ev.eval_all();
