@@ -36,7 +36,7 @@ public:
     //! Only the first call of this method will have an effect.
     //!
     //! \note If release() has been called, this method will have no effect.
-    auto unsubscribe()
+    void unsubscribe()
     {
         if(!called_ || !unsubscribe_ || called_->test_and_set())
             return;
@@ -109,6 +109,8 @@ class shared_subscription final
 public:
     //! Create a shared subscription from a r-value unique subscription.
     //!
+    //! \param subscription An unique subscription that will be converted to a
+    //!                     shared subscription.
     //! \note The unique subscription will be released.
     explicit shared_subscription(unique_subscription && subscription) :
         unsubscribe_ { std::make_shared<unique_subscription>(std::move(subscription)) }
@@ -123,7 +125,7 @@ public:
     //! Unsubscribe the associated observer from receiving notifications.
     //!
     //! Only the first call of this method will have an effect.
-    auto unsubscribe()
+    void unsubscribe()
     {
         unsubscribe_.reset();
     }

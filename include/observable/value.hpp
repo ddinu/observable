@@ -49,7 +49,7 @@ public:
 
     //! Create an initialized value that will be updated by the provided updater.
     //!
-    //! \param A value updater that will be stored by the value.
+    //! \param updater A value updater that will be stored by the value.
     template <typename UpdaterType>
     explicit value(std::unique_ptr<UpdaterType> && updater) :
         updater_ { std::move(updater) }

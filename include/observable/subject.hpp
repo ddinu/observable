@@ -85,7 +85,7 @@ public:
     //!
     //! \warning If notify() is called from multiple threads, all observers must
     //!          be safe to call from multiple threads.
-    auto notify(Args ... arguments) const -> void;
+    void notify(Args ... arguments) const;
 
 public:
     //! Constructor. Will create an empty subject.

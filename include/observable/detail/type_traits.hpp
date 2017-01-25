@@ -5,16 +5,12 @@
 namespace observable { namespace detail {
 
 //! Check if a callable type is compatible with an observer type.
-//!
-//! \internal
 template <typename CallableType, typename ObserverType>
 using is_compatible_with_observer = std::is_convertible<
                                         CallableType,
                                         std::function<ObserverType>>;
 
 //! Check if a callable type can be used to subscribe to a subject.
-//!
-//! \internal
 template <typename CallableType, typename SubjectType>
 using is_compatible_with_subject = is_compatible_with_observer<
                                         CallableType,

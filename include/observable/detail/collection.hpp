@@ -13,7 +13,6 @@ namespace observable { namespace detail {
 //!
 //! \tparam ValueType Type of the elements that will be stored inside the
 //!                   collection. This type must be at least move constructible.
-//! \internal
 template <typename ValueType>
 class collection final
 {
@@ -105,7 +104,7 @@ public:
     //! \param[in] fun A functor that will be called with each element of the
     //!            collection.
     template <typename UnaryFunctor>
-    auto apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
+    void apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
     {
         auto const block_gc = gc_blocker { this };
 
