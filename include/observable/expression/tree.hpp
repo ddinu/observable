@@ -99,7 +99,7 @@ public:
         subscribe_to_nodes(nodes ...);
 
         data_->eval = [t = std::make_tuple(std::move(nodes) ...),
-                       o= std::forward<OpType>(op),
+                       o = std::forward<OpType>(op),
                        d = data_.get()]() mutable {
                           if(!d->dirty)
                               return;
@@ -151,7 +151,7 @@ private:
     {
         data_->subs.emplace_back(
                     head.subscribe([d = data_.get()]() {
-                                    d->dirty = true;
+                                        d->dirty = true;
                                         d->notify();
                                     }));
 

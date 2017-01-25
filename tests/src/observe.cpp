@@ -207,7 +207,7 @@ TEST(observe_test, chained_values_with_immediate_update_are_updated)
 
     a = 3;
 
-    ASSERT_TRUE(3, v2.get());
+    ASSERT_EQ(3, v2.get());
 }
 
 TEST(observe_test, chained_expressions_with_immediate_update_are_updated)
@@ -218,7 +218,7 @@ TEST(observe_test, chained_expressions_with_immediate_update_are_updated)
 
     a = 3;
 
-    ASSERT_TRUE(7, v2.get());
+    ASSERT_EQ(7, v2.get());
 }
 
 TEST(observe_test, chained_values_with_manual_update_are_updated)
@@ -232,7 +232,7 @@ TEST(observe_test, chained_values_with_manual_update_are_updated)
     a = 3;
     test_updater.update();
 
-    ASSERT_TRUE(3, v2.get());
+    ASSERT_EQ(3, v2.get());
 }
 
 TEST(observe_test, chained_expressions_with_manual_update_are_updated)
@@ -246,7 +246,7 @@ TEST(observe_test, chained_expressions_with_manual_update_are_updated)
     a = 3;
     test_updater.update();
 
-    ASSERT_TRUE(7, v2.get());
+    ASSERT_EQ(7, v2.get());
 }
 
 } }

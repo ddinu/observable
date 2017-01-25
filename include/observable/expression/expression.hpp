@@ -2,11 +2,12 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <type_traits>
 #include <utility>
+#include <unordered_map>
 #include "observable/subscription.hpp"
 #include "observable/value.hpp"
-#include "observable/detail/collection.hpp"
 #include "observable/expression/tree.hpp"
 
 namespace observable { inline namespace expr {
@@ -21,14 +22,17 @@ public:
     //! Evaluate all expressions associated with this evaluator instance.
     //!
     //! \warning This method cannot be safely called concurrently.
-    void eval_all() const { funs_->apply([](auto && f) { f(); }); }
+    void eval_all() const
+    {
+        for(auto && kv : data_->funs)
+            kv.second();
+    }
 
     //! Destructor.
     virtual ~expression_evaluator() { }
 
 private:
-    using eval_collection = detail::collection<std::function<void()>>;
-    using id = eval_collection::id;
+    using id = void const *;
 
     //! Register a new expression to be evaluated by this evaluator.
     //!
@@ -38,17 +42,29 @@ private:
     auto insert(ExpressionType * expr)
     {
         assert(expr);
-        return funs_->insert([=]() { expr->eval(); });
+
+        std::lock_guard<std::mutex> const lock { data_->mutex };
+        data_->funs.emplace(expr, [=]() { expr->eval(); });
+        return id { expr };
     }
 
     //! Unregister a previously registered expression.
     //!
     //! \param[in] instance_id Id that has been returned by `insert()`.
     //! \note This method can be safely called in parallel, from multiple threads.
-    void remove(id instance_id) { funs_->remove(instance_id); }
+    void remove(id instance_id)
+    {
+        std::lock_guard<std::mutex> const lock { data_->mutex };
+        data_->funs.erase(instance_id);
+    }
 
 private:
-    std::shared_ptr<eval_collection> funs_ { std::make_shared<eval_collection>() };
+    struct data {
+        std::unordered_map<id, std::function<void()>> funs;
+        std::mutex mutex;
+    };
+
+    std::shared_ptr<data> data_ { std::make_shared<data>() };
 
     template <typename ValueType, typename UpdaterType>
     friend class expression;
