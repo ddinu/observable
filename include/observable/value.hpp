@@ -276,6 +276,8 @@ inline auto value<ValueType, EqualityComparator>::operator=(value<ValueType, Oth
 
     if(updater_)
         updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
+
+    return *this;
 }
 
 }
