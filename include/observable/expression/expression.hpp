@@ -1,11 +1,11 @@
 #pragma once
 #include <cassert>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <type_traits>
 #include <utility>
-#include <unordered_map>
 #include "observable/subscription.hpp"
 #include "observable/value.hpp"
 #include "observable/expression/tree.hpp"
@@ -21,17 +21,23 @@ class expression_evaluator
 public:
     //! Evaluate all expressions associated with this evaluator instance.
     //!
-    //! \warning This method cannot be safely called concurrently.
+    //! \note This method can be safely called in parallel.
     void eval_all() const
     {
-        for(auto && kv : data_->funs)
-            kv.second();
+        std::lock_guard<std::mutex> const lock { data_->mutex };
+        for(auto && p : data_->funs)
+            p.second();
     }
 
     //! Destructor.
     virtual ~expression_evaluator() { }
 
 private:
+    // Expressions are inserted and removed in the order in which they are
+    // created. Evaluating them in this order guarantees that the evaluation
+    // order is correct (insert is called from the constructor, nothing can
+    // have a dependency on the inserted expression yet).
+
     using id = void const *;
 
     //! Register a new expression to be evaluated by this evaluator.
@@ -42,9 +48,9 @@ private:
     auto insert(ExpressionType * expr)
     {
         assert(expr);
-
         std::lock_guard<std::mutex> const lock { data_->mutex };
-        data_->funs.emplace(expr, [=]() { expr->eval(); });
+
+        data_->funs.emplace_back(expr, [=]() { expr->eval(); });
         return id { expr };
     }
 
@@ -55,12 +61,18 @@ private:
     void remove(id instance_id)
     {
         std::lock_guard<std::mutex> const lock { data_->mutex };
-        data_->funs.erase(instance_id);
+
+        auto const it = find_if(begin(data_->funs),
+                                end(data_->funs),
+                                [&](auto && p) { return p.first == instance_id; });
+        assert(it != end(data_->funs));
+        if(it != end(data_->funs))
+            data_->funs.erase(it);
     }
 
 private:
     struct data {
-        std::unordered_map<id, std::function<void()>> funs;
+        std::deque<std::pair<id, std::function<void()>>> funs;
         std::mutex mutex;
     };
 
