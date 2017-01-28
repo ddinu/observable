@@ -195,6 +195,16 @@ template <typename ValueType,
           typename EqualityComparator=std::equal_to<>>
 using property = value<ValueType, EqualityComparator, EnclosingType>;
 
+//! Check if a type is a value.
+template <typename T>
+struct is_value_ : std::false_type { };
+
+template <typename T>
+struct is_value_<value<T>> : std::true_type { };
+
+template <typename T>
+struct is_value : is_value_<std::decay_t<T>> { };
+
 // Implementation
 
 template <typename ValueType, typename EqualityComparator>

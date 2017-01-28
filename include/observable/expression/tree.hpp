@@ -91,7 +91,7 @@ public:
     //! Nodes created with this constructor are called unary nodes. These nodes
     //! notify their subscribers of value changes.
     template <typename OpType, typename ... ValueType>
-    expression_node(OpType && op, expression_node<ValueType> && ... nodes)
+    explicit expression_node(OpType && op, expression_node<ValueType> && ... nodes)
     {
         static_assert(std::is_convertible<decltype(op(ValueType {} ...)), ResultType>::value,
                       "Operation must return a type that is convertible to ResultType.");
@@ -197,5 +197,15 @@ private:
 
     std::shared_ptr<data> data_ { std::make_shared<data>() };
 };
+
+//! Check if a type is an expression node.
+template <typename T>
+struct is_expression_node_ : std::false_type { };
+
+template <typename T>
+struct is_expression_node_<expression_node<T>> : std::true_type { };
+
+template <typename T>
+struct is_expression_node : is_expression_node_<std::decay_t<T>> { };
 
 } }

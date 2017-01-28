@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include "observable/expression/utility.hpp"
 #include "observable/expression/tree.hpp"
 
@@ -8,21 +9,11 @@ namespace observable { inline namespace expr {
 
 #define OBSERVABLE_MAKE_UNARY_OP(OP) \
 template <typename T> \
-inline auto operator OP (value<T> & arg) -> expression_node<decltype(OP op::var_type(arg))> \
+inline auto operator OP (T && arg) noexcept(noexcept(OP op::declval<T>())) \
+    -> std::enable_if_t<op::is_observable<T>::value, \
+                        expression_node<decltype(OP op::declval<T>())>> \
 { \
-    return { \
-        [](auto && v) { return OP v; }, \
-        expression_node<T> { arg } \
-    }; \
-} \
-\
-template <typename T> \
-inline auto operator OP (expression_node<T> && arg) -> expression_node<decltype(OP op::var_type(arg))> \
-{ \
-    return { \
-        [](auto && v) { return OP v; }, \
-        std::move(arg) \
-    }; \
+    return op::make_node([](auto && v) { return OP v; }, std::forward<T>(arg)); \
 }
 
 OBSERVABLE_MAKE_UNARY_OP(!)
@@ -35,94 +26,77 @@ OBSERVABLE_MAKE_UNARY_OP(-)
 #define OBSERVABLE_MAKE_BINARY_OP(OP) \
 template <typename A, typename B> \
 inline auto operator OP (value<A> & a, B && b) \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
     -> std::enable_if_t<!op::is_observable<B>::value, \
-                        expression_node<decltype(op::var_type(a) OP op::var_type(b))>> \
+                        expression_node<decltype(op::declval<A>() OP op::declval<B>())>> \
 { \
-    return  { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        expression_node<A> { a }, \
-        expression_node<std::decay_t<B>> { std::forward<B>(b) } \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         a, std::forward<B>(b)); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (A && a, value<B> & b) \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
     -> std::enable_if_t<!op::is_observable<A>::value, \
-                        expression_node<decltype(op::var_type(a) OP op::var_type(b))>> \
+                        expression_node<decltype(op::declval<A>() OP op::declval<B>())>> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        expression_node<std::decay_t<A>> { std::forward<A>(a) }, \
-        expression_node<B> { b } \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         std::forward<A>(a), b); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (value<A> & a, value<B> & b) \
-    -> expression_node<decltype(op::var_type(a) OP op::var_type(b))> \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
+    -> expression_node<decltype(op::declval<A>() OP op::declval<B>())> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        expression_node<A> { a }, \
-        expression_node<B> { b } \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, a, b); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (expression_node<A> && a, B && b) \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
     -> std::enable_if_t<!op::is_observable<B>::value, \
-                        expression_node<decltype(op::var_type(a) OP op::var_type(b))>> \
+                        expression_node<decltype(op::declval<A>() OP op::declval<B>())>> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        std::move(a), \
-        expression_node<std::decay_t<B>> { std::forward<B>(b) } \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         std::move(a), std::forward<B>(b)); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (A && a, expression_node<B> && b) \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
     -> std::enable_if_t<!op::is_observable<A>::value, \
-                        expression_node<decltype(op::var_type(a) OP op::var_type(b))>> \
+                        expression_node<decltype(op::declval<A>() OP op::declval<B>())>> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        expression_node<std::decay_t<A>> { std::forward<A>(a) }, \
-        std::move(b) \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         std::forward<A>(a), std::move(b)); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (expression_node<A> && a, expression_node<B> && b) \
-    -> expression_node<decltype(op::var_type(a) OP op::var_type(b))> \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
+    -> expression_node<decltype(op::declval<A>() OP op::declval<B>())> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        std::move(a), \
-        std::move(b) \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         std::move(a), std::move(b)); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (value<A> & a, expression_node<B> && b) \
-    -> expression_node<decltype(op::var_type(a) OP op::var_type(b))> \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
+    -> expression_node<decltype(op::declval<A>() OP op::declval<B>())> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        expression_node<A> { a }, \
-        std::move(b) \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         a, std::move(b)); \
 } \
 \
 template <typename A, typename B> \
 inline auto operator OP (expression_node<A> && a, value<B> & b) \
-    -> expression_node<decltype(op::var_type(a) OP op::var_type(b))> \
+    noexcept(noexcept(op::declval<A>() OP op::declval<B>())) \
+    -> expression_node<decltype(op::declval<A>() OP op::declval<B>())> \
 { \
-    return { \
-        [](auto && av, auto && bv) { return av OP bv; }, \
-        std::move(a), \
-        expression_node<B> { b } \
-    }; \
+    return op::make_node([](auto && av, auto && bv) { return av OP bv; }, \
+                         std::move(a), b); \
 }
 
 OBSERVABLE_MAKE_BINARY_OP(*)
