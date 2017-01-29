@@ -4,12 +4,13 @@
 
 namespace observable { namespace detail {
 
-//! Thread-safe collection that can store items and can apply a functor over them.
+//! Thread-safe collection that can store arbitrary items and apply a functor over
+//! them.
 //!
 //! All methods of the collection can be safely called in parallel, from multiple
 //! threads.
 //!
-//! \note The order of elements inside the collection is unspecified.
+//! \warning The order of elements inside the collection is unspecified.
 //!
 //! \tparam ValueType Type of the elements that will be stored inside the
 //!                   collection. This type must be at least move constructible.
@@ -17,8 +18,8 @@ template <typename ValueType>
 class collection final
 {
 public:
-    //! Identifier for an element that has been inserted. You can use this to
-    //! remove a previously inserted object.
+    //! Identifier for an element that has been inserted. You can use this id to
+    //! remove a previously inserted element.
     using id = std::size_t;
 
     //! Create an empty collection.
@@ -30,11 +31,11 @@ public:
     //! \tparam ValueType_ Type of the inserted element. Must be convertible to
     //!                    the collection's ValueType.
     //!
-    //! \return An id that can be used to remove the inserted element.
-    //!         This id is stable; you can use it even after mutating the
+    //! \return An \ref id that can be used to remove the inserted element.
+    //!         This \ref id is stable; you can use it after modifying the
     //!         collection.
     //!
-    //! \note Any apply() call running concurrently with an insert(), that has
+    //! \note Any apply() call running concurrently with an insert() that has
     //!       already called its functor for at least one element, is guaranteed
     //!       to not call the functor for this newly inserted element.
     template <typename ValueType_>
@@ -61,16 +62,17 @@ public:
 
     //! Remove a previously inserted element from the collection.
     //!
-    //! If no element with the provided id exists, this method does nothing.
+    //! If no element with the provided \ref id exists, this method does nothing.
     //!
-    //! \param[in] element_id Id returned by insert.
+    //! \param[in] element_id Id of the element to remove. This is returned by
+    //!                       insert.
     //!
     //! \return True if an element of the collection was removed, false if no
     //!         element has been removed.
     //!
-    //! \note Any apply() call running concurrently with a remove() call,
-    //!       that has not already called its functor with the removed element,
-    //!       is guaranteed to not call the functor with the removed element.
+    //! \note Any apply() call running concurrently with a remove() call that has
+    //!       not already called its functor with the removed element, is
+    //!       guaranteed to not call the functor with the removed element.
     auto remove(id const & element_id) noexcept
     {
         auto deleted = false;
@@ -91,18 +93,22 @@ public:
         return deleted;
     }
 
-    //! Apply an unary functor over all elements of the collection.
+    //! Apply a unary functor over all elements of the collection.
     //!
-    //! The functor will be called with each element, in an unspecified order.
+    //! The functor will be called multiple times, with each element, in an
+    //! unspecified order.
     //!
-    //! \note This method is reentrant; you can call insert and remove on the
+    //! \note This method is reentrant; you can call insert() and remove() on the
     //!       collection from inside the functor.
     //!
     //! \note It is well defined and supported to remove() the element passed
     //!       to the functor, even before the functor returns.
     //!
     //! \param[in] fun A functor that will be called with each element of the
-    //!            collection.
+    //!                collection. The functor must be assignable to a
+    //!                ``std::function<void(ValueType const &)>``.
+    //!
+    //! \tparam UnaryFunctor Type of the ``fun`` parameter.
     template <typename UnaryFunctor>
     void apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
     {
@@ -117,7 +123,7 @@ public:
         }
     }
 
-    //! Check if the collection is empty.
+    //! Return true if the collection has no elements.
     auto empty() const noexcept
     {
         auto const block_gc = gc_blocker { this };

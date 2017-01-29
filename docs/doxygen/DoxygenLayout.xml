@@ -3,9 +3,11 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="user" visible="yes" url=".." title="Documentation Home"/>
-    <tab type="mainpage" visible="no" title="Reference"/>
-    <tab type="classlist" visible="yes" title="" intro=""/>
+    <tab type="mainpage" visible="no" title=""/>
+    <tab type="namespaces" visible="yes" title=""/>
+    <tab type="classes" visible="no" title=""/>
     <tab type="files" visible="no" title=""/>
+    <tab type="examples" visible="no" title=""/>
   </navindex>
 
   <!-- Layout definition for a class page -->

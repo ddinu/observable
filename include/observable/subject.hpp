@@ -8,11 +8,12 @@
 
 namespace observable {
 
+//! \cond
 template <typename ...>
 class subject;
+//! \endcond
 
-//! A subject stores observers and provides a way to notify them when the notify()
-//! method is called.
+//! Store observers and provide a way to notify them when events occur.
 //!
 //! Observers are objects that satisfy the Callable concept and can be stored
 //! inside a ``std::function<void(Args ...)>``.
@@ -53,10 +54,10 @@ public:
     //! \return An unique subscription that can be used to unsubscribe the
     //!         provided observer from receiving notifications from this subject.
     //!
-    //! \warning Observers must be valid and callable for as long as they are
+    //! \warning Observers must be valid to be called for as long as they are
     //!          subscribed and there is a possibility to be called.
     //!
-    //! \warning Observers must be safe to be called in parallel if the notify()
+    //! \warning Observers must be safe to be called in parallel, if the notify()
     //!          method will be called from multiple threads.
     template <typename Callable>
     auto subscribe(Callable && observer) -> unique_subscription;
@@ -68,7 +69,7 @@ public:
     //!
     //! You can safely call this method in parallel, from multiple threads.
     //!
-    //! \note Observers subscribed during a notify call will not be called as
+    //! \note Observers subscribed during a notify call, will not be called as
     //!       part of the notify call during which they were added.
     //!
     //! \note Observers removed during the notify call, before they themselves
@@ -80,8 +81,8 @@ public:
     //! \param[in] arguments Arguments that will be forwarded to the subscribed
     //!                      observers.
     //!
-    //! \warning All observers that will be called by a notify() call must
-    //!          remain valid and callable for the duration of the notify() call.
+    //! \warning All observers that will be called by notify() must remain valid
+    //!          to be called for the duration of the notify() call.
     //!
     //! \warning If notify() is called from multiple threads, all observers must
     //!          be safe to call from multiple threads.
@@ -109,20 +110,19 @@ private:
     std::shared_ptr<collection> observers_ { std::make_shared<collection>() };
 };
 
-//! This subject specialization can be used inside a class, as a member to
-//! prevent external code from calling notify() but still allow anyone to
+//! Subject specialization that can be used inside a class, as a member, to
+//! prevent external code from calling notify(), but still allow anyone to
 //! subscribe.
 //!
 //! \note Except for the notify() method being private, this specialization is
 //!       exactly the same as a regular subject.
-//!
-//! \see subject<void(Args ...)>
 //!
 //! \tparam ObserverType The function type of the observers that will subscribe
 //!                      to notifications.
 //!
 //! \tparam EnclosingType This type will be declared a friend of the subject and
 //!                       will have access to the notify() method.
+//! \see subject<void(Args ...)>
 template <typename ObserverType, typename EnclosingType>
 class subject<ObserverType, EnclosingType> : public subject<ObserverType>
 {
@@ -135,10 +135,6 @@ private:
 
     friend EnclosingType;
 };
-
-//! Convenience alias.
-template <typename ObserverType, typename EnclosingType>
-using event = subject<ObserverType, EnclosingType>;
 
 // Implementation
 

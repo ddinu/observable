@@ -10,6 +10,7 @@
 
 namespace observable {
 
+//! \cond
 template <typename ValueType,
           typename EqualityComparator=std::equal_to<>,
           typename ...>
@@ -17,8 +18,9 @@ class value;
 
 template <typename ValueType>
 class value_updater;
+//! \endcond
 
-//! Observable values provide a way to get notified when a value-type changes.
+//! Get notified when a value-type changes.
 //!
 //! When setting a new value, if the new value is different than the existing one,
 //! any subscribed observers will be notified.
@@ -28,7 +30,8 @@ class value_updater;
 //! \tparam ValueType The value-type that will be stored inside the observable.
 //!                   This type will need to be at least movable.
 //! \tparam EqualityComparator A comparator to use when checking if new values
-//!                            are different than the stored value.
+//!                            are different than the stored value. Default is
+//!                            ``std::equal_to<>``.
 template <typename ValueType, typename EqualityComparator>
 class value<ValueType, EqualityComparator>
 {
@@ -47,16 +50,20 @@ public:
     //! \param initial_value The observable's initial value.
     explicit value(ValueType initial_value);
 
-    //! Create an initialized value that will be updated by the provided updater.
+    //! Create an initialized value that will be updated by the provided
+    //! value_updater.
     //!
-    //! \param updater A value updater that will be stored by the value.
+    //! \param ud A value_updater that will be stored by the value.
     template <typename UpdaterType>
-    explicit value(std::unique_ptr<UpdaterType> && updater) :
-        updater_ { std::move(updater) }
+    explicit value(std::unique_ptr<UpdaterType> && ud) :
+        updater_ { std::move(ud) }
     {
         using namespace std::placeholders;
 
-        updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
+        updater_->set_value_notifier(
+                    std::bind(&value<ValueType, EqualityComparator>::set<ValueType>,
+                              this,
+                              _1));
         set(updater_->get());
     }
 
@@ -72,13 +79,15 @@ public:
     //!
     //! \tparam Callable A callable taking no parameters or a callable taking one
     //!                  parameter that will be called with the new value:
+    //!
     //!                  - ``void()`` -- will be called when the value changes but
     //!                    will not receive the new value.
+    //!
     //!                  - ``void(T const &)`` or ``void(T)`` -- will be called
     //!                    with the new value. The expression
     //!                    ``T { value.get() }`` must be correct.
     //!
-    //! \see subject::subscribe()
+    //! \see subject<void(Args ...)>::subscribe()
     template <typename Callable>
     auto subscribe(Callable && callable) -> unique_subscription;
 
@@ -90,13 +99,13 @@ public:
     //! \param new_value The new value to set.
     //! \tparam ValueType_ The new value's actual type. Must be convertible to
     //!                    the value's ValueType.
-    //! \see subject::notify()
+    //! \see subject<void(Args ...)>::notify()
     template <typename ValueType_>
-    auto set(ValueType_ && new_value) -> void;
+    void set(ValueType_ && new_value);
 
-    //! Set a new value. Will just call set().
+    //! Set a new value. Will just call set(ValueType_ &&).
     //!
-    //! \see set()
+    //! \see set(ValueType_ &&)
     template <typename ValueType_>
     auto operator=(ValueType_ && new_value) -> value &;
 
@@ -147,7 +156,9 @@ private:
     std::unique_ptr<value_updater<ValueType>> updater_;
 };
 
-//! Observable values provide a way to get notified when a value-type changes.
+//! Value specialization that can be used inside a class, as a member, to
+//! prevent external code from calling set(), but still allow anyone to
+//! subscribe.
 //!
 //! \see value<ValueType, EqualityComparator>
 //!
@@ -171,7 +182,7 @@ private:
     friend EnclosingType;
 };
 
-//! Interface used to update a value when something happens.
+//! Interface used to update a value.
 template <typename ValueType>
 class value_updater
 {
@@ -189,19 +200,15 @@ public:
     virtual ~value_updater() { }
 };
 
-//! Convenience alias.
-template <typename ValueType,
-          typename EnclosingType,
-          typename EqualityComparator=std::equal_to<>>
-using property = value<ValueType, EqualityComparator, EnclosingType>;
-
-//! Check if a type is a value.
+//! \cond
 template <typename T>
 struct is_value_ : std::false_type { };
 
 template <typename T>
 struct is_value_<value<T>> : std::true_type { };
+//! \endcond
 
+//! Check if a type is a value.
 template <typename T>
 struct is_value : is_value_<std::decay_t<T>> { };
 

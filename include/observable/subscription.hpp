@@ -5,19 +5,16 @@
 
 namespace observable {
 
-//! Unique subscriptions will unsubscribe the associated observer when they
-//! are destroyed.
+//! Unsubscribe the associated observer when destroyed.
 //!
-//! This class is movable but not copyable.
-//!
-//! \note All methods of this class can be safely called in parallel from multiple
+//! \note All methods of this class can be safely called in parallel, from multiple
 //!       threads.
 class unique_subscription final
 {
 public:
     //! Create an empty subscription.
     //!
-    //! Calling unsubscribe on an empty subscription will have no effect.
+    //! \note Calling unsubscribe on an empty subscription will have no effect.
     unique_subscription() =default;
 
     //! Create a subscription with the specified unsubscribe functor.
@@ -25,7 +22,7 @@ public:
     //! \param[in] unsubscribe This functor will be called when the unique
     //!                        subscription goes out of scope or when
     //!                        unsubscribe() has been called.
-    //! \internal
+    //! \note This is for internal use by subject instances.
     explicit unique_subscription(std::function<void()> const & unsubscribe) :
         unsubscribe_ { unsubscribe }
     {
@@ -97,19 +94,17 @@ private:
     std::unique_ptr<std::atomic_flag> called_ { std::make_unique<std::atomic_flag>() };
 };
 
-//! Shared subscriptions will unsubscribe the associated observer when the last
-//! instance of the class is destroyed.
+//! Unsubscribe the associated observer when the last instance of the class is
+//! destroyed.
 //!
-//! This class is both movable and copyable.
-//!
-//! \note All methods of this class can be safely called in parallel from multiple
+//! \note All methods of this class can be safely called in parallel, from multiple
 //!       threads.
 class shared_subscription final
 {
 public:
-    //! Create a shared subscription from a r-value unique subscription.
+    //! Create a shared subscription from a temporary unique subscription.
     //!
-    //! \param subscription An unique subscription that will be converted to a
+    //! \param subscription A unique subscription that will be converted to a
     //!                     shared subscription.
     //! \note The unique subscription will be released.
     explicit shared_subscription(unique_subscription && subscription) :
@@ -125,16 +120,10 @@ public:
     //! Unsubscribe the associated observer from receiving notifications.
     //!
     //! Only the first call of this method will have an effect.
-    void unsubscribe()
-    {
-        unsubscribe_.reset();
-    }
+    void unsubscribe() { unsubscribe_.reset(); }
 
     //! Return true if the subscription is not empty.
-    explicit operator bool() const noexcept
-    {
-        return !!unsubscribe_;
-    }
+    explicit operator bool() const noexcept { return !!unsubscribe_; }
 
 private:
     std::shared_ptr<unique_subscription> unsubscribe_;

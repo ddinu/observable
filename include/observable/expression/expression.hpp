@@ -19,9 +19,9 @@ namespace observable { inline namespace expr {
 class expression_evaluator
 {
 public:
-    //! Evaluate all expressions associated with this evaluator instance.
+    //! Evaluate all expressions associated with this instance.
     //!
-    //! \note This method can be safely called in parallel.
+    //! \note This method can be safely called in parallel, from multiple threads.
     void eval_all() const
     {
         std::lock_guard<std::mutex> const lock { data_->mutex };
@@ -82,11 +82,14 @@ private:
     friend class expression;
 };
 
-//! Expressions manage expression tree updates.
+//! Expressions manage expression tree evaluation and results.
 //!
-//! \tparam ValueType The expression's result value type. This is what `get()`
+//! Expressions are also value updaters, so they can be used for updating a
+//! value when an expression tree changes.
+//!
+//! \tparam ValueType The expression's result value type. This is what get()
 //!                   returns.
-//! \tparam EvaluatorType An instance of expression_evaluator or a type derived
+//! \tparam EvaluatorType An instance of expression_evaluator, or a type derived
 //!                       from it.
 //! \warning None of the methods in this class can be safely called concurrently.
 template <typename ValueType, typename EvaluatorType=expression_evaluator>
@@ -96,9 +99,9 @@ class expression : public value_updater<ValueType>
                   "EvaluatorType needs to be derived from expression_evaluator.");
 
 public:
-    //! Create a new expression from the root of an expression tree.
+    //! Create a new expression from the root node of an expression tree.
     //!
-    //! \param[in] root Expression tree root.
+    //! \param[in] root Expression tree root node.
     //! \param[in] evaluator Expression evaluator to be used for globally updating
     //!                      the expression.
     expression(expression_node<ValueType> && root,
@@ -117,14 +120,11 @@ public:
         value_notifier_(root_.get());
     }
 
-    //! Get the expression's result.
+    //! Retrieve the expression's result.
     //!
-    //! If eval() has not been called, the result might be stale.
-    //!
-    //! \see value_updater<ValueType>::get
+    //! \warning If eval() has not been called, the result might be stale.
     virtual auto get() const -> ValueType override { return root_.get(); }
 
-    //! \see value_updater<ValueType>::set_value_notifier
     virtual void set_value_notifier(std::function<void(ValueType &&)> const & notifier) override
     {
         value_notifier_ = notifier;
@@ -163,9 +163,9 @@ private:
 //! Evaluator used for expressions that are updated immediately, whenever an
 //! expression node changes.
 //!
-//! Expressions associated with this type do not need manual updates. Any manual
-//! update calls will not do anything.
-struct immediate_evaluator : expression_evaluator { };
+//! Expressions using this evaluator do not need manual updates. Manual update
+//! calls will not do anything.
+struct immediate_evaluator final : expression_evaluator { };
 
 //! \cond
 inline auto get_dummy_evaluator_()
@@ -184,9 +184,9 @@ class expression<ValueType, immediate_evaluator> :
     public expression<ValueType, expression_evaluator>
 {
 public:
-    //! Create a new expression from an expression node.
+    //! Create a new expression from the root node of an expression tree.
     //!
-    //! \param[in] root Expression node that is the root of an expression tree.
+    //! \param[in] root Expression tree root node.
     explicit expression(expression_node<ValueType> && root) :
         expression<ValueType, expression_evaluator>(std::move(root),
                                                     get_dummy_evaluator_())
@@ -195,14 +195,19 @@ public:
     }
 
 public:
-    expression() =delete;
+    //! Expressions are default-constructible.
+    expression() =default;
 
+    //! Expressions are not copy-constructible.
     expression(expression const &) =delete;
 
+    //! Expressions are not copy-assignable.
     auto operator=(expression const &) -> expression & =delete;
 
+    //! Expressions are move-constructible.
     expression(expression &&) =default;
 
+    //! Expressions are move-assignable.
     auto operator=(expression &&) -> expression & =default;
 
 private:
