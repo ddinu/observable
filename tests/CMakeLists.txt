@@ -10,6 +10,7 @@ set(SOURCE_FILES src/detail/collection.cpp
                  src/expression/operators.cpp
                  src/expression/tree.cpp
                  src/gtest.h
+                 src/infinite_subscription.cpp
                  src/observe.cpp
                  src/shared_lib.cpp
                  src/shared_subscription.cpp

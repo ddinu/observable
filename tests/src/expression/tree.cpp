@@ -30,6 +30,18 @@ TEST(expression_tree_test, value_node_can_be_evaluated)
     ASSERT_EQ(5, node.get());
 }
 
+TEST(expression_tree_test, value_node_with_enclosed_can_be_evaluated)
+{
+    struct enclosed {
+        value<int, std::equal_to<>, enclosed> val { 5 };
+    } enc;
+
+    auto node = expression_node<int> { enc.val };
+    node.eval();
+
+    ASSERT_EQ(5, node.get());
+}
+
 TEST(expression_tree_test, value_node_can_be_evaluated_after_move)
 {
     auto val = value<int> { 5 };

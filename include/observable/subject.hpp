@@ -60,7 +60,24 @@ public:
     //! \warning Observers must be safe to be called in parallel, if the notify()
     //!          method will be called from multiple threads.
     template <typename Callable>
-    auto subscribe(Callable && observer) -> unique_subscription;
+    auto subscribe(Callable && observer) -> infinite_subscription
+    {
+        static_assert(detail::is_compatible_with_observer<Callable, observer_type>::value,
+                      "The provided observer object is not callable or not compatible"
+                      " with the subject");
+
+        auto const id = observers_->insert(observer);
+
+        return infinite_subscription {
+            [this, id, weak_observers = std::weak_ptr<collection> { observers_ }]() {
+                auto const observers = weak_observers.lock();
+                if(!observers)
+                    return;
+
+                observers->remove(id);
+            }
+        };
+    }
 
     //! Notify all currently subscribed observers.
     //!
@@ -86,7 +103,10 @@ public:
     //!
     //! \warning If notify() is called from multiple threads, all observers must
     //!          be safe to call from multiple threads.
-    void notify(Args ... arguments) const;
+    void notify(Args ... arguments) const
+    {
+        observers_->apply([&](auto && observer) { observer(arguments ...); });
+    }
 
 public:
     //! Constructor. Will create an empty subject.
@@ -135,34 +155,5 @@ private:
 
     friend EnclosingType;
 };
-
-// Implementation
-
-template <typename ... Args>
-template <typename Callable>
-inline auto subject<void(Args ...)>::subscribe(Callable && observer) -> unique_subscription
-{
-    static_assert(detail::is_compatible_with_observer<Callable, observer_type>::value,
-                  "The provided observer object is not callable or not compatible"
-                  " with the subject");
-
-    auto const id = observers_->insert(observer);
-
-    return unique_subscription {
-        [this, id, weak_observers = std::weak_ptr<collection> { observers_ }]() {
-            auto const observers = weak_observers.lock();
-            if(!observers)
-                return;
-
-            observers->remove(id);
-        }
-    };
-}
-
-template <typename ... Args>
-inline void subject<void(Args ...)>::notify(Args ... arguments) const
-{
-    observers_->apply([&](auto && observer) { observer(arguments ...); });
-}
 
 }

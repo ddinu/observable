@@ -35,6 +35,9 @@ class value_updater;
 template <typename ValueType, typename EqualityComparator>
 class value<ValueType, EqualityComparator>
 {
+    using void_subject = subject<void()>;
+    using value_subject = subject<void(ValueType const &)>;
+
 public:
     //! The observable value's stored value type.
     using value_type = ValueType;
@@ -48,7 +51,10 @@ public:
     //! Create an initialized observable value.
     //!
     //! \param initial_value The observable's initial value.
-    explicit value(ValueType initial_value);
+    explicit value(ValueType initial_value)
+        noexcept(std::is_nothrow_move_constructible<ValueType>::value) :
+        value_ { std::move(initial_value) }
+    { }
 
     //! Create an initialized value that will be updated by the provided
     //! value_updater.
@@ -61,17 +67,17 @@ public:
         using namespace std::placeholders;
 
         updater_->set_value_notifier(
-                    std::bind(&value<ValueType, EqualityComparator>::set<ValueType>,
+                    std::bind(&value<ValueType, EqualityComparator>::set,
                               this,
                               _1));
         set(updater_->get());
     }
 
     //! Convert the observable value to its stored value type.
-    explicit operator ValueType const &() const noexcept;
+    explicit operator ValueType const &() const noexcept { return value_; }
 
     //! Retrieve the stored value.
-    auto get() const noexcept -> ValueType const &;
+    auto get() const noexcept -> ValueType const & { return value_; }
 
     //! Subscribe to changes to the observable value.
     //!
@@ -89,7 +95,15 @@ public:
     //!
     //! \see subject<void(Args ...)>::subscribe()
     template <typename Callable>
-    auto subscribe(Callable && callable) -> unique_subscription;
+    auto subscribe(Callable && callable)
+    {
+        static_assert(detail::is_compatible_with_subject<Callable, void_subject>::value ||
+                      detail::is_compatible_with_subject<Callable, value_subject>::value,
+                      "Observer is not valid. Please provide a void observer or an "
+                      "observer that takes a ValueType as its only argument.");
+
+        return subscribe_impl(std::forward<Callable>(callable));
+    }
 
     //! Set a new value, possibly notifying any subscribed observers.
     //!
@@ -97,45 +111,82 @@ public:
     //! effect. The comparison is performed using the EqualityComparator.
     //!
     //! \param new_value The new value to set.
-    //! \tparam ValueType_ The new value's actual type. Must be convertible to
-    //!                    the value's ValueType.
     //! \see subject<void(Args ...)>::notify()
-    template <typename ValueType_>
-    void set(ValueType_ && new_value);
+    void set(ValueType new_value)
+    {
+        if(eq_(new_value, value_))
+            return;
 
-    //! Set a new value. Will just call set(ValueType_ &&).
+        value_ = std::move(new_value);
+        void_observers_.notify();
+        value_observers_.notify(value_);
+    }
+
+    //! Set a new value. Will just call set(ValueType &&).
     //!
-    //! \see set(ValueType_ &&)
-    template <typename ValueType_>
-    auto operator=(ValueType_ && new_value) -> value &;
+    //! \see set(ValueType &&)
+    auto operator=(ValueType new_value) -> value &
+    {
+        set(std::move(new_value));
+        return *this;
+    }
 
 public:
     //! Observable values are **not** copy-constructible.
-    value(value const &) =delete;
+    value(value<ValueType, EqualityComparator> const &) =delete;
 
     //! Observable values are **not** copy-assignable.
-    auto operator=(value const &) -> value & =delete;
+    auto operator=(value<ValueType, EqualityComparator> const &)
+            -> value<ValueType, EqualityComparator> & =delete;
 
     //! Observable values are move-constructible.
     template <typename OtherEqualityComparator>
     value(value<ValueType, OtherEqualityComparator> && other)
-        noexcept(std::is_nothrow_move_constructible<ValueType>::value);
+        noexcept(std::is_nothrow_move_constructible<ValueType>::value &&
+                 std::is_nothrow_move_constructible<void_subject>::value &&
+                 std::is_nothrow_move_constructible<value_subject>::value) :
+        value_ { std::move(other.value_) },
+        void_observers_ { std::move(other.void_observers_) },
+        value_observers_ { std::move(other.value_observers_) },
+        updater_ { std::move(other.updater_) }
+    {
+        using namespace std::placeholders;
+        if(updater_)
+            updater_->set_value_notifier(
+                        std::bind(&value<ValueType, EqualityComparator>::set,
+                                  this,
+                                  _1));
+    }
 
     //! Observable values are move-assignable.
     template <typename OtherEqualityComparator>
     auto operator=(value<ValueType, OtherEqualityComparator> && other)
-        noexcept(std::is_nothrow_move_assignable<ValueType>::value)
-        -> value &;
+        noexcept(std::is_nothrow_move_assignable<ValueType>::value &&
+                 std::is_nothrow_move_assignable<void_subject>::value &&
+                 std::is_nothrow_move_assignable<value_subject>::value)
+        -> value<ValueType, EqualityComparator> &
+    {
+        using namespace std::placeholders;
+
+        value_ = std::move(other.value_);
+        void_observers_ = std::move(other.void_observers_);
+        value_observers_ = std::move(other.value_observers_);
+        updater_ = std::move(other.updater_);
+
+        if(updater_)
+            updater_->set_value_notifier(
+                        std::bind(&value<ValueType, EqualityComparator>::set,
+                                  this,
+                                  _1));
+        return *this;
+    }
 
 private:
-    using void_subject = subject<void()>;
-    using value_subject = subject<void(ValueType const &)>;
-
     template <typename Callable>
     auto subscribe_impl(Callable && observer) ->
         std::enable_if_t<detail::is_compatible_with_subject<Callable,
                                                             void_subject>::value,
-                         unique_subscription>
+                         infinite_subscription>
     {
         return void_observers_.subscribe(std::forward<Callable>(observer));
     }
@@ -144,7 +195,7 @@ private:
     auto subscribe_impl(Callable && observer) ->
         std::enable_if_t<detail::is_compatible_with_subject<Callable,
                                                             value_subject>::value,
-                         unique_subscription>
+                         infinite_subscription>
     {
         return value_observers_.subscribe(std::forward<Callable>(observer));
     }
@@ -154,6 +205,7 @@ private:
     void_subject void_observers_;
     value_subject value_observers_;
     std::unique_ptr<value_updater<ValueType>> updater_;
+    EqualityComparator eq_;
 };
 
 //! Value specialization that can be used inside a class, as a member, to
@@ -170,7 +222,8 @@ private:
 //!                            are different than the stored value.
 //! \tparam EnclosingType A type that will have access to the value's setters.
 template <typename ValueType, typename EqualityComparator, typename EnclosingType>
-class value<ValueType, EqualityComparator, EnclosingType> : public value<ValueType, EqualityComparator>
+class value<ValueType, EqualityComparator, EnclosingType> :
+    public value<ValueType, EqualityComparator>
 {
 public:
     using value<ValueType, EqualityComparator>::value;
@@ -178,6 +231,13 @@ public:
 private:
     using value<ValueType, EqualityComparator>::set;
     using value<ValueType, EqualityComparator>::operator=;
+
+    //! Create an initialized observable value.
+    //!
+    //! \param initial_value The observable's initial value.
+    value(ValueType initial_value) :
+        value<ValueType, EqualityComparator>(initial_value)
+    { }
 
     friend EnclosingType;
 };
@@ -201,100 +261,15 @@ public:
 };
 
 //! \cond
-template <typename T>
+template <typename ...>
 struct is_value_ : std::false_type { };
 
-template <typename T>
-struct is_value_<value<T>> : std::true_type { };
+template <typename T, typename ... R>
+struct is_value_<value<T, R ...>> : std::true_type { };
 //! \endcond
 
 //! Check if a type is a value.
-template <typename T>
-struct is_value : is_value_<std::decay_t<T>> { };
-
-// Implementation
-
-template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::value(ValueType initial_value) :
-    value_ { std::move(initial_value) }
-{
-}
-
-template <typename ValueType, typename EqualityComparator>
-inline value<ValueType, EqualityComparator>::operator ValueType const &() const noexcept
-{
-    return value_;
-}
-
-template <typename ValueType, typename EqualityComparator>
-inline auto value<ValueType, EqualityComparator>::get() const noexcept -> ValueType const &
-{
-    return value_;
-}
-
-template <typename ValueType, typename EqualityComparator>
-template <typename ValueType_>
-inline auto value<ValueType, EqualityComparator>::set(ValueType_ && new_value) -> void
-{
-    if(EqualityComparator { }(new_value, value_))
-        return;
-
-    value_ = std::forward<ValueType_>(new_value);
-    void_observers_.notify();
-    value_observers_.notify(value_);
-}
-
-template <typename ValueType, typename EqualityComparator>
-template <typename ValueType_>
-inline auto value<ValueType, EqualityComparator>::operator=(ValueType_ && new_value) -> value &
-{
-    set(std::forward<ValueType_>(new_value));
-    return *this;
-}
-
-template <typename ValueType, typename EqualityComparator>
-template <typename Callable>
-inline auto value<ValueType, EqualityComparator>::subscribe(Callable && callable) -> unique_subscription
-{
-    static_assert(detail::is_compatible_with_subject<Callable, void_subject>::value ||
-                  detail::is_compatible_with_subject<Callable, value_subject>::value,
-                  "Observer is not valid. Please provide a void observer or an "
-                  "observer that takes a ValueType as its only argument.");
-
-    return subscribe_impl(std::forward<Callable>(callable));
-}
-
-template <typename ValueType, typename EqualityComparator>
-template <typename OtherEqualityComparator>
-inline value<ValueType, EqualityComparator>::value(value<ValueType, OtherEqualityComparator> && other)
-    noexcept(std::is_nothrow_move_constructible<ValueType>::value) :
-    value_ { std::move(other.value_) },
-    void_observers_ { std::move(other.void_observers_) },
-    value_observers_ { std::move(other.value_observers_) },
-    updater_ { std::move(other.updater_) }
-{
-    using namespace std::placeholders;
-    if(updater_)
-        updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
-}
-
-template <typename ValueType, typename EqualityComparator>
-template <typename OtherEqualityComparator>
-inline auto value<ValueType, EqualityComparator>::operator=(value<ValueType, OtherEqualityComparator> && other)
-        noexcept(std::is_nothrow_move_assignable<ValueType>::value)
-        -> value<ValueType, EqualityComparator> &
-{
-    using namespace std::placeholders;
-
-    value_ = std::move(other.value_);
-    void_observers_ = std::move(other.void_observers_);
-    value_observers_ = std::move(other.value_observers_);
-    updater_ = std::move(other.updater_);
-
-    if(updater_)
-        updater_->set_value_notifier(std::bind(&value<ValueType, EqualityComparator>::set<ValueType>, this, _1));
-
-    return *this;
-}
+template <typename ... T>
+struct is_value : is_value_<std::decay_t<T> ...> { };
 
 }

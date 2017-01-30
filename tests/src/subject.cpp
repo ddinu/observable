@@ -156,7 +156,10 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
     std::atomic_int new_call_count { 0 };
 
     for(auto i = 0; i < 10; ++i)
-        s.subscribe([&]() { ++old_call_count; std::this_thread::sleep_for(5ms); }).release();
+        s.subscribe([&]() {
+            ++old_call_count;
+            std::this_thread::sleep_for(5ms);
+        }).release();
 
     auto t = std::thread { [&]() { s.notify(); } };
 

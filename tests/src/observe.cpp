@@ -11,11 +11,35 @@ TEST(observe_test, single_value_with_immediate_update)
     ASSERT_EQ(5, result.get());
 }
 
+TEST(observe_test, single_enclosed_value_with_immediate_update)
+{
+    struct enclosed {
+        value<int, std::equal_to<>, enclosed> val { 5 };
+    } enc;
+
+    auto result = observe(enc.val);
+
+    ASSERT_EQ(5, result.get());
+}
+
 TEST(observe_test, single_value_with_manual_update)
 {
     auto test_updater = updater { };
     auto val = value<int> { 5 };
     auto result = observe(test_updater, val);
+
+    ASSERT_EQ(5, result.get());
+}
+
+TEST(observe_test, single_enclosed_value_with_manual_update)
+{
+    auto test_updater = updater { };
+
+    struct enclosed {
+        value<int, std::equal_to<>, enclosed> val { 5 };
+    } enc;
+
+    auto result = observe(test_updater, enc.val);
 
     ASSERT_EQ(5, result.get());
 }

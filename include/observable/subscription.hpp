@@ -5,28 +5,19 @@
 
 namespace observable {
 
-//! Unsubscribe the associated observer when destroyed.
-//!
-//! \note All methods of this class can be safely called in parallel, from multiple
-//!       threads.
-class unique_subscription final
+//! Infinite subscription that will not unsubscribe the associated observer
+//! when destroyed.
+class infinite_subscription
 {
 public:
-    //! Create an empty subscription.
-    //!
-    //! \note Calling unsubscribe on an empty subscription will have no effect.
-    unique_subscription() =default;
-
     //! Create a subscription with the specified unsubscribe functor.
     //!
-    //! \param[in] unsubscribe This functor will be called when the unique
-    //!                        subscription goes out of scope or when
-    //!                        unsubscribe() has been called.
+    //! \param[in] unsubscribe Calling this functor will unsubscribe the
+    //!                        associated observer.
     //! \note This is for internal use by subject instances.
-    explicit unique_subscription(std::function<void()> const & unsubscribe) :
+    explicit infinite_subscription(std::function<void()> const & unsubscribe) :
         unsubscribe_ { unsubscribe }
-    {
-    }
+    { }
 
     //! Unsubscribe the associated observer from receiving notifications.
     //!
@@ -64,13 +55,57 @@ public:
         return unsub;
     }
 
+public:
+    //! This class is default-constructible.
+    infinite_subscription() =default;
+
+    //! This class is not copy-constructible.
+    infinite_subscription(infinite_subscription const & ) =delete;
+
+    //! This class is not copy-assignable.
+    auto operator=(infinite_subscription const &) -> infinite_subscription & =delete;
+
+    //! This class is move-constructible.
+    infinite_subscription(infinite_subscription &&) = default;
+
+    //! This class is move-assignable.
+    auto operator=(infinite_subscription &&) -> infinite_subscription & =default;
+
+private:
+    std::function<void()> unsubscribe_ { []() { } };
+
+    // std::call_once with a std::once_flag would have worked, but it requires
+    // pthreads on Linux. We're using this in order not to bring in that
+    // dependency.
+    std::unique_ptr<std::atomic_flag> called_ { std::make_unique<std::atomic_flag>() };
+};
+
+//! Unsubscribe the associated observer when destroyed.
+//!
+//! \note All methods of this class can be safely called in parallel, from multiple
+//!       threads.
+class unique_subscription final : public infinite_subscription
+{
+public:
+    //! Create an empty subscription.
+    //!
+    //! \note Calling unsubscribe on an empty subscription will have no effect.
+    unique_subscription() =default;
+
+    //! Create an unique subscription from an infinite_subscription.
+    //!
+    //! \param[in] sub An infinite subscription that will be converted to an
+    //!                unique_subscription.
+    unique_subscription(infinite_subscription && sub) :
+        infinite_subscription(std::move(sub))
+    { }
+
     //! Destructor. Will call unsubscribe().
     //!
     //! \note If release() has been called, this will have no effect.
-    ~unique_subscription()
-    {
-        unsubscribe();
-    }
+    ~unique_subscription() { unsubscribe(); }
+
+    using infinite_subscription::operator=;
 
 public:
     //! This class is not copy-constructible.
@@ -84,14 +119,6 @@ public:
 
     //! This class is move-assignable.
     auto operator=(unique_subscription &&) -> unique_subscription & =default;
-
-private:
-    std::function<void()> unsubscribe_ { []() { } };
-
-    // std::call_once with a std::once_flag would have worked, but it requires
-    // pthreads on Linux. We're using this in order not to bring in that
-    // dependency.
-    std::unique_ptr<std::atomic_flag> called_ { std::make_unique<std::atomic_flag>() };
 };
 
 //! Unsubscribe the associated observer when the last instance of the class is
@@ -102,12 +129,12 @@ private:
 class shared_subscription final
 {
 public:
-    //! Create a shared subscription from a temporary unique subscription.
+    //! Create a shared subscription from a temporary infinite subscription.
     //!
-    //! \param subscription A unique subscription that will be converted to a
+    //! \param subscription An infinite subscription that will be converted to a
     //!                     shared subscription.
     //! \note The unique subscription will be released.
-    explicit shared_subscription(unique_subscription && subscription) :
+    explicit shared_subscription(infinite_subscription && subscription) :
         unsubscribe_ { std::make_shared<unique_subscription>(std::move(subscription)) }
     {
     }
@@ -124,6 +151,19 @@ public:
 
     //! Return true if the subscription is not empty.
     explicit operator bool() const noexcept { return !!unsubscribe_; }
+
+public:
+    //! This class is not copy-constructible.
+    shared_subscription(shared_subscription const & ) =default;
+
+    //! This class is not copy-assignable.
+    auto operator=(shared_subscription const &) -> shared_subscription & =default;
+
+    //! This class is move-constructible.
+    shared_subscription(shared_subscription &&) = default;
+
+    //! This class is move-assignable.
+    auto operator=(shared_subscription &&) -> shared_subscription & =default;
 
 private:
     std::shared_ptr<unique_subscription> unsubscribe_;

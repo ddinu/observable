@@ -1,3 +1,4 @@
+#include <functional>
 #include "observable/value.hpp"
 #include "observable/expression/operators.hpp"
 #include "observable/expression/tree.hpp"
@@ -15,6 +16,12 @@ TEST(expression_operators_test, NAME) \
 \
     ASSERT_EQ(expected, (OP v).get()); \
     ASSERT_EQ(expected, (OP expression_node<decltype(V)> { V }).get()); \
+\
+    struct enclosing { \
+        value<decltype(V), std::equal_to<>, enclosing> v { V }; \
+    } enc ; \
+\
+    ASSERT_EQ(expected, (OP enc.v).get()); \
 }
 
 MAKE_UNARY_OP_TEST(logical_not, !, false)
@@ -38,6 +45,17 @@ TEST(expression_operators_test, NAME) \
     ASSERT_EQ(expected, (expression_node<decltype(A)> { A } OP expression_node<decltype(B)> { B }).get()); \
     ASSERT_EQ(expected, (va OP expression_node<decltype(B)> { B }).get()); \
     ASSERT_EQ(expected, (expression_node<decltype(A)> { A } OP vb).get()); \
+\
+    struct enclosing { \
+        value<decltype(A), std::equal_to<>, enclosing> va { A }; \
+        value<decltype(B), std::equal_to<>, enclosing> vb { B }; \
+    } enc; \
+\
+    ASSERT_EQ(expected, (enc.va OP B).get()); \
+    ASSERT_EQ(expected, (A OP enc.vb).get()); \
+    ASSERT_EQ(expected, (enc.va OP enc.vb).get()); \
+    ASSERT_EQ(expected, (enc.va OP expression_node<decltype(B)> { B }).get()); \
+    ASSERT_EQ(expected, (expression_node<decltype(A)> { A } OP enc.vb).get()); \
 }
 
 MAKE_BINARY_OP_TEST(multiplication, 5, *, 7)

@@ -12,13 +12,15 @@ TEST(unique_subscription_test, is_default_constructible)
 
 TEST(unique_subscription_test, can_create_initialized_subscription)
 {
-    unique_subscription { []() {} };
+    unique_subscription { infinite_subscription { []() {} } };
 }
 
 TEST(unique_subscription_test, unsubscribe_function_is_called)
 {
     auto call_count = 0;
-    auto sub = unique_subscription { [&]() { ++call_count; } };
+    auto sub = unique_subscription {
+                    infinite_subscription { [&]() { ++call_count; } }
+               };
 
     sub.unsubscribe();
 
@@ -30,7 +32,9 @@ TEST(unique_subscription_test, destructor_calls_unsubscribe_function)
     auto call_count = 0;
 
     {
-        unique_subscription { [&]() { ++call_count; } };
+        unique_subscription {
+            infinite_subscription { [&]() { ++call_count; } }
+        };
     }
 
     ASSERT_EQ(call_count, 1);
@@ -40,7 +44,9 @@ TEST(unique_subscription_test, calling_unsubscribe_multiple_times_calls_function
 {
     auto call_count = 0;
 
-    auto sub = unique_subscription { [&]() { ++call_count; } };
+    auto sub = unique_subscription {
+                    infinite_subscription { [&]() { ++call_count; } }
+               };
     sub.unsubscribe();
     sub.unsubscribe();
 
@@ -67,15 +73,19 @@ TEST(unique_subscription_test, is_move_assignable)
     ASSERT_TRUE(std::is_move_assignable<unique_subscription>::value);
 }
 
-TEST(unique_subscription_test, unsubscribing_from_moved_handle_calls_function)
+TEST(unique_subscription_test, unsubscribing_from_moved_subscription_calls_function)
 {
     auto call_count = 0;
+    unique_subscription other;
 
     {
-        auto sub = unique_subscription { [&]() { ++call_count; } };
-        auto other = std::move(sub);
-        other.unsubscribe();
+        auto sub = unique_subscription {
+                        infinite_subscription { [&]() { ++call_count; } }
+                   };
+        other = std::move(sub);
     }
+
+    other.unsubscribe();
 
     ASSERT_EQ(call_count, 1);
 }
