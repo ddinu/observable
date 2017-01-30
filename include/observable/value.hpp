@@ -242,6 +242,55 @@ private:
     friend EnclosingType;
 };
 
+// Properties
+
+//! Macro that enables observable properties for a class.
+//!
+//! You **must** use this macro inside a class that will have observable_property
+//! members.
+//!
+//! To enable observable properties, just use the macro, with the class type as
+//! a parameter before declaring the first observable property member.
+//!
+//! Example:
+//!
+//!     class MyClass
+//!     {
+//!         OBSERVABLE_PROPERTIES(MyClass)
+//!
+//!     public:
+//!         observable_property<int> my_val;
+//!     };
+#define OBSERVABLE_PROPERTIES(EnclosingType) \
+    using Observable_Property_EnclosingType_ = EnclosingType;
+
+namespace detail {
+    //! \cond
+    template <typename EnclosingType>
+    struct prop_
+    {
+        template <typename ValueType, typename EqualityComparator=std::equal_to<>>
+        using type = value<ValueType, EqualityComparator, EnclosingType>;
+    };
+    //! \endcond
+}
+
+//! Declare an observable property member of a class.
+//!
+//! \note You must use the OBSERVABLE_PROPERTIES macro before declaring any
+//!       observable_property members inside a class.
+//!
+//! The macro expands to an observable value that takes two template parameters:
+//! ValueType and EqualityComparator.
+//!
+//! The value's setters will only be accessible from inside the class passed as
+//! a parameter to the OBSERVABLE_PROPERTIES macro.
+//!
+//! \see value<ValueType, EqualityComparator>
+//! \see value<ValueType, EqualityComparator, EnclosingType>
+#define observable_property \
+    ::observable::detail::prop_<Observable_Property_EnclosingType_>::type
+
 //! Interface used to update a value.
 template <typename ValueType>
 class value_updater
