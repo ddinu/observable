@@ -15,48 +15,27 @@ TEST(example_tests, readme)
     using namespace std;
     using namespace observable;
 
-    // Will print "Hello {name}!" for each name that you enter.
-    // Use "exit" to stop.
-
     //int main()
     {
-        // Event will be fired before exiting.
-        auto before_exit = subject<void()> { };
-        before_exit.subscribe([]() { cout << "Bye!"s << endl; });
+        auto sub = subject<void(string)> { };
+        sub.subscribe([](auto const & str) { cout << str << endl; });
 
-        // Current name.
-        auto name = value<string> { };
+        // "Hello world!" will be printed on stdout.
+        sub.notify("Hello world!");
 
-        // Current greeting.
-        auto greeting = observe("Hello "s + name + "!"s);
-        greeting.subscribe([](auto const & hello) {
-            cout << hello << endl;
-        });
+        auto a = value<int> { 5 };
+        auto b = value<int> { 7 };
+        auto avg = observe((a + b) / 2.0f);
 
-        // Read the names.
-        while(cin)
-        {
-            cout << "What's your name?"s << endl;
+        avg.subscribe([](auto val) { cout << val << endl; });
 
-            // Read the name.
-            auto input_name = string { };
-            cin >> input_name;
-
-            if(input_name.empty() || input_name == "exit"s)
-                break;
-
-            // Update the current name.
-            name = input_name;
-        }
-
-        // Notify observers that we're exiting.
-        before_exit.notify();
+        // 10 will be printed on stdout.
+        b = 15;
 
         //return 0;
     }
 
     // END EXAMPLE CODE
 
-    ASSERT_EQ("What's your name?\nHello Jane!\nWhat's your name?\nBye!\n"s,
-              cout_buf.str());
+    ASSERT_EQ("Hello world!\n10\n"s, cout_buf.str());
 }
