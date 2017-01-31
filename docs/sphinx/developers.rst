@@ -20,7 +20,7 @@ below:
  - Everything must be documented.
  - Everything must be tested.
  - Try to match the code style in the file that you're editing.
- - Keep files under a couple hundred lines. Definetly keep them under 500
+ - Keep files under a couple hundred lines. Definitely keep them under 500
    lines (comments, includes and all).
  - Limit yourself to 80 characters per line.
 

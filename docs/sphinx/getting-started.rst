@@ -1,13 +1,13 @@
 Getting started
 ===============
 
-The library has a few classes and a set of macros and function overloades:
+The library has a few classes and a set of macros and function overloads:
 
 `subject\<void(Args ...)\>`_
     Provides a way to notify subscribed observers when an event occurs.
 
 `value\<T\>`_
-    Holds value types and provides a way to notify subscibed observers when
+    Holds value types and provides a way to notify subscribed observers when
     the value changes.
 
 `OBSERVABLE_PROPERTIES`_ and `observable_property`_

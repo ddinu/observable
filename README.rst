@@ -1,13 +1,13 @@
 Observable: Generic observable objects for C++
 ==============================================
 
-If you want to write code in a reactive style or just implemnt the observer
+If you want to write code in a reactive style or just implement the observer
 pattern, this is for you.
 
 Quick start
 -----------
 
-The library is header-only and has no dependencies; just copy the
+The library is header-only and has no dependencies; copy the
 ``include/observable`` directory into your include path and you're set.
 
 Example:
