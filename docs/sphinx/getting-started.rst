@@ -1,82 +1,195 @@
 Getting started
 ===============
 
-The library has two main classes: :doc:`value\<\> </reference/value>` and
-:doc:`subject\<\> </reference/subject>`.
+The library has a few classes and a set of macros and function overloades:
 
-A value is a way to notify subscribed observers that a variable has changed,
-while a subject is just a way to notify observers that an event has occured.
+`subject\<void(Args ...)\>`_
+    Provides a way to notify subscribed observers when an event occurs.
 
-Simple value example
------------------------
+`value\<T\>`_
+    Holds value types and provides a way to notify subscibed observers when
+    the value changes.
+
+`OBSERVABLE_PROPERTIES`_ and `observable_property`_
+    Values nested inside an enclosing class with setters accessible only from
+    inside that class.
+
+`observe()`_
+    A group of overloaded functions that can create observable values that are
+    updated when their argument expression changes.
+
+.. _subject\<void(Args ...)\>: reference/classobservable_1_1subject_3_01void_07_args_01_8_8_8_08_4.html
+.. _value\<T\>: reference/classobservable_1_1value_3_01_value_type_00_01_equality_comparator_01_4.html
+.. _OBSERVABLE_PROPERTIES: reference/value_8hpp.html#a29f96693ca8b710b884b72860149fb7b
+.. _observable_property: reference/value_8hpp.html#acca2b9245c501c1f5f71fabd516a66d3
+.. _observe(): reference/namespaceobservable.html#a25c1181fc75df6d45c0e8da530ce8639
+
+Getting started with subjects
+-----------------------------
+
+Subjects are the simplest observable objects. They provide a way to get notified
+when some event occurs.
 
 .. code-block:: C++
 
-    #include <observable/value.hpp>
+    #include <iostream>
+    #include <string>
+    #include "observable/observable.hpp"
+
+    using namespace std;
     using namespace observable;
 
-    class WidgetModel
-    {
-    public:
-        property<std::string, WidgetModel> text;
+    // Will print "Hello {name}" each time you enter a name.
+    // Type exit to stop.
 
-        void set_text(std::string const & value) { text = value; }
+    int main()
+    {
+        auto name_entered = subject<void(string)> { };
+
+        // Subscribe to name_entered notifications.
+        name_entered.subscribe([](auto const & name) {
+                                   cout << "Hello "s
+                                        << name
+                                        << "!"s
+                                        << endl;
+                               });
+
+        while(cin)
+        {
+            cout << "What's your name?"s << endl;
+
+            // Read the name.
+            auto input_name = string { };
+            cin >> input_name;
+
+            if(input_name.empty() || input_name == "exit"s)
+                break;
+
+            // Notify all name_entered observers.
+            name_entered.notify(input_name);
+        }
+
+        return 0;
+    }
+
+Getting started with values
+---------------------------
+
+Values are wrappers around value-types. You can subscribe to changes to the
+contained value-type.
+
+The ``observe()`` functions can be used to generate values associated with
+an expression. For example: ``auto result = observe((a + b) / 2.0)``.
+The ``result`` value will recompute the average, each time either the ``a``
+or ``b`` value changes.
+
+.. code-block:: C++
+
+    #include <iostream>
+    #include <string>
+    #include "observable/observable.hpp"
+
+    // Will print "Hello {name}" each time you enter a name.
+    // Type exit to stop.
+
+    using namespace std;
+    using namespace observable;
+
+    int main()
+    {
+        auto name = value<string> { };
+
+        // Recompute the greeting each time name changes and
+        // fire change notifications.
+        auto greeting = observe("Hello "s + name + "!"s);
+
+        // Subscribe to greeting changes.
+        greeting.subscribe([](auto const & name) {
+                               cout << name << endl;
+                           });
+
+        while(cin)
+        {
+            cout << "What's your name?"s << endl;
+
+            // Read the name.
+            auto input_name = string { };
+            cin >> input_name;
+
+            if(input_name.empty() || input_name == "exit"s)
+                break;
+
+            // Update the name value.
+            name = input_name;
+        }
+
+        return 0;
+    }
+
+Getting started with observable properties
+------------------------------------------
+
+Properties are just values that are nested inside a class. This makes all
+setters inaccessible from outside the enclosing class.
+
+.. code-block:: C++
+
+    #include <iostream>
+    #include <string>
+    #include "observable/observable.hpp"
+
+    // Will print "Hello {name}" each time you enter a name.
+    // Type exit to stop.
+
+    using namespace std;
+    using namespace observable;
+
+    // Greet people using names read from stdin.
+    class NameModel
+    {
+        OBSERVABLE_PROPERTIES(NameModel)
+
+    public:
+        // Current name.
+        observable_property<string> name;
+
+        // Current greeting.
+        observable_property<string> greeting = observe(
+                                                "Hello "s + name + "!"s
+                                               );
+
+    public:
+        // Read names from stdin until the user quits.
+        void read_names()
+        {
+            while(cin)
+            {
+                cout << "What's your name?"s << endl;
+
+                auto input_name = string { };
+                cin >> input_name;
+
+                if(input_name.empty() || input_name == "exit"s)
+                    break;
+
+                name = input_name;
+            }
+        }
     };
 
-    WidgetModel widget_model;
-    WidgetView widget_view;
+    int main()
+    {
+        NameModel model;
 
-    auto sub = widget_model.text.subscribe([&](auto const & text) {
-                                               widget_view.set_text(text);
-                                           });
+        // Print the greetings.
+        model.greeting.subscribe([](auto const & hello) {
+                                     cout << hello << endl;
+                                 });
 
-    widget_model.text.subscribe([]() { /* React to updates */ }).release();
+        // Properties cannot be set from outside the class. The
+        // line below will not compile:
+        // model.name = input_name;
 
-    widget_model.set_text("Hello!"); // Calls the lambdas above.
-
-    // widget_model.text = "bar"; // Will not compile.
-
-.. NOTE::
-
-    ``observable::property<>`` is just an alias for ``observable::value<>``.
-
-    By providing the enclosing ``WidgetModel`` class as a template parameter,
-    you'll be able to use the assignment operator from inside your class, but
-    other code will not be able to access them.
-
-Simple subject example
-----------------------
-
-.. code-block:: C++
-
-    #include <observable/subject.hpp>
-    using namespace observable;
-
-    subject<void(double)> some_event;
-
-    auto subscription = some_event.subscribe([](double value) {
-                                                /* Use value */
-                                             }); 
-
-    some_event.notify(5.1); // Calls the lambda from above.
-
-What's going on
----------------
-
-When you subscribe to either subjects or values, you get back a
-:doc:`unique_subscription </reference/unique_subscription>` object, which you
-can use to unsubscribe.
-
-:doc:`unique_subscription </reference/unique_subscription>` objects, act like a
-``unique_ptr``, but instead of deleting something, they unsubscribe your
-observer when they go out of scope.
-
-You can also create :doc:`shared_subscription </reference/shared_subscription>`
-objects (from unique ones). These behave like ``shared_ptr`` and unsubscribe
-your observer when the last instance goes out of scope.
-
-If you want subscriptions that live forever, just call ``release()`` on the
-subscription.
-
-You generally don't have to worry about lifetimes, except to keep the subscribed
-observer valid for as long as there is a chance that it will be notified.
+        model.read_names();
+        return 0;
+    }

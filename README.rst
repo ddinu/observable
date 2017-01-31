@@ -1,8 +1,8 @@
 Observable: Generic observable objects for C++
 ==============================================
 
-Did you ever needed to implement the observer pattern and didn't have an easy
-way to do it? This is for those times.
+If you want to write code in a reactive style or just implemnt the observer
+pattern, this is for you.
 
 Quick start
 -----------
@@ -10,75 +10,65 @@ Quick start
 The library is header-only and has no dependencies; just copy the
 ``include/observable`` directory into your include path and you're set.
 
-Observable properties (member values):
+Example:
 
-.. code-block:: C++
+.. code:: C++
 
-    #include <observable/value.hpp>
+    #include <iostream>
+    #include <string>
+    #include "observable/observable.hpp"
+
+    using namespace std;
     using namespace observable;
 
-    class WidgetModel
+    int main()
     {
-    public:
-        property<std::string, WidgetModel> text;
+        // Event fired before exiting.
+        auto before_exit = subject<void()> { };
+        before_exit.subscribe([]() { cout << "Bye!"s << endl; });
 
-        void set_text(std::string const & value) { text = value; }
-    };
+        // Current name.
+        auto name = value<string> { };
 
-    WidgetModel widget_model;
+        // Current greeting.
+        auto greeting = observe("Hello "s + name + "!"s);
+        greeting.subscribe([](auto const & hello) {
+                               cout << hello << endl;
+                           });
 
-    auto sub = widget_model.text.subscribe([&](std::string const & new_value) {
-                                                /* Update the widget. */
-                                           });
-    widget_model.text.subscribe([&]() { /* React to updates */ }).release();
+        // Read the names.
+        while(cin)
+        {
+            cout << "What's your name?"s << endl;
 
-    widget_model.set_text("Hello!"); // Calls the lambdas above.
-    
-Observable values:
+            // Read the name.
+            auto input_name = string { };
+            cin >> input_name;
 
-.. code-block:: C++
+            if(input_name.empty() || input_name == "exit"s)
+                break;
 
-    #include <observable/value.hpp>
-    using namespace observable;
-    
-    value<std::string> text;
-    
-    auto sub = text.subscribe([&](std::string const & new_value) {
-                                  /* React to the text change. */
-                              });
-                              
-    text = "foo"; // Will call the lambda above.
+            // Update the name value.
+            name = input_name;
+        }
 
-Simple subject:
+        // Notify observers that we're exiting.
+        before_exit.notify();
 
-.. code-block:: C++
-
-    #include <observable/subject.hpp>
-
-    observable::subject<void(double)> subject;
-
-    auto subscription = subject.subscribe([](double value) {
-                                              /* Use value */
-                                          }); 
-    subject.notify(5.1); // Calls the lambda from above.
+        return 0;
+    }
 
 Documentation
 -------------
 
-.. image:: https://readthedocs.org/projects/observable/badge/?version=latest
-    :target: http://observable.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
-The project is documented using `Sphinx <http://www.sphinx-doc.org/>`_ and
-the documentation is hosted on `Read the Docs <https://readthedocs.org/>`.
-
-You can `access the documentation <http://observable.readthedocs.io/en/latest/>`_ here: http://observable.readthedocs.io/en/latest/.
+You can `access the documentation <https://danieldinu.com/observable/>`_ here:
+https://danieldinu.com/observable/.
 
 What's with the CMake files?
 ----------------------------
 
-The library is using CMake to build and run the tests and benchmarks. You won't
-need CMake if you don't want to run the tests.
+The library is using CMake to build the tests, benchmarks and documentation. You
+won't need CMake if you don't want to work on the library as a developer.
 
 Why not just use Boost.Signals2 or Qt?
 --------------------------------------
@@ -86,8 +76,8 @@ Why not just use Boost.Signals2 or Qt?
 Boost.Signals2 and Qt are pretty cool libraries and do their jobs well.
 
 This library is not meant to replace signals and slots, it focuses more on 
-providing easy to use observable properties, values and eventually collections
-for patterns like MVC and reactive programming in general.
+providing easy to use observable objects and expressions that can help with
+patterns like MVC and reactive programming.
 
 Choose whichever library works best for your case; you can even choose them
 both (for example, have your models use this library and your views use Qt). 
@@ -95,13 +85,16 @@ both (for example, have your models use this library and your views use Qt).
 Contributing
 ------------
 
-Bug reports, feature requests, documentation and code contributions are welcome and
-highly appreciated.
+Bug reports, feature requests, documentation and code contributions are welcome 
+and highly appreciated.
 
 Legal and Licensing
 -------------------
 
 The library is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
+
+Please note that all contributions are considered to be provided under the
+terms of this license.
 
 Supported compilers
 -------------------

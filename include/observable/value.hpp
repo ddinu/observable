@@ -228,6 +228,8 @@ class value<ValueType, EqualityComparator, EnclosingType> :
 public:
     using value<ValueType, EqualityComparator>::value;
 
+    value() =default;
+
 private:
     using value<ValueType, EqualityComparator>::set;
     using value<ValueType, EqualityComparator>::operator=;
@@ -277,17 +279,17 @@ namespace detail {
 
 //! Declare an observable property member of a class.
 //!
-//! \note You must use the OBSERVABLE_PROPERTIES macro before declaring any
+//! \note You must use the \ref OBSERVABLE_PROPERTIES macro before declaring any
 //!       observable_property members inside a class.
 //!
 //! The macro expands to an observable value that takes two template parameters:
 //! ValueType and EqualityComparator.
 //!
 //! The value's setters will only be accessible from inside the class passed as
-//! a parameter to the OBSERVABLE_PROPERTIES macro.
+//! a parameter to the \ref OBSERVABLE_PROPERTIES macro.
 //!
-//! \see value<ValueType, EqualityComparator>
-//! \see value<ValueType, EqualityComparator, EnclosingType>
+//! \see observable::value<ValueType, EqualityComparator>
+//! \see observable::value<ValueType, EqualityComparator, EnclosingType>
 #define observable_property \
     ::observable::detail::prop_<Observable_Property_EnclosingType_>::type
 
