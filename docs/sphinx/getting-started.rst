@@ -89,11 +89,11 @@ or ``b`` value changes.
     #include <string>
     #include "observable/observable.hpp"
 
-    // Will print "Hello {name}" each time you enter a name.
-    // Type exit to stop.
-
     using namespace std;
     using namespace observable;
+
+    // Will print "Hello {name}" each time you enter a name.
+    // Type exit to stop.
 
     int main()
     {
@@ -138,11 +138,11 @@ setters inaccessible from outside the enclosing class.
     #include <string>
     #include "observable/observable.hpp"
 
-    // Will print "Hello {name}" each time you enter a name.
-    // Type exit to stop.
-
     using namespace std;
     using namespace observable;
+
+    // Will print "Hello {name}" each time you enter a name.
+    // Type exit to stop.
 
     // Greet people using names read from stdin.
     class NameModel

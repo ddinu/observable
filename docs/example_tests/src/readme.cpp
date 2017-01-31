@@ -11,11 +11,16 @@ TEST(example_tests, readme)
     capture_cout cout_buf { };
 
     // BEGIN EXAMPLE CODE
-    {
-        using namespace std;
-        using namespace observable;
 
-        // Event fired before exiting.
+    using namespace std;
+    using namespace observable;
+
+    // Will print "Hello {name}!" for each name that you enter.
+    // Use "exit" to stop.
+
+    //int main()
+    {
+        // Event will be fired before exiting.
         auto before_exit = subject<void()> { };
         before_exit.subscribe([]() { cout << "Bye!"s << endl; });
 
@@ -24,8 +29,11 @@ TEST(example_tests, readme)
 
         // Current greeting.
         auto greeting = observe("Hello "s + name + "!"s);
-        greeting.subscribe([](auto const & hello) { cout << hello << endl; });
+        greeting.subscribe([](auto const & hello) {
+            cout << hello << endl;
+        });
 
+        // Read the names.
         while(cin)
         {
             cout << "What's your name?"s << endl;
@@ -37,13 +45,16 @@ TEST(example_tests, readme)
             if(input_name.empty() || input_name == "exit"s)
                 break;
 
-            // Update the name value.
+            // Update the current name.
             name = input_name;
         }
 
         // Notify observers that we're exiting.
         before_exit.notify();
+
+        //return 0;
     }
+
     // END EXAMPLE CODE
 
     ASSERT_EQ("What's your name?\nHello Jane!\nWhat's your name?\nBye!\n"s,
