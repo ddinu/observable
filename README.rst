@@ -21,9 +21,12 @@ Example:
     using namespace std;
     using namespace observable;
 
+    // Will print "Hello {name}!" for each name that you enter.
+    // Use "exit" to stop.
+
     int main()
     {
-        // Event fired before exiting.
+        // Event will be fired before exiting.
         auto before_exit = subject<void()> { };
         before_exit.subscribe([]() { cout << "Bye!"s << endl; });
 
@@ -48,7 +51,7 @@ Example:
             if(input_name.empty() || input_name == "exit"s)
                 break;
 
-            // Update the name value.
+            // Update the current name.
             name = input_name;
         }
 
