@@ -27,6 +27,8 @@ If you want to write code in a reactive style, this is for you.
         return 0;
     }
 
+Check out the :doc:`getting-started` page for some more examples.
+
 The library is usable on both Windows and Linux, with any recent compiler that
 supports at least C++14.
 
@@ -37,9 +39,9 @@ into your project.
 If you want to build the tests and benchmarks, they’re using CMake, so that
 should be easy too.
 
-Other useful links:
+.. toctree::
+    :maxdepth: 2
+    :glob:
 
-    - :doc:`getting-started`
-    - `Reference <reference/namespaceobservable.html>`_
-    - :doc:`developers`
-    - :doc:`toc`
+    *
+    Reference <https://danieldinu.com/observable/reference/namespaceobservable.html>

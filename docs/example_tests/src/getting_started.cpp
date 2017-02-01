@@ -77,8 +77,8 @@ TEST(example_tests, getting_started_with_values)
         auto greeting = observe("Hello "s + name + "!"s);
 
         // Subscribe to greeting changes.
-        greeting.subscribe([](auto const & name) {
-                               cout << name << endl;
+        greeting.subscribe([](auto const & hello) {
+                               cout << hello << endl;
                            });
 
         while(cin)
@@ -119,9 +119,9 @@ TEST(example_tests, getting_started_with_properties)
     // Type exit to stop.
 
     // Greet people using names read from stdin.
-    class NameModel
+    class Greeter
     {
-        OBSERVABLE_PROPERTIES(NameModel)
+        OBSERVABLE_PROPERTIES(Greeter)
 
     public:
         // Current name.
@@ -129,8 +129,8 @@ TEST(example_tests, getting_started_with_properties)
 
         // Current greeting.
         observable_property<string> greeting = observe(
-                                                   "Hello "s + name + "!"s
-                                               );
+                                                    "Hello "s + name + "!"s
+                                                );
 
     public:
         // Read names from stdin until the user quits.
@@ -153,18 +153,18 @@ TEST(example_tests, getting_started_with_properties)
 
     //int main()
     {
-        NameModel model;
+        Greeter greeter;
 
         // Print the greetings.
-        model.greeting.subscribe([](auto const & hello) {
-                                    cout << hello << endl;
-                                 });
+        greeter.greeting.subscribe([](auto const & hello) {
+            cout << hello << endl;
+        });
 
         // Properties cannot be set from outside the class. The
         // line below will not compile:
-        // model.name = input_name;
+        // greeter.name = input_name;
 
-        model.read_names();
+        greeter.read_names();
         //return 0;
     }
 

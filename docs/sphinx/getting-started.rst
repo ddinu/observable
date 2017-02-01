@@ -104,8 +104,8 @@ or ``b`` value changes.
         auto greeting = observe("Hello "s + name + "!"s);
 
         // Subscribe to greeting changes.
-        greeting.subscribe([](auto const & name) {
-                               cout << name << endl;
+        greeting.subscribe([](auto const & hello) {
+                               cout << hello << endl;
                            });
 
         while(cin)
@@ -145,9 +145,9 @@ setters inaccessible from outside the enclosing class.
     // Type exit to stop.
 
     // Greet people using names read from stdin.
-    class NameModel
+    class Greeter
     {
-        OBSERVABLE_PROPERTIES(NameModel)
+        OBSERVABLE_PROPERTIES(Greeter)
 
     public:
         // Current name.
@@ -179,17 +179,17 @@ setters inaccessible from outside the enclosing class.
 
     int main()
     {
-        NameModel model;
+        Greeter greeter;
 
         // Print the greetings.
-        model.greeting.subscribe([](auto const & hello) {
-                                     cout << hello << endl;
-                                 });
+        greeter.greeting.subscribe([](auto const & hello) {
+                                       cout << hello << endl;
+                                   });
 
         // Properties cannot be set from outside the class. The
         // line below will not compile:
-        // model.name = input_name;
+        // greeter.name = input_name;
 
-        model.read_names();
+        greeter.read_names();
         return 0;
     }
