@@ -1,18 +1,17 @@
 include(compile_flags)
-include(observable_includes)
 include(default_source_groups)
 
 # Function benchmark target.
 add_executable(bench_function src/utility.h
                               src/function.cpp)
-add_observable_includes(bench_function)
 set_cpp_standard(bench_function)
+target_link_libraries(bench_function observable)
 
 # Virtual function benchmark target.
 add_executable(bench_virtual src/utility.h
                              src/virtual.cpp)
-add_observable_includes(bench_virtual)
 set_cpp_standard(bench_virtual)
+target_link_libraries(bench_virtual observable)
 
 # Qt signal-slot benchmark target.
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -35,7 +34,6 @@ if(Qt5_FOUND)
     add_executable(bench_qt src/utility.h
                             src/qt.h
                             src/qt.cpp)
-    add_observable_includes(bench_qt)
     set_cpp_standard(bench_qt)
-    target_link_libraries(bench_qt Qt5::Core)
+    target_link_libraries(bench_qt observable Qt5::Core)
 endif()

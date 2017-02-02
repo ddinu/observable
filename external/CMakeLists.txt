@@ -5,8 +5,8 @@ include(compile_flags)
 
 set_cpp_standard(gtest)
 disable_warnings(gtest)
-set_common_compiler_flags(gtest)
+target_include_directories(gtest INTERFACE gtest/include)
 
 set_cpp_standard(gtest_main)
 disable_warnings(gtest_main)
-set_common_compiler_flags(gtest_main)
+target_include_directories(gtest_main INTERFACE gtest/include)

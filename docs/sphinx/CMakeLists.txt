@@ -1,8 +1,7 @@
 set(SOURCES conf.py
             developers.rst
             getting-started.rst
-            index.rst
-            toc.rst)
+            index.rst)
 
 set(OUTPUT_DIR ${CMAKE_BINARY_DIR}/docs/html)
 

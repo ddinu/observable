@@ -1,7 +1,6 @@
 add_subdirectory(shared_lib)
 
 include(compile_flags)
-include(observable_includes)
 include(default_source_groups)
 
 set(SOURCE_FILES src/detail/collection.cpp
@@ -26,12 +25,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 endif()
 
 configure_compiler(tests)
-add_observable_includes(tests)
-target_link_libraries(tests shared gtest gtest_main)
+target_link_libraries(tests observable shared gtest gtest_main)
 target_include_directories(tests PRIVATE src shared_lib)
-target_include_directories(tests
-                           SYSTEM
-                           PRIVATE ${PROJECT_SOURCE_DIR}/external/gtest/include)
 
 add_custom_command(
     TARGET tests POST_BUILD

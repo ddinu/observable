@@ -17,7 +17,11 @@ set(SOURCE_FILES include/observable/observable.hpp
                  include/observable/detail/collection.hpp
                  include/observable/detail/type_traits.hpp)
 
-add_custom_target(observable SOURCES ${SOURCE_FILES})
+add_library(observable INTERFACE)
+target_include_directories(observable INTERFACE include)
+
+# Dummy target to get a project in IDEs.
+add_custom_target(observable_headers SOURCES ${SOURCE_FILES})
 
 add_subdirectory(external)
 add_subdirectory(tests)

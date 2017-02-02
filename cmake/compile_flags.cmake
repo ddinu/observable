@@ -47,20 +47,10 @@ function(set_cpp_standard target_name)
     set_property(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED on)
 endfunction(set_cpp_standard)
 
-# Set some common compiler flags.
-#
-# - target_name Name of the configured target.
-function(set_common_compiler_flags target_name)
-    if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-        target_compile_options(${target_name} PUBLIC /EHsc)
-    endif()
-endfunction(set_common_compiler_flags)
-
 # Set the default compiler flags.
 #
 # - target_name Name of the configured target.
 function(configure_compiler target_name)
     enable_strict_warnings(${target_name})
-    set_common_compiler_flags(${target_name})
     set_cpp_standard(${target_name})
 endfunction(configure_compiler)
