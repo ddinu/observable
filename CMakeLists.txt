@@ -10,10 +10,10 @@ set(SOURCE_FILES include/observable/observable.hpp
                  include/observable/subject.hpp
                  include/observable/subscription.hpp
                  include/observable/value.hpp
-                 include/observable/expression/expression.hpp
-                 include/observable/expression/operators.hpp
-                 include/observable/expression/tree.hpp
-                 include/observable/expression/utility.hpp
+                 include/observable/expressions/expression.hpp
+                 include/observable/expressions/operators.hpp
+                 include/observable/expressions/tree.hpp
+                 include/observable/expressions/utility.hpp
                  include/observable/detail/collection.hpp
                  include/observable/detail/type_traits.hpp)
 

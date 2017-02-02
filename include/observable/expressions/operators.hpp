@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
-#include "observable/expression/utility.hpp"
-#include "observable/expression/tree.hpp"
+#include "observable/expressions/utility.hpp"
+#include "observable/expressions/tree.hpp"
 
 namespace observable { inline namespace expr {
 

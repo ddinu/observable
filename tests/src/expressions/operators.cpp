@@ -1,7 +1,7 @@
 #include <functional>
 #include "observable/value.hpp"
-#include "observable/expression/operators.hpp"
-#include "observable/expression/tree.hpp"
+#include "observable/expressions/operators.hpp"
+#include "observable/expressions/tree.hpp"
 #include "gtest.h"
 
 using observable::value;

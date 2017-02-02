@@ -1,5 +1,5 @@
 #include <memory>
-#include "observable/expression/expression.hpp"
+#include "observable/expressions/expression.hpp"
 #include "gtest.h"
 
 namespace observable { inline namespace expr { namespace test {

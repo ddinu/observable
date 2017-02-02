@@ -8,7 +8,7 @@
 #include <utility>
 #include "observable/subscription.hpp"
 #include "observable/value.hpp"
-#include "observable/expression/tree.hpp"
+#include "observable/expressions/tree.hpp"
 
 namespace observable { inline namespace expr {
 

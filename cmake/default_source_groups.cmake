@@ -1,10 +1,10 @@
 source_group(include REGULAR_EXPRESSION .*/include/.*)
 source_group(include\\detail REGULAR_EXPRESSION .*/include/.*/detail/.*)
-source_group(include\\expression REGULAR_EXPRESSION .*/include/.*/expression/.*)
+source_group(include\\expressions REGULAR_EXPRESSION .*/include/.*/expressions/.*)
 
 source_group(src REGULAR_EXPRESSION .*\\.cpp)
 source_group(src REGULAR_EXPRESSION .*\\.cc)
 source_group(src REGULAR_EXPRESSION .*\\.h)
 source_group(src REGULAR_EXPRESSION .*/src/.*)
 source_group(src\\detail REGULAR_EXPRESSION .*/src/detail/.*)
-source_group(src\\expression REGULAR_EXPRESSION .*/src/expression/.*)
+source_group(src\\expressions REGULAR_EXPRESSION .*/src/expressions/.*)
