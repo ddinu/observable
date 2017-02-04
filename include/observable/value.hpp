@@ -320,7 +320,7 @@ struct is_value_<value<T, R ...>> : std::true_type { };
 //! \endcond
 
 //! Check if a type is a value.
-template <typename ... T>
-struct is_value : is_value_<std::decay_t<T> ...> { };
+template <typename T>
+struct is_value : is_value_<std::decay_t<T>> { };
 
 }
