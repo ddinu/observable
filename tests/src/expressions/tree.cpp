@@ -2,7 +2,7 @@
 #include "observable/expressions/tree.hpp"
 #include "gtest.h"
 
-namespace observable { namespace detail { namespace test {
+namespace observable { inline namespace expr { namespace test {
 
 TEST(expression_tree_test, constant_node_can_be_evaluated)
 {

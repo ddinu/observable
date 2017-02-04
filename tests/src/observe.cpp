@@ -1,7 +1,11 @@
 #include "observable/observe.hpp"
+#include "observable/value.hpp"
 #include "gtest.h"
 
-namespace observable { namespace test {
+namespace {
+
+using observable::value;
+using observable::updater;
 
 TEST(observe_test, single_value_with_immediate_update)
 {
@@ -273,4 +277,4 @@ TEST(observe_test, chained_expressions_with_manual_update_are_updated)
     ASSERT_EQ(7, v2.get());
 }
 
-} }
+}

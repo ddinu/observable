@@ -4,6 +4,8 @@
 #include "observable/expressions/tree.hpp"
 #include "gtest.h"
 
+namespace {
+
 using observable::value;
 using observable::expression_node;
 
@@ -92,4 +94,6 @@ TEST(expression_operators_test, node_is_updated)
     r.eval();
 
     ASSERT_FLOAT_EQ(((a.get() + b.get()) * c.get()) / 2.5f, r.get());
+}
+
 }
