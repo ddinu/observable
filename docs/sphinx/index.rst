@@ -44,4 +44,4 @@ should be easy too.
     :glob:
 
     *
-    Reference <https://danieldinu.com/observable/reference/namespaceobservable.html>
+    Reference <https://danieldinu.com/observable/reference/group__observable.html>

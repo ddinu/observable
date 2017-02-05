@@ -20,9 +20,9 @@ The library has a few classes and a set of macros and function overloads:
 
 .. _subject\<void(Args ...)\>: reference/classobservable_1_1subject_3_01void_07_args_01_8_8_8_08_4.html
 .. _value\<T\>: reference/classobservable_1_1value_3_01_value_type_00_01_equality_comparator_01_4.html
-.. _OBSERVABLE_PROPERTIES: reference/value_8hpp.html#a29f96693ca8b710b884b72860149fb7b
-.. _observable_property: reference/value_8hpp.html#acca2b9245c501c1f5f71fabd516a66d3
-.. _observe(): reference/namespaceobservable.html#a25c1181fc75df6d45c0e8da530ce8639
+.. _OBSERVABLE_PROPERTIES: reference/group__observable.html#ga29f96693ca8b710b884b72860149fb7b
+.. _observable_property: reference/group__observable.html#gacca2b9245c501c1f5f71fabd516a66d3
+.. _observe(): reference/group__observable.html#ga25c1181fc75df6d45c0e8da530ce8639
 
 Getting started with subjects
 -----------------------------

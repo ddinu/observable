@@ -14,6 +14,7 @@ namespace observable { namespace detail {
 //!
 //! \tparam ValueType Type of the elements that will be stored inside the
 //!                   collection. This type must be at least move constructible.
+//! \ingroup observable_detail
 template <typename ValueType>
 class collection final
 {

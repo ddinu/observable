@@ -30,6 +30,7 @@ struct is_expression_node;
 //! evaluated.
 //!
 //! \warning None of the methods in this class can be safely called concurrently.
+//! \ingroup observable_detail
 template <typename ResultType>
 class expression_node final
 {
@@ -220,6 +221,8 @@ struct is_expression_node_<expression_node<T>> : std::true_type { };
 //!
 //! The static member ``value`` will be true if the provided type is an
 //! expression_node.
+//!
+//! \ingroup observable_detail
 template <typename T>
 struct is_expression_node : is_expression_node_<std::decay_t<T>> { };
 

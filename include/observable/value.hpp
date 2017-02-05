@@ -32,6 +32,8 @@ class value_updater;
 //! \tparam EqualityComparator A comparator to use when checking if new values
 //!                            are different than the stored value. Default is
 //!                            ``std::equal_to<>``.
+//!
+//! \ingroup observable
 template <typename ValueType, typename EqualityComparator>
 class value<ValueType, EqualityComparator>
 {
@@ -221,6 +223,8 @@ private:
 //! \tparam EqualityComparator A comparator to use when checking if new values
 //!                            are different than the stored value.
 //! \tparam EnclosingType A type that will have access to the value's setters.
+//!
+//! \ingroup observable
 template <typename ValueType, typename EqualityComparator, typename EnclosingType>
 class value<ValueType, EqualityComparator, EnclosingType> :
     public value<ValueType, EqualityComparator>
@@ -263,6 +267,8 @@ private:
 //!     public:
 //!         observable_property<int> my_val;
 //!     };
+//!
+//! \ingroup observable
 #define OBSERVABLE_PROPERTIES(EnclosingType) \
     using Observable_Property_EnclosingType_ = EnclosingType;
 
@@ -290,10 +296,13 @@ namespace detail {
 //!
 //! \see observable::value<ValueType, EqualityComparator>
 //! \see observable::value<ValueType, EqualityComparator, EnclosingType>
+//! \ingroup observable
 #define observable_property \
     ::observable::detail::prop_<Observable_Property_EnclosingType_>::type
 
 //! Interface used to update a value.
+//!
+//! \ingroup observable
 template <typename ValueType>
 class value_updater
 {
@@ -320,6 +329,8 @@ struct is_value_<value<T, R ...>> : std::true_type { };
 //! \endcond
 
 //! Check if a type is a value.
+//!
+//! \ingroup observable_detail
 template <typename T>
 struct is_value : is_value_<std::decay_t<T>> { };
 

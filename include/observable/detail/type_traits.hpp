@@ -15,6 +15,8 @@ namespace observable { namespace detail {
 //!
 //! The static member ``value`` will be true, if the CallableType is compatible
 //! with the ObserverType.
+//!
+//! \ingroup observable_detail
 template <typename CallableType, typename ObserverType>
 using is_compatible_with_observer = std::is_convertible<
                                         CallableType,
@@ -31,6 +33,8 @@ using is_compatible_with_observer = std::is_convertible<
 //!
 //! The static member ``value`` will be true if, the CallableType can be used
 //! with the SubjectType.
+//!
+//! \ingroup observable_detail
 template <typename CallableType, typename SubjectType>
 using is_compatible_with_subject = is_compatible_with_observer<
                                         CallableType,

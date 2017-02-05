@@ -7,6 +7,8 @@ namespace observable {
 
 //! Infinite subscription that will not unsubscribe the associated observer
 //! when destroyed.
+//!
+//! \ingroup observable
 class infinite_subscription
 {
 public:
@@ -84,6 +86,8 @@ private:
 //!
 //! \note All methods of this class can be safely called in parallel, from multiple
 //!       threads.
+//!
+//! \ingroup observable
 class unique_subscription final : public infinite_subscription
 {
 public:
@@ -126,6 +130,8 @@ public:
 //!
 //! \note All methods of this class can be safely called in parallel, from multiple
 //!       threads.
+//!
+//! \ingroup observable
 class shared_subscription final
 {
 public:

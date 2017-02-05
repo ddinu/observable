@@ -16,6 +16,8 @@ namespace observable { inline namespace expr {
 //! the same time.
 //!
 //! You can use this type as-is or extend it.
+//!
+//! \ingroup observable_detail
 class expression_evaluator
 {
 public:
@@ -92,6 +94,8 @@ private:
 //! \tparam EvaluatorType An instance of expression_evaluator, or a type derived
 //!                       from it.
 //! \warning None of the methods in this class can be safely called concurrently.
+//!
+//! \ingroup observable_detail
 template <typename ValueType, typename EvaluatorType=expression_evaluator>
 class expression : public value_updater<ValueType>
 {
@@ -165,6 +169,8 @@ private:
 //!
 //! Expressions using this evaluator do not need manual updates. Manual update
 //! calls will not do anything.
+//!
+//! \ingroup observable_detail
 struct immediate_evaluator final : expression_evaluator { };
 
 //! \cond
@@ -179,6 +185,7 @@ inline auto get_dummy_evaluator_()
 //! node changes.
 //!
 //! \see expression<ValueType, EvaluatorType>
+//! \ingroup observable_detail
 template <typename ValueType>
 class expression<ValueType, immediate_evaluator> :
     public expression<ValueType, expression_evaluator>

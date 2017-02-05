@@ -14,6 +14,8 @@ namespace observable {
 //! updater as a first parameter to ``observe()``.
 //!
 //! \note This class can be used as-is or derived.
+//!
+//! \ingroup observable
 class updater : public expr::expression_evaluator
 {
 public:
@@ -30,6 +32,8 @@ private:
 //!
 //! \param[in] val Value to observe.
 //! \return An observable value that automatically mirrors the provided parameter.
+//!
+//! \ingroup observable
 template <typename ValueType, typename ... Rest>
 inline auto observe(value<ValueType, Rest ...> & val)
 {
@@ -45,6 +49,8 @@ inline auto observe(value<ValueType, Rest ...> & val)
 //! \param[in] root Expression tree to observe.
 //! \return An observable value that is automatically updated when the provided
 //!         expression tree changes.
+//!
+//! \ingroup observable
 template <typename ValueType>
 inline auto observe(expr::expression_node<ValueType> && root)
 {
@@ -63,6 +69,8 @@ inline auto observe(expr::expression_node<ValueType> && root)
 //! \param[in] val A value to synchronize with the returned value.
 //! \return An observable value that is manually synchronized to the provided
 //!         value.
+//!
+//! \ingroup observable
 template <typename UpdaterType, typename ValueType, typename ... Rest>
 inline auto observe(UpdaterType & ud, value<ValueType, Rest ...> & val)
 {
@@ -87,6 +95,8 @@ inline auto observe(UpdaterType & ud, value<ValueType, Rest ...> & val)
 //!               returned value with the expression tree.
 //! \param[in] root An expression tree to be used for updating the returned value.
 //! \return An observable value that is updated from the provided expression.
+//!
+//! \ingroup observable
 template <typename UpdaterType, typename ValueType>
 inline auto observe(UpdaterType & ud, expr::expression_node<ValueType> && root)
 {

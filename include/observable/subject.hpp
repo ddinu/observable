@@ -31,6 +31,8 @@ class subject;
 //!
 //! \warning Even though subjects themselves are safe to use in parallel,
 //!          observers need to handle being called from multiple threads too.
+//!
+//! \ingroup observable
 template <typename ... Args>
 class subject<void(Args ...)>
 {
@@ -142,7 +144,9 @@ private:
 //!
 //! \tparam EnclosingType This type will be declared a friend of the subject and
 //!                       will have access to the notify() method.
+//!
 //! \see subject<void(Args ...)>
+//! \ingroup observable
 template <typename ObserverType, typename EnclosingType>
 class subject<ObserverType, EnclosingType> : public subject<ObserverType>
 {
