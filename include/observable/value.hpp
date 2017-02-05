@@ -11,8 +11,29 @@
 namespace observable {
 
 //! \cond
+namespace detail {
+
+struct equal_to
+{
+    template <typename A, typename B>
+    auto operator()(A && a, B && b) const
+        -> std::enable_if_t<are_equality_comparable<A, B>::value, bool>
+    {
+        return std::equal_to<> { }(std::forward<A>(a), std::forward<B>(b));
+    }
+
+    template <typename A, typename B>
+    auto operator()(A &&, B &&) const noexcept
+        -> std::enable_if_t<!are_equality_comparable<A, B>::value, bool>
+    {
+        return false;
+    }
+};
+
+}
+
 template <typename ValueType,
-          typename EqualityComparator=std::equal_to<>,
+          typename EqualityComparator=detail::equal_to,
           typename ...>
 class value;
 
@@ -31,7 +52,9 @@ class value_updater;
 //!                   This type will need to be at least movable.
 //! \tparam EqualityComparator A comparator to use when checking if new values
 //!                            are different than the stored value. Default is
-//!                            ``std::equal_to<>``.
+//!                            ``std::equal_to<>`` if ``ValueType`` is equality-
+//!                            comparable, else a comparator that always compares
+//!                            false.
 //!
 //! \ingroup observable
 template <typename ValueType, typename EqualityComparator>
@@ -208,6 +231,9 @@ private:
     value_subject value_observers_;
     std::unique_ptr<value_updater<ValueType>> updater_;
     EqualityComparator eq_;
+
+    template <typename, typename, typename ...>
+    friend class value;
 };
 
 //! Value specialization that can be used inside a class, as a member, to

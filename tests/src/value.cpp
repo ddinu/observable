@@ -244,4 +244,24 @@ TEST(value_test, value_is_updated_by_updater_after_move)
     ASSERT_EQ(7, new_val.get());
 }
 
+TEST(value_test, can_create_value_with_non_equality_comparable_type)
+{
+    struct dummy { };
+    auto v = value<dummy> { };
+    v.get();
+}
+
+TEST(value_test, value_with_non_equality_comparable_type_always_triggers_change)
+{
+    struct dummy { };
+    auto v = value<dummy> { };
+
+    auto call_count = 0;
+    v.subscribe([&]() { ++call_count; });
+    v.subscribe([&](auto &&) { ++call_count; });
+    v = dummy { };
+
+    ASSERT_EQ(2, call_count);
+}
+
 } }
