@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <tuple>
 #include <utility>
 #include "observable/expressions/utility.hpp"
 
@@ -96,6 +97,14 @@ namespace filter_detail {
             return min(high, max(low, val));
         }
     };
+
+    struct zip_
+    {
+        template <typename ... Args>
+        auto operator()(Args && ... args) const
+        {
+            using std::make_tuple;
+            return make_tuple(std::forward<Args>(args) ...);
         }
     };
 }
@@ -173,6 +182,17 @@ template <typename Val, typename Low, typename High>
 auto clamp(Val && val, Low && low, High && high);
 #endif
 OBSERVABLE_ADAPT_FILTER(clamp, filter_detail::clamp_ { })
+
+#if defined(DOXYGEN)
+//! Convert a number of arguments to a tuple containing the arguments.
+//!
+//! \param args ... Arguments to pack into a tuple.
+//! \return Tuple containing the provided arguments.
+//!
+//! \ingroup observable_expressions
+template <typename ... Args>
+auto zip(Args && ... args);
 #endif
+OBSERVABLE_ADAPT_FILTER(zip, filter_detail::zip_ { })
 
 } }

@@ -157,4 +157,27 @@ TEST(filter_test, clamp)
     ASSERT_EQ(35, res.get());
 }
 
+TEST(filter_test, zip)
+{
+    auto a = value<int> { 1 };
+    auto b = value<int> { 2 };
+    auto c = value<int> { 3 };
+
+    auto res = observe(zip(a, b, c));
+
+    using std::get;
+
+    ASSERT_EQ(1, get<0>(res.get()));
+    ASSERT_EQ(2, get<1>(res.get()));
+    ASSERT_EQ(3, get<2>(res.get()));
+
+    a = 10;
+    b = 20;
+    c = 30;
+
+    ASSERT_EQ(10, get<0>(res.get()));
+    ASSERT_EQ(20, get<1>(res.get()));
+    ASSERT_EQ(30, get<2>(res.get()));
+}
+
 }
