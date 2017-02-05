@@ -6,6 +6,7 @@ include(default_source_groups)
 set(SOURCE_FILES src/detail/collection.cpp
                  src/detail/type_traits.cpp
                  src/expressions/expression.cpp
+                 src/expressions/filters.cpp
                  src/expressions/operators.cpp
                  src/expressions/tree.cpp
                  src/gtest.h
