@@ -4,6 +4,8 @@
 #include "observable/subject.hpp"
 #include "observable/value.hpp"
 #include "observable/observe.hpp"
+#include "observable/expressions/filters.hpp"
+#include "observable/expressions/math.hpp"
 
 // Some Doxygen boilerplate.
 
