@@ -31,7 +31,7 @@ namespace observable { inline namespace expr {
 
 //! \cond
 namespace filter_detail {
-    struct select
+    struct select_
     {
         template <typename CondType,
                   typename TrueType,
@@ -44,25 +44,27 @@ namespace filter_detail {
         }
     };
 
-    struct min
+    struct min_
     {
         template <typename ... Args>
         auto operator()(Args && ... args) const
         {
-            return std::min({ std::forward<Args>(args) ... });
+            using std::min;
+            return min({ std::forward<Args>(args) ... });
         }
     };
 
-    struct max
+    struct max_
     {
         template <typename ... Args>
         auto operator()(Args && ... args) const
         {
-            return std::max({ std::forward<Args>(args) ... });
+            using std::max;
+            return max({ std::forward<Args>(args) ... });
         }
     };
 
-    struct mean
+    struct mean_
     {
         template <typename ... Args>
         auto operator()(Args && ... args) const
@@ -84,12 +86,16 @@ namespace filter_detail {
         }
     };
 
-    struct clamp
+    struct clamp_
     {
         template <typename Val, typename Low, typename High>
         auto operator()(Val && val, Low && low, High && high) const
         {
-            return std::min(high, std::max(low, val));
+            using std::min;
+            using std::max;
+            return min(high, max(low, val));
+        }
+    };
         }
     };
 }
@@ -107,10 +113,10 @@ namespace filter_detail {
 //! \return One of true_val or false_val.
 //!
 //! \ingroup observable_expressions
-template <typename Return, typename Cond, typename TrueVal, typename FalseVal>
-Return select(Cond && cond, TrueVal && true_val, FalseVal && false_val);
+template <typename Cond, typename TrueVal, typename FalseVal>
+auto select(Cond && cond, TrueVal && true_val, FalseVal && false_val);
 #endif
-OBSERVABLE_ADAPT_FILTER(select, filter_detail::select { })
+OBSERVABLE_ADAPT_FILTER(select, filter_detail::select_ { })
 
 #if defined(DOXYGEN)
 //! Return the argument with the minimum value.
@@ -122,9 +128,9 @@ OBSERVABLE_ADAPT_FILTER(select, filter_detail::select { })
 //!
 //! \ingroup observable_expressions
 template <typename ... Values>
-Return min(Values ... values);
+auto min(Values ... values);
 #endif
-OBSERVABLE_ADAPT_FILTER(min, filter_detail::min { })
+OBSERVABLE_ADAPT_FILTER(min, filter_detail::min_ { })
 
 #if defined(DOXYGEN)
 //! Return the argument with the maximum value.
@@ -136,9 +142,9 @@ OBSERVABLE_ADAPT_FILTER(min, filter_detail::min { })
 //!
 //! \ingroup observable_expressions
 template <typename ... Values>
-Return max(Values ... values);
+auto max(Values ... values);
 #endif
-OBSERVABLE_ADAPT_FILTER(max, filter_detail::max { })
+OBSERVABLE_ADAPT_FILTER(max, filter_detail::max_ { })
 
 #if defined(DOXYGEN)
 //! Return the mean of the arguments.
@@ -148,9 +154,9 @@ OBSERVABLE_ADAPT_FILTER(max, filter_detail::max { })
 //!
 //! \ingroup observable_expressions
 template <typename ... Values>
-Return mean(Values ... values);
+auto mean(Values ... values);
 #endif
-OBSERVABLE_ADAPT_FILTER(mean, filter_detail::mean { })
+OBSERVABLE_ADAPT_FILTER(mean, filter_detail::mean_ { })
 
 #if defined(DOXYGEN)
 //! Keep a value between a minimum and maximum.
@@ -164,8 +170,9 @@ OBSERVABLE_ADAPT_FILTER(mean, filter_detail::mean { })
 //!
 //! \ingroup observable_expressions
 template <typename Val, typename Low, typename High>
-Return clamp(Val && val, Low && low, High && high);
+auto clamp(Val && val, Low && low, High && high);
 #endif
-OBSERVABLE_ADAPT_FILTER(clamp, filter_detail::clamp { })
+OBSERVABLE_ADAPT_FILTER(clamp, filter_detail::clamp_ { })
+#endif
 
 } }
