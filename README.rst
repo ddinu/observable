@@ -23,7 +23,7 @@ Example:
     int main()
     {
         auto sub = subject<void(string)> { };
-        sub.subscribe([](auto const & str) { cout << str << endl; });
+        sub.subscribe([](auto const & msg) { cout << msg << endl; });
 
         // "Hello world!" will be printed on stdout.
         sub.notify("Hello world!");
@@ -38,7 +38,7 @@ Example:
                        );
 
         avg.subscribe([](auto val) { cout << val << endl; });
-        eq_msg.subscribe([](auto && msg) { cout << msg << endl; });
+        eq_msg.subscribe([](auto const & msg) { cout << msg << endl; });
 
         // "10" and "not equal" will be printed on stdout in an
         // unspecified order.
