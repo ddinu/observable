@@ -165,12 +165,13 @@ public:
             -> value<ValueType, EqualityComparator> & =delete;
 
     //! Observable values are move-constructible.
-    template <typename OtherEqualityComparator>
+    template <typename OtherEqualityComparator,
+              typename = std::enable_if_t<std::is_move_constructible<ValueType>::value>>
     value(value<ValueType, OtherEqualityComparator> && other)
         noexcept(std::is_nothrow_move_constructible<ValueType>::value &&
                  std::is_nothrow_move_constructible<void_subject>::value &&
                  std::is_nothrow_move_constructible<value_subject>::value) :
-        value_ { std::move(other.value_) },
+        value_(std::move(other.value_)),
         void_observers_ { std::move(other.void_observers_) },
         value_observers_ { std::move(other.value_observers_) },
         updater_ { std::move(other.updater_) }
@@ -184,7 +185,8 @@ public:
     }
 
     //! Observable values are move-assignable.
-    template <typename OtherEqualityComparator>
+    template <typename OtherEqualityComparator,
+              typename =  std::enable_if_t<std::is_move_assignable<ValueType>::value>>
     auto operator=(value<ValueType, OtherEqualityComparator> && other)
         noexcept(std::is_nothrow_move_assignable<ValueType>::value &&
                  std::is_nothrow_move_assignable<void_subject>::value &&

@@ -20,10 +20,10 @@
 //! \ingroup observable_expressions
 #define OBSERVABLE_ADAPT_FILTER(NAME, OP) \
 template <typename ... Args> \
-auto NAME(Args && ... args) \
-    -> std::enable_if_t< \
-            ::observable::expr::expr_detail::are_any_observable<Args ...>::value, \
-            ::observable::expr::expr_detail::result_node_t<decltype(OP), Args ...>> \
+inline auto NAME(Args && ... args) \
+                -> std::enable_if_t< \
+                        ::observable::expr::expr_detail::are_any_observable<Args ...>::value, \
+                        ::observable::expr::expr_detail::result_node_t<decltype(OP), Args ...>> \
 { \
     return ::observable::expr::expr_detail::make_node(OP, std::forward<Args>(args) ...); \
 }

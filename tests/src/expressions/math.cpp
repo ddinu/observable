@@ -4,7 +4,7 @@
 #include "observable/expressions/math.hpp"
 #include "gtest.h"
 
-namespace {
+namespace { // Filters should be usable with ADL.
 
 using observable::value;
 

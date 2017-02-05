@@ -4,7 +4,7 @@
 #include "observable/expressions/tree.hpp"
 #include "gtest.h"
 
-namespace {
+namespace { // Operators should be usable with ADL.
 
 using observable::value;
 using observable::expression_node;

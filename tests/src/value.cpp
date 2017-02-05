@@ -59,6 +59,7 @@ TEST(value_test, is_not_nothrow_move_constructible_if_value_type_throws)
 
 TEST(value_test, is_nothrow_move_assignable)
 {
+    ASSERT_TRUE(std::is_move_assignable<value<int>>::value);
     ASSERT_TRUE(std::is_nothrow_move_assignable<value<int>>::value);
 }
 
