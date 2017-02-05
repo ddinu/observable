@@ -12,6 +12,7 @@ set(SOURCE_FILES include/observable/observable.hpp
                  include/observable/value.hpp
                  include/observable/expressions/expression.hpp
                  include/observable/expressions/filters.hpp
+                 include/observable/expressions/math.hpp
                  include/observable/expressions/operators.hpp
                  include/observable/expressions/tree.hpp
                  include/observable/expressions/utility.hpp
