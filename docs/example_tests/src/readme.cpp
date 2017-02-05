@@ -24,12 +24,19 @@ TEST(example_tests, readme)
         sub.notify("Hello world!");
 
         auto a = value<int> { 5 };
-        auto b = value<int> { 7 };
-        auto avg = observe((a + b) / 2.0f);
+        auto b = value<int> { 5 };
+        auto avg = observe(
+                        (a + b) / 2.0f
+                   );
+        auto eq_msg = observe(
+                        select(a == b, "equal", "not equal")
+                       );
 
         avg.subscribe([](auto val) { cout << val << endl; });
+        eq_msg.subscribe([](auto && msg) { cout << msg << endl; });
 
-        // 10 will be printed on stdout.
+        // "10" and "not equal" will be printed on stdout in an
+        // unspecified order.
         b = 15;
 
         //return 0;
@@ -37,5 +44,6 @@ TEST(example_tests, readme)
 
     // END EXAMPLE CODE
 
-    ASSERT_EQ("Hello world!\n10\n"s, cout_buf.str());
+    ASSERT_TRUE("Hello world!\n10\nnot equal\n"s == cout_buf.str() ||
+                "Hello world!\nnot equal\n10\n"s == cout_buf.str());
 }
