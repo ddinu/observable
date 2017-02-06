@@ -20,7 +20,7 @@ class updater : public expr::expression_evaluator
 {
 public:
     //! Update all observable values that have been associated with this instance.
-    void update() { eval_all(); }
+    void update_all() { eval_all(); }
 
 private:
     using expr::expression_evaluator::eval_all;

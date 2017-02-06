@@ -61,7 +61,7 @@ TEST(observe_test, single_value_with_manual_update_propagates_changes)
     auto result = observe(test_updater, val);
 
     val = 7;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(7, result.get());
 }
@@ -97,7 +97,7 @@ TEST(observe_test, single_value_with_manual_update_triggers_change_notification_
     auto call_count = 0;
     result.subscribe([&]() { ++call_count; }).release();
     val = 10;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(1, call_count);
 }
@@ -157,7 +157,7 @@ TEST(observe_test, expression_with_manual_update_propagates_changes)
 
     a = 10;
     b = 20;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(15, result.get());
 }
@@ -203,7 +203,7 @@ TEST(observe_test, expression_with_manual_update_triggers_change_notification_on
 
     a = 10;
     b = 20;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(1, call_count);
 }
@@ -255,7 +255,7 @@ TEST(observe_test, chained_values_with_manual_update_are_updated)
     auto v2 = observe(test_updater, v1);
 
     a = 3;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(3, v2.get());
 }
@@ -269,7 +269,7 @@ TEST(observe_test, chained_expressions_with_manual_update_are_updated)
     auto v2 = observe(test_updater, v1 + 2);
 
     a = 3;
-    test_updater.update();
+    test_updater.update_all();
 
     ASSERT_EQ(7, v2.get());
 }
