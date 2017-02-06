@@ -4,7 +4,8 @@ include(default_source_groups)
 set(SOURCE_FILES src/utility.h
                  src/getting_started.cpp
                  src/index.cpp
-                 src/readme.cpp)
+                 src/readme.cpp
+                 src/using_expressions.cpp)
 
 add_executable(docs_example_tests ${SOURCE_FILES})
 

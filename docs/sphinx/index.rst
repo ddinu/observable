@@ -44,4 +44,5 @@ should be easy too.
     :glob:
 
     *
+    pages/index
     Reference <https://danieldinu.com/observable/reference/group__observable.html>
