@@ -99,7 +99,7 @@ Predefined filters
 ++++++++++++++++++
 
 There are a number of `predefined filters <../reference/group__observable__expressions.html>`_,
-that you can check out in the `reference <reference/group__observable__expressions.html>`_.
+that you can check out in the `reference <../reference/group__observable__expressions.html>`_.
 
 Like with operators, you can take advantage of `ADL`_ and just use the filter's
 unqualified name.
@@ -133,7 +133,7 @@ You can write your own expression filters.
 
 It's pretty easy as you won't need to handle the expression nodes directly;
 just write a normal function taking the right values and use the
-`OBSERVABLE_ADAPT_FILTER <group__observable__expressions.html#ga06de81bd93a814eefde0b3ba3118d3fe>`_
+`OBSERVABLE_ADAPT_FILTER <../reference/group__observable__expressions.html#ga06de81bd93a814eefde0b3ba3118d3fe>`_
 macro.
 
 The predefined filters are created with the same macro.
