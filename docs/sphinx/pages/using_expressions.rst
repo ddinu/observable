@@ -99,7 +99,7 @@ Predefined filters
 ++++++++++++++++++
 
 There are a number of `predefined filters <../reference/group__observable__expressions.html>`_,
-that you can check out in the `reference <reference/group__observable__expressions.html>`_.
+that you can check out in the `reference <../reference/group__observable__expressions.html>`_.
 
 Like with operators, you can take advantage of `ADL`_ and just use the filter's
 unqualified name.
