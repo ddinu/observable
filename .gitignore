@@ -6,3 +6,4 @@
 
 # The default out of source build folder
 build/
+.vs/
