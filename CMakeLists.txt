@@ -1,6 +1,8 @@
 project(observable)
 cmake_minimum_required(VERSION 3.0)
 enable_testing()
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(default_source_groups)

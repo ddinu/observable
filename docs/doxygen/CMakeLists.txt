@@ -16,6 +16,7 @@ if(DOXYGEN_FOUND)
                       SOURCES ${SOURCES}
                       COMMENT "Building the Doxygen documentation."
                       BYPRODUCTS ${OUTPUT_DIR})
+    set_target_properties(doxygen_docs PROPERTIES FOLDER docs)
 else()
     message(STATUS "Doxygen not found. Will not create the doxygen_docs target.")
 endif()

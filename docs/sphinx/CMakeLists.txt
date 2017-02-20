@@ -14,6 +14,7 @@ if(PYTHONINTERP_FOUND AND SPHINX_FOUND)
                       SOURCES ${SOURCES}
                       COMMENT "Building the Sphinx documentation."
                       BYPRODUCTS ${OUTPUT_DIR})
+    set_target_properties(sphinx_docs PROPERTIES FOLDER docs)
 else()
     if(NOT PYTHONINTERP_FOUND)
         message(STATUS "Python not found. Will not create the sphinx_docs documentation target.")

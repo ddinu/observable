@@ -8,6 +8,7 @@ set(SOURCE_FILES src/utility.h
                  src/using_expressions.cpp)
 
 add_executable(docs_example_tests ${SOURCE_FILES})
+set_target_properties(docs_example_tests PROPERTIES FOLDER docs)
 
 configure_compiler(docs_example_tests)
 target_include_directories(docs_example_tests PRIVATE src)
