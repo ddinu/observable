@@ -8,10 +8,10 @@ function(enable_strict_warnings target_name)
                     /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868 /wd4571)
         set(debug /WX)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-        set(release -Wall -Wextra -pedantic -Wshadow)
+        set(release -Wall -Wextra -pedantic -Wshadow -Wabi)
         set(debug -Werror)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-        set(release -Weverything -Wno-system-headers -Wno-c++98-compat
+        set(release -Weverything -Wno-system-headers -Wabi -Wno-c++98-compat
                     -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
                     -Wno-global-constructors -Wno-missing-prototypes
                     -Wno-padded -Wno-documentation-unknown-command)
@@ -22,8 +22,8 @@ function(enable_strict_warnings target_name)
                         "Detected id is '${CMAKE_CXX_COMPILER_ID}'.")
     endif()
 
-    target_compile_options(${target_name} PUBLIC ${release})
-    target_compile_options(${target_name} PUBLIC $<$<CONFIG:Debug>:${debug}>)
+    target_compile_options(${target_name} PRIVATE ${release})
+    target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${debug}>)
 endfunction(enable_strict_warnings)
 
 # Disablee all warnings.
@@ -39,6 +39,25 @@ function(disable_warnings target_name)
     endif()
 endfunction(disable_warnings)
 
+# Set the default compile flags.
+#
+# - target_name Name of the configured target.
+function(set_default_flags target_name)
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+        set(flags /MP /GF /Za)
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+        set(flags -fpic)
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+        set(flags -fpic)
+    else()
+        message(WARNING "Custom compiler flags not set.\n"
+                        "Your compiler is not supported.\n"
+                        "Detected id is '${CMAKE_CXX_COMPILER_ID}'.")
+    endif()
+
+    target_compile_options(${target_name} PRIVATE ${flags})
+endfunction(set_default_flags)
+
 # Set the required C++ standard version (ie. C++14).
 #
 # - target_name Name of the configured target.
@@ -53,4 +72,5 @@ endfunction(set_cpp_standard)
 function(configure_compiler target_name)
     enable_strict_warnings(${target_name})
     set_cpp_standard(${target_name})
+    set_default_flags(${target_name})
 endfunction(configure_compiler)
