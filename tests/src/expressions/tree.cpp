@@ -33,7 +33,7 @@ TEST(expression_tree_test, value_node_can_be_evaluated)
 TEST(expression_tree_test, value_node_with_enclosed_can_be_evaluated)
 {
     struct enclosed {
-        value<int, std::equal_to<>, enclosed> val { 5 };
+        value<int, enclosed> val { 5 };
     } enc;
 
     auto node = expression_node<int> { enc.val };
@@ -42,7 +42,7 @@ TEST(expression_tree_test, value_node_with_enclosed_can_be_evaluated)
     ASSERT_EQ(5, node.get());
 }
 
-TEST(expression_tree_test, value_node_can_be_evaluated_after_move)
+TEST(expression_tree_test, value_node_can_be_evaluated_after_node_move)
 {
     auto val = value<int> { 5 };
     auto node = expression_node<int> { val };
@@ -52,6 +52,36 @@ TEST(expression_tree_test, value_node_can_be_evaluated_after_move)
     ASSERT_EQ(5, new_node.get());
 }
 
+TEST(expression_tree_test, value_node_can_be_evaluated_after_value_move)
+{
+    auto val = value<int> { 5 };
+    auto node = expression_node<int> { val };
+
+    auto moved_val = std::move(val);
+
+    node.eval();
+    ASSERT_EQ(5, node.get());
+
+    moved_val = 7;
+    node.eval();
+
+    ASSERT_EQ(7, node.get());
+}
+
+TEST(expression_tree_test, value_node_can_be_evaluated_after_both_value_and_node_move)
+{
+    auto val = value<int> { 5 };
+    auto node = expression_node<int> { val };
+
+    auto moved_val = std::move(val);
+    auto moved_node = std::move(node);
+
+    moved_val = 7;
+    moved_node.eval();
+
+    ASSERT_EQ(7, moved_node.get());
+}
+
 TEST(expression_tree_test, value_node_can_be_evaluated_after_value_is_dead)
 {
     auto node = expression_node<int> { };
@@ -59,6 +89,7 @@ TEST(expression_tree_test, value_node_can_be_evaluated_after_value_is_dead)
     {
         auto val = value<int> { 5 };
         node = expression_node<int> { val };
+        val = 7;
     }
 
     node.eval();

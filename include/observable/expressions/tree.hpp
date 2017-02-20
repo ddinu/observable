@@ -63,24 +63,41 @@ public:
     //! \param[in] value An observable value who will become the node's evaluated
     //!                  value. This value needs to be kept alive for at least
     //!                  the duration of this constructor call.
+    //!
+    //! \note If the value is destroyed, the node will keep returning the last
+    //!       evaluated value indefinitely.
+    //! \note If the value is moved, the node will use the new, moved-into, value.
     template <typename ValueType, typename ... Rest>
     explicit expression_node(value<ValueType, Rest ...> & value)
     {
         static_assert(std::is_convertible<ValueType, ResultType>::value,
                       "ValueType must be convertible to ResultType.");
 
-        data_->subs.emplace_back(value.subscribe([d = data_.get()]() {
-                                                      d->dirty = true;
-                                                      d->notify();
-                                                  }));
+        auto mark_dirty = [d = data_.get()]() {
+                              d->dirty = true;
+                              d->notify();
+                          };
 
-        data_->eval = [v = &value, d = data_.get()]() {
-                          if(!d->dirty)
-                              return;
+        auto update_eval = [d = data_.get()](auto & val) {
+                                d->eval = [=, v = &val]() {
+                                    if(!d->dirty)
+                                        return;
 
-                          d->result = v->get();
-                          d->dirty = false;
-                      };
+                                    d->result = v->get();
+                                    d->dirty = false;
+                                };
+                            };
+
+        data_->subs.emplace_back(value.subscribe(mark_dirty));
+        update_eval(value);
+
+        data_->subs.emplace_back(value.moved.subscribe(update_eval));
+
+        data_->subs.emplace_back(
+                value.destroyed.subscribe([d = data_.get()]() {
+                    d->eval = []() { };
+                    d->subs.clear();
+                }));
 
         data_->eval(); // So we cache the value in case the observable value dies
                        // before our node's first eval.
@@ -101,7 +118,7 @@ public:
     template <typename OpType, typename ... ValueType>
     explicit expression_node(OpType && op, expression_node<ValueType> && ... nodes)
     {
-        static_assert(std::is_convertible<decltype(op(ValueType {} ...)), ResultType>::value,
+        static_assert(std::is_convertible<decltype(op(ValueType { } ...)), ResultType>::value,
                       "Operation must return a type that is convertible to ResultType.");
 
         subscribe_to_nodes(nodes ...);

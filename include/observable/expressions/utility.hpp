@@ -67,15 +67,6 @@ struct val_type : val_type_<std::decay_t<T>> { };
 template <typename T>
 using val_type_t = typename val_type<T>::type;
 
-//! Function that can be used in an unevaluated context to extract a value type
-//! from an expression_node or from an observable value<ValueType, EqualityComparator>.
-//!
-//! This is similar to ``std::declval()``.
-//!
-//! \ingroup observable_detail
-template <typename T>
-inline auto declval() -> val_type_t<T>;
-
 //! Computes the type of the expression_node created for an expression with
 //! callable ``Op`` and corresponding arguments.
 //!

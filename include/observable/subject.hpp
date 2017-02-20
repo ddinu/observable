@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -68,6 +69,7 @@ public:
                       "The provided observer object is not callable or not compatible"
                       " with the subject");
 
+        assert(observers_);
         auto const id = observers_->insert(observer);
 
         return infinite_subscription {
@@ -107,6 +109,7 @@ public:
     //!          be safe to call from multiple threads.
     void notify(Args ... arguments) const
     {
+        assert(observers_);
         observers_->apply([&](auto && observer) { observer(arguments ...); });
     }
 

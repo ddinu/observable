@@ -15,7 +15,7 @@ TEST(observe_test, single_value_with_immediate_update)
 TEST(observe_test, single_enclosed_value_with_immediate_update)
 {
     struct enclosed {
-        value<int, std::equal_to<>, enclosed> val { 5 };
+        value<int, enclosed> val { 5 };
     } enc;
 
     auto result = observe(enc.val);
@@ -37,7 +37,7 @@ TEST(observe_test, single_enclosed_value_with_manual_update)
     auto test_updater = updater { };
 
     struct enclosed {
-        value<int, std::equal_to<>, enclosed> val { 5 };
+        value<int, enclosed> val { 5 };
     } enc;
 
     auto result = observe(test_updater, enc.val);
@@ -272,6 +272,28 @@ TEST(observe_test, chained_expressions_with_manual_update_are_updated)
     test_updater.update_all();
 
     ASSERT_EQ(7, v2.get());
+}
+
+TEST(observe_test, expssion_works_after_everythin_gets_moved)
+{
+    auto a = value<int> { };
+    auto b = value<int> { };
+    auto r = value<double> { };
+
+    {
+        auto a1 = value<int> { 2 };
+        auto b1 = value<int> { 3 };
+        auto r1 = observe((a1 + b1) / 2.0);
+
+        a = std::move(a1);
+        b = std::move(b1);
+        r = std::move(r1);
+    }
+
+    a = 10;
+    b = 30;
+
+    ASSERT_EQ((10 + 30) / 2.0, r.get());
 }
 
 } }

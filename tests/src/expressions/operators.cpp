@@ -20,7 +20,7 @@ TEST(expression_operators_test, NAME) \
     ASSERT_EQ(expected, (OP expression_node<decltype(V)> { V }).get()); \
 \
     struct enclosing { \
-        value<decltype(V), std::equal_to<>, enclosing> v { V }; \
+        value<decltype(V), enclosing> v { V }; \
     } enc ; \
 \
     ASSERT_EQ(expected, (OP enc.v).get()); \
@@ -49,8 +49,8 @@ TEST(expression_operators_test, NAME) \
     ASSERT_EQ(expected, (expression_node<decltype(A)> { A } OP vb).get()); \
 \
     struct enclosing { \
-        value<decltype(A), std::equal_to<>, enclosing> va { A }; \
-        value<decltype(B), std::equal_to<>, enclosing> vb { B }; \
+        value<decltype(A), enclosing> va { A }; \
+        value<decltype(B), enclosing> vb { B }; \
     } enc; \
 \
     ASSERT_EQ(expected, (enc.va OP B).get()); \

@@ -193,7 +193,7 @@ TEST(value_test, can_use_value_enclosed_in_class)
 {
     struct mock
     {
-        value<int, std::equal_to<>, mock> val { 0 };
+        value<int, mock> val { 0 };
         void set_value(int v) { val = v; }
     } foo;
 
@@ -205,7 +205,7 @@ TEST(value_test, can_use_value_enclosed_in_class)
     ASSERT_TRUE(called);
 }
 
-TEST(value_test, can_create_value_from_updater)
+TEST(value_test, can_create_value_with_updater)
 {
     auto val = value<int> { std::make_unique<mock_updater>(5) };
 
@@ -263,6 +263,46 @@ TEST(value_test, value_with_non_equality_comparable_type_always_triggers_change)
     v = dummy { };
 
     ASSERT_EQ(2, call_count);
+}
+
+TEST(value_test, can_create_value_with_custom_equality_comparator)
+{
+    auto v = value<int> {
+                    5,
+                    [](auto a, auto b) {
+                        return std::abs(a) == std::abs(b);
+                    }
+             };
+
+    auto call_count = 0u;
+    v.subscribe([&]() { ++call_count; });
+
+    v = 5;
+    v = -5;
+
+    ASSERT_EQ(0, call_count);
+    ASSERT_EQ(5, v.get());
+}
+
+TEST(value_test, moved_value_keeps_custom_equality_comparator)
+{
+    auto v = value<int> {
+        5,
+        [](auto a, auto b) {
+            return std::abs(a) == std::abs(b);
+        }
+    };
+
+    auto moved = std::move(v);
+
+    auto call_count = 0u;
+    moved.subscribe([&]() { ++call_count; });
+
+    moved = 5;
+    moved = -5;
+
+    ASSERT_EQ(0, call_count);
+    ASSERT_EQ(5, moved.get());
 }
 
 } }

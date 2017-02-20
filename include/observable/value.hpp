@@ -11,6 +11,12 @@
 namespace observable {
 
 //! \cond
+template <typename ValueType, typename ...>
+class value;
+
+template <typename ValueType>
+class value_updater;
+
 namespace detail {
 
 struct equal_to
@@ -31,14 +37,6 @@ struct equal_to
 };
 
 }
-
-template <typename ValueType,
-          typename EqualityComparator=detail::equal_to,
-          typename ...>
-class value;
-
-template <typename ValueType>
-class value_updater;
 //! \endcond
 
 //! Get notified when a value-type changes.
@@ -46,19 +44,17 @@ class value_updater;
 //! When setting a new value, if the new value is different than the existing one,
 //! any subscribed observers will be notified.
 //!
+//! Equality will be checked using ``std::equal_to<ValueType>`` if the ValueType
+//! is EqualityComparable, else all values will be assumed to be unequal.
+//!
 //! \warning None of the methods in this class can be safely called concurrently.
 //!
 //! \tparam ValueType The value-type that will be stored inside the observable.
 //!                   This type will need to be at least movable.
-//! \tparam EqualityComparator A comparator to use when checking if new values
-//!                            are different than the stored value. Default is
-//!                            ``std::equal_to<>`` if ``ValueType`` is equality-
-//!                            comparable, else a comparator that always compares
-//!                            false.
 //!
 //! \ingroup observable
-template <typename ValueType, typename EqualityComparator>
-class value<ValueType, EqualityComparator>
+template <typename ValueType>
+class value<ValueType>
 {
     using void_subject = subject<void()>;
     using value_subject = subject<void(ValueType const &)>;
@@ -81,6 +77,24 @@ public:
         value_ { std::move(initial_value) }
     { }
 
+    //! Create an initialized observable value.
+    //!
+    //! \param initial_value The observable's initial value.
+    //! \param equal A functor to be used for comparing values. The functor must
+    //!              have a signature compatible with the one below:
+    //!
+    //!                 bool(ValueType const &, ValueType const &)
+    //!
+    //!              The comparator must return true if both of its parameters
+    //!              are equal.
+    template <typename EqualityComparator>
+    value(ValueType initial_value, EqualityComparator equal)
+        noexcept(std::is_nothrow_move_constructible<ValueType>::value &&
+                 std::is_nothrow_move_constructible<EqualityComparator>::value) :
+        value_ { std::move(initial_value) },
+        eq_ { std::move(equal) }
+    { }
+
     //! Create an initialized value that will be updated by the provided
     //! value_updater.
     //!
@@ -91,10 +105,7 @@ public:
     {
         using namespace std::placeholders;
 
-        updater_->set_value_notifier(
-                    std::bind(&value<ValueType, EqualityComparator>::set,
-                              this,
-                              _1));
+        updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
         set(updater_->get());
     }
 
@@ -139,7 +150,7 @@ public:
     //! \see subject<void(Args ...)>::notify()
     void set(ValueType new_value)
     {
-        if(eq_(new_value, value_))
+        if(eq_(value_, new_value))
             return;
 
         value_ = std::move(new_value);
@@ -156,55 +167,73 @@ public:
         return *this;
     }
 
+    //! Subject notified after the value has been moved.
+    //!
+    //! The subject's parameter is a reference to the value instance that has been
+    //! moved into.
+    //!
+    //! \warning The subject of the moved-into value will be notified, not the
+    //!          moved-from value's subject.
+    subject<void(value<ValueType> &), value<ValueType>> moved;
+
+    //! Subject notified before the value is destroyed.
+    subject<void(), value<ValueType>> destroyed;
+
+    //! Destructor.
+    ~value()
+    {
+        destroyed.notify();
+    }
+
 public:
     //! Observable values are **not** copy-constructible.
-    value(value<ValueType, EqualityComparator> const &) =delete;
+    value(value<ValueType> const &) =delete;
 
     //! Observable values are **not** copy-assignable.
-    auto operator=(value<ValueType, EqualityComparator> const &)
-            -> value<ValueType, EqualityComparator> & =delete;
+    auto operator=(value<ValueType> const &) -> value<ValueType> & =delete;
 
     //! Observable values are move-constructible.
-    template <typename OtherEqualityComparator,
-              typename = std::enable_if_t<std::is_move_constructible<ValueType>::value>>
-    value(value<ValueType, OtherEqualityComparator> && other)
-        noexcept(std::is_nothrow_move_constructible<ValueType>::value &&
-                 std::is_nothrow_move_constructible<void_subject>::value &&
-                 std::is_nothrow_move_constructible<value_subject>::value) :
+    template <typename = std::enable_if_t<std::is_move_constructible<ValueType>::value>>
+    value(value<ValueType> && other)
+        noexcept(std::is_nothrow_move_constructible<ValueType>::value) :
+        moved { std::move(other.moved) },
+        destroyed { std::move(other.destroyed) },
         value_(std::move(other.value_)),
         void_observers_ { std::move(other.void_observers_) },
         value_observers_ { std::move(other.value_observers_) },
-        updater_ { std::move(other.updater_) }
+        updater_ { std::move(other.updater_) },
+        eq_ { std::move(other.eq_) }
     {
         using namespace std::placeholders;
         if(updater_)
-            updater_->set_value_notifier(
-                        std::bind(&value<ValueType, EqualityComparator>::set,
-                                  this,
-                                  _1));
+            updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
+
+        moved.notify(*this);
+        other.destroyed = decltype(destroyed) { };
     }
 
     //! Observable values are move-assignable.
-    template <typename OtherEqualityComparator,
-              typename =  std::enable_if_t<std::is_move_assignable<ValueType>::value>>
-    auto operator=(value<ValueType, OtherEqualityComparator> && other)
-        noexcept(std::is_nothrow_move_assignable<ValueType>::value &&
-                 std::is_nothrow_move_assignable<void_subject>::value &&
-                 std::is_nothrow_move_assignable<value_subject>::value)
-        -> value<ValueType, EqualityComparator> &
+    template <typename =  std::enable_if_t<std::is_move_assignable<ValueType>::value>>
+    auto operator=(value<ValueType> && other)
+        noexcept(std::is_nothrow_move_assignable<ValueType>::value)
+        -> value<ValueType> &
     {
         using namespace std::placeholders;
+
+        moved = std::move(other.moved);
+        destroyed = std::move(other.destroyed);
 
         value_ = std::move(other.value_);
         void_observers_ = std::move(other.void_observers_);
         value_observers_ = std::move(other.value_observers_);
         updater_ = std::move(other.updater_);
+        eq_ = std::move(other.eq_);
 
         if(updater_)
-            updater_->set_value_notifier(
-                        std::bind(&value<ValueType, EqualityComparator>::set,
-                                  this,
-                                  _1));
+            updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
+
+        moved.notify(*this);
+        other.destroyed = decltype(destroyed) { };
         return *this;
     }
 
@@ -229,12 +258,16 @@ private:
 
 private:
     ValueType value_;
+
+    std::function<bool(ValueType const &, ValueType const &)> eq_ {
+        [](auto && a, auto && b) { return detail::equal_to { }(a, b); }
+    };
+
     void_subject void_observers_;
     value_subject value_observers_;
     std::unique_ptr<value_updater<ValueType>> updater_;
-    EqualityComparator eq_;
 
-    template <typename, typename, typename ...>
+    template <typename, typename ...>
     friend class value;
 };
 
@@ -242,36 +275,42 @@ private:
 //! prevent external code from calling set(), but still allow anyone to
 //! subscribe.
 //!
-//! \see value<ValueType, EqualityComparator>
+//! \see value<ValueType>
 //!
 //! This specialization is exactly the same as the main value specialization, but
 //! its setters are only accessible from inside the EnclosingType.
 //!
 //! \tparam ValueType The value-type that will be stored inside the observable.
-//! \tparam EqualityComparator A comparator to use when checking if new values
-//!                            are different than the stored value.
 //! \tparam EnclosingType A type that will have access to the value's setters.
 //!
 //! \ingroup observable
-template <typename ValueType, typename EqualityComparator, typename EnclosingType>
-class value<ValueType, EqualityComparator, EnclosingType> :
-    public value<ValueType, EqualityComparator>
+template <typename ValueType, typename EnclosingType>
+class value<ValueType, EnclosingType> :
+    public value<ValueType>
 {
 public:
-    using value<ValueType, EqualityComparator>::value;
+    using value<ValueType>::value;
 
     value() =default;
 
 private:
-    using value<ValueType, EqualityComparator>::set;
-    using value<ValueType, EqualityComparator>::operator=;
+    using value<ValueType>::set;
+    using value<ValueType>::operator=;
 
-    //! Create an initialized observable value.
-    //!
-    //! \param initial_value The observable's initial value.
-    value(ValueType initial_value) :
-        value<ValueType, EqualityComparator>(initial_value)
+    value(value<ValueType, EnclosingType> &&) =default;
+
+    auto operator=(value<ValueType, EnclosingType> &&)
+         -> value<ValueType, EnclosingType> & =default;
+
+    value(value<ValueType> && other) :
+        value<ValueType> { std::move(other) }
     { }
+
+    auto operator=(value<ValueType> && other) -> value<ValueType, EnclosingType> &
+    {
+        *static_cast<value<ValueType> *>(this) = std::move(other);
+        return *this;
+    }
 
     friend EnclosingType;
 };
@@ -305,8 +344,8 @@ namespace detail {
     template <typename EnclosingType>
     struct prop_
     {
-        template <typename ValueType, typename EqualityComparator=std::equal_to<>>
-        using type = value<ValueType, EqualityComparator, EnclosingType>;
+        template <typename ValueType>
+        using type = value<ValueType, EnclosingType>;
     };
     //! \endcond
 }
@@ -326,7 +365,7 @@ namespace detail {
 //! \see observable::value<ValueType, EqualityComparator, EnclosingType>
 //! \ingroup observable
 #define observable_property \
-    ::observable::detail::prop_<Observable_Property_EnclosingType_>::type
+    typename ::observable::detail::prop_<Observable_Property_EnclosingType_>::type
 
 //! Interface used to update a value.
 //!

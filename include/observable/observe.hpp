@@ -34,12 +34,13 @@ private:
 //! \return An observable value that automatically mirrors the provided parameter.
 //!
 //! \ingroup observable
-template <typename ValueType, typename ... Rest>
-inline auto observe(value<ValueType, Rest ...> & val)
+template <typename ... T>
+inline auto observe(value<T ...> & val)
 {
-    using expression_type = expr::expression<ValueType, expr::immediate_evaluator>;
-    auto e = std::make_unique<expression_type>(expr::expression_node<ValueType> { val });
-    return value<ValueType> { std::move(e) };
+    using value_type = std::decay_t<decltype(val.get())>;
+    using expression_type = expr::expression<value_type, expr::immediate_evaluator>;
+    auto e = std::make_unique<expression_type>(expr::expression_node<value_type> { val });
+    return value<value_type> { std::move(e) };
 }
 
 //! Observe changes to an expression tree with automatic evaluation.
@@ -71,16 +72,17 @@ inline auto observe(expr::expression_node<ValueType> && root)
 //!         value.
 //!
 //! \ingroup observable
-template <typename UpdaterType, typename ValueType, typename ... Rest>
-inline auto observe(UpdaterType & ud, value<ValueType, Rest ...> & val)
+template <typename UpdaterType, typename ... T>
+inline auto observe(UpdaterType & ud, value<T ...> & val)
 {
     static_assert(std::is_base_of<updater, UpdaterType>::value,
                   "UpdaterType must derive from updater.");
 
-    using expression_type = expr::expression<ValueType, UpdaterType>;
-    auto root = expr::expression_node<ValueType> { val };
+    using value_type = std::decay_t<decltype(val.get())>;
+    using expression_type = expr::expression<value_type, UpdaterType>;
+    auto root = expr::expression_node<value_type> { val };
     auto e = std::make_unique<expression_type>(std::move(root), ud);
-    return value<ValueType> { std::move(e) };
+    return value<value_type> { std::move(e) };
 }
 
 //! Observe changes to an expression tree with manual synchronization.
