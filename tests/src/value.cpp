@@ -124,15 +124,17 @@ TEST(value_test, can_subscribe_to_value_changes)
 
 TEST(value_test, can_subscribe_to_value_changes_and_get_value)
 {
-    auto call_count = 0;
-    auto v = 0;
+    struct p { int a; };
 
-    auto val = value<int> { 123 };
-    val.subscribe([&](int new_v) { ++call_count; v = new_v; }).release();
-    val.set(1234);
+    auto call_count = 0;
+    auto v = p { };
+
+    auto val = value<p> { };
+    val.subscribe([&](auto new_v) { ++call_count; v = new_v; }).release();
+    val.set(p { 1234 });
 
     ASSERT_EQ(call_count, 1);
-    ASSERT_EQ(v, 1234);
+    ASSERT_EQ(v.a, 1234);
 }
 
 TEST(value_test, setting_same_value_does_not_trigger_subscribers)

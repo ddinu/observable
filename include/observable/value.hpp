@@ -252,8 +252,8 @@ public:
 private:
     template <typename Callable>
     auto subscribe_impl(Callable && observer) ->
-        std::enable_if_t<detail::is_compatible_with_subject<Callable,
-                                                            void_subject>::value,
+        std::enable_if_t<detail::is_compatible_with_subject<Callable, void_subject>::value &&
+                         !detail::is_compatible_with_subject<Callable, value_subject>::value,
                          infinite_subscription>
     {
         return void_observers_.subscribe(std::forward<Callable>(observer));
