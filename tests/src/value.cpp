@@ -221,6 +221,13 @@ TEST(value_test, value_is_updated_by_the_updater)
     ASSERT_EQ(7, val.get());
 }
 
+TEST(value_test, value_with_updater_throws_on_set)
+{
+    auto val = value<int> { std::make_unique<mock_updater>(5) };
+
+    ASSERT_THROW({ val = 7; }, readonly_value);
+}
+
 TEST(value_test, change_notification_is_triggered_by_the_updater)
 {
     auto updater = new mock_updater { 5 };

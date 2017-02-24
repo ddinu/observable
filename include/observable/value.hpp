@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include "observable/subject.hpp"
@@ -38,6 +39,12 @@ struct equal_to
 
 }
 //! \endcond
+
+//! Exception thrown if you try to set a value that has an associated updater.
+struct readonly_value : std::runtime_error
+{
+    using std::runtime_error::runtime_error;
+};
 
 //! Get notified when a value-type changes.
 //!
@@ -105,8 +112,10 @@ public:
     {
         using namespace std::placeholders;
 
-        updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
-        set(updater_->get());
+        updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
+                                               this,
+                                                _1));
+        set_impl(updater_->get());
     }
 
     //! Convert the observable value to its stored value type.
@@ -147,15 +156,17 @@ public:
     //! effect. The comparison is performed using the EqualityComparator.
     //!
     //! \param new_value The new value to set.
+    //! \throw readonly_value if the value has an associated updater.
     //! \see subject<void(Args ...)>::notify()
     void set(ValueType new_value)
     {
-        if(eq_(value_, new_value))
-            return;
+        if(updater_)
+            throw readonly_value {
+                "Can't set a value that has an associated updater. These values "
+                "are readonly."
+            };
 
-        value_ = std::move(new_value);
-        void_observers_.notify();
-        value_observers_.notify(value_);
+        set_impl(std::move(new_value));
     }
 
     //! Set a new value. Will just call set(ValueType &&).
@@ -180,10 +191,7 @@ public:
     subject<void(), value<ValueType>> destroyed;
 
     //! Destructor.
-    ~value()
-    {
-        destroyed.notify();
-    }
+    ~value() { destroyed.notify(); }
 
 public:
     //! Observable values are **not** copy-constructible.
@@ -206,7 +214,9 @@ public:
     {
         using namespace std::placeholders;
         if(updater_)
-            updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
+            updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
+                                                   this,
+                                                   _1));
 
         moved.notify(*this);
         other.destroyed = decltype(destroyed) { };
@@ -230,7 +240,9 @@ public:
         eq_ = std::move(other.eq_);
 
         if(updater_)
-            updater_->set_value_notifier(std::bind(&value<ValueType>::set, this, _1));
+            updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
+                                                   this,
+                                                   _1));
 
         moved.notify(*this);
         other.destroyed = decltype(destroyed) { };
@@ -254,6 +266,16 @@ private:
                          infinite_subscription>
     {
         return value_observers_.subscribe(std::forward<Callable>(observer));
+    }
+
+    void set_impl(ValueType new_value)
+    {
+        if(eq_(value_, new_value))
+            return;
+
+        value_ = std::move(new_value);
+        void_observers_.notify();
+        value_observers_.notify(value_);
     }
 
 private:
