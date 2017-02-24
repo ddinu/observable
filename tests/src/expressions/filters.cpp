@@ -180,4 +180,29 @@ TEST(filter_test, zip)
     ASSERT_EQ(30, get<2>(res.get()));
 }
 
+TEST(filter_test, construct)
+{
+    struct mock
+    {
+        int ma { 0 };
+        int mb { 0 };
+
+        mock() =default;
+
+        mock(int a, int b) : ma { a }, mb { b }
+        { }
+    };
+
+    auto a = value<int> { 5 };
+    auto res = observe(observable::construct<mock>(a, 5));
+
+    ASSERT_EQ(5, res.get().ma);
+    ASSERT_EQ(5, res.get().mb);
+
+    a = 7;
+
+    ASSERT_EQ(7, res.get().ma);
+    ASSERT_EQ(5, res.get().mb);
+}
+
 }

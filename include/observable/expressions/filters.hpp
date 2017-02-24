@@ -32,6 +32,39 @@ namespace observable { inline namespace expr {
 
 //! \cond
 namespace filter_detail {
+
+template <typename ValueType>
+struct construct
+{
+    template <typename ... T>
+    auto operator()(T && ... t) const
+    {
+        return ValueType { std::forward<T>(t) ... };
+    }
+};
+
+}
+//! \endcond
+
+//! Construct an object.
+//!
+//! \param args Arguments to be passed to the object's constructor. You must
+//!             have at least one observable argument.
+//! \return Expression node having the newly constructed object as its result.
+//! \tparam ValueType The constructed object's type.
+//! \tparam Args Argument pack for the parameters passed to the constructor.
+//! \ingroup observable_expressions
+template <typename ValueType, typename ... Args>
+inline auto construct(Args && ... args)
+    -> std::enable_if_t<expr_detail::are_any_observable<Args ...>::value,
+                        expression_node<ValueType>>
+{
+    return expr_detail::make_node(filter_detail::construct<ValueType> { },
+                                  std::forward<Args>(args) ...);
+}
+
+//! \cond
+namespace filter_detail {
     struct select_
     {
         template <typename CondType,
