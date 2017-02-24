@@ -63,6 +63,38 @@ inline auto construct(Args && ... args)
                                   std::forward<Args>(args) ...);
 }
 
+//! Cast an expression node to another type using static_cast.
+//!
+//! \param from Incoming type.
+//! \return Expression node having the To type.
+//!
+//! \ingroup observable_expressions
+template <typename To, typename From>
+inline auto static_expr_cast(From && from)
+    -> std::enable_if_t<
+    expr_detail::is_observable<From>::value,
+    expression_node<To>>
+{
+    return expr_detail::make_node([](auto && f) { return static_cast<To>(f); },
+                                  std::forward<From>(from));
+}
+
+//! Cast an expression node to another type using reinterpret_cast.
+//!
+//! \param from Incoming type.
+//! \return Expression node having the To type.
+//!
+//! \ingroup observable_expressions
+template <typename To, typename From>
+inline auto reinterpret_expr_cast(From && from)
+-> std::enable_if_t<
+    expr_detail::is_observable<From>::value,
+    expression_node<To>>
+{
+    return expr_detail::make_node([](auto && f) { return reinterpret_cast<To>(f); },
+                                  std::forward<From>(from));
+}
+
 //! \cond
 namespace filter_detail {
     struct select_

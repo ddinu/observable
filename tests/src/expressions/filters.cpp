@@ -205,4 +205,43 @@ TEST(filter_test, construct)
     ASSERT_EQ(5, res.get().mb);
 }
 
+TEST(filter_test, static_expr_cast)
+{
+    struct mock
+    {
+        mock() =default;
+
+        explicit mock(int a) : a_ { a }
+        { }
+
+        explicit operator int() { return a_; }
+
+    private:
+        int a_ { 0 };
+    };
+
+    auto a = value<mock> { mock { 5 } };
+    auto res = observe(observable::static_expr_cast<int>(a));
+
+    ASSERT_EQ(5, res.get());
+
+    a = mock { 7 };
+
+    ASSERT_EQ(7, res.get());
+}
+
+TEST(filter_test, reinterpret_expr_cast)
+{
+    auto v1 = 5;
+    auto s = value<char *> { reinterpret_cast<char *>(&v1) };
+    auto res = observe(observable::reinterpret_expr_cast<int *>(s));
+
+    ASSERT_EQ(5, *res.get());
+
+    auto v2 = 7;
+    s = reinterpret_cast<char *>(&v2);
+
+    ASSERT_EQ(7, *res.get());
+}
+
 }
