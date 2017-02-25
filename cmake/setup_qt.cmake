@@ -1,11 +1,13 @@
 # Prepare everything for using FindQt5 and building a Qt5 target.
 macro(setup_qt)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        # Search for 64bit Qt
-        set(QT_ROOT $ENV{QT_ROOT_64})
-    else()
-        # Search for 32bit Qt
-        set(QT_ROOT $ENV{QT_ROOT_32})
+    if(NOT QT_ROOT)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            # Search for 64bit Qt
+            set(QT_ROOT $ENV{QT_ROOT_64})
+        else()
+            # Search for 32bit Qt
+            set(QT_ROOT $ENV{QT_ROOT_32})
+        endif()
     endif()
 
     list(APPEND CMAKE_PREFIX_PATH ${QT_ROOT}/lib/cmake/Qt5)
