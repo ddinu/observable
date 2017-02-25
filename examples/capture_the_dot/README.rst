@@ -10,12 +10,14 @@ model and view, and has just 3 classes in total.
 
 Here's what these 3 classes do:
 
- - GameView -- Renders the game and captures user input. This is a QWidget.
- - GameModel -- Contains the game's business logic, like positioning computations,
-                score and hit-test code. This class does not use Qt at all.
- - GameController -- Hooks up the view and the model so that the view is updated
-                     when the model changes and the model's actions are called
-                     when different events happen.
+- GameView -- Renders the game and captures user input. This is a QWidget.
+
+- GameModel -- Contains the game's business logic, like positioning
+  computations, score and hit-test code. This class does not use Qt at all.
+
+- GameController -- Hooks up the view and the model so that the view is updated
+  when the model changes and the model's actions are called when different
+  events happen.
 
 Building the example
 --------------------
