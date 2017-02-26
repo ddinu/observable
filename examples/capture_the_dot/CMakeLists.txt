@@ -17,7 +17,7 @@ find_package(Qt5 QUIET OPTIONAL_COMPONENTS Core Gui Widgets)
 if(Qt5_FOUND)
     message(STATUS "Creating 'capture_the_dot' target. Using Qt5 from: ${QT_ROOT}")
 
-    add_executable(capture_the_dot WIN32 EXCLUDE_FROM_ALL ${SOURCES})
+    add_executable(capture_the_dot WIN32 ${SOURCES})
     set_cpp_standard(capture_the_dot)
     set_target_properties(capture_the_dot PROPERTIES FOLDER examples)
     target_link_libraries(capture_the_dot observable
