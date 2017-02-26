@@ -2,6 +2,8 @@ Capture The Dot Example
 =======================
 
 .. image:: screenshot.png
+  :alt: Game screenshot
+  :align: center
 
 *Capture The Dot* is a simple game built with Qt and the Observable library
 to showcase how you can use observable objects to build the model part of
