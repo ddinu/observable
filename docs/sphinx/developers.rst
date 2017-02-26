@@ -4,6 +4,8 @@ Developers
 You are welcome to contribute code, bug reports, feature requests or just ask
 questions.
 
+The code is hosted on GitHub: https://github.com/ddinu/observable
+
 Coding standard
 ---------------
 
