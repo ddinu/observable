@@ -182,16 +182,18 @@ TEST(subject_test, can_unsubscribe_while_notification_is_running)
     auto subs = std::vector<shared_subscription> { };
 
     for(auto i = 0; i < 10; ++i)
-        subs.emplace_back(
-                s.subscribe([&]() {
-                    ++call_count;
-                    std::this_thread::sleep_for(5ms);
-                }));
+        subs.emplace_back(s.subscribe([&]() {
+                              ++call_count;
+                              std::this_thread::sleep_for(5ms);
+                          }));
 
-    auto t = std::thread { [&]() { s.notify(); } };
+    auto t = std::thread { [&]() { 
+                s.notify();
+                std::this_thread::sleep_for(1ms);
+             } };
 
     for(auto i = 0; i < 100 && call_count == 0; ++i)
-        std::this_thread::sleep_for(1ms);
+        ;
 
     subs.clear();
     t.join();
