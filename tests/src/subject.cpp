@@ -138,6 +138,20 @@ TEST(subject_test, observer_added_from_running_notify_is_called_on_second_notifi
     ASSERT_EQ(call_count, 3);
 }
 
+TEST(subject_test, can_unsubscribe_while_notification_is_running)
+{
+    auto s = subject<void()> { };
+    auto call_count = 0;
+
+    auto sub = unique_subscription { };
+    sub = s.subscribe([&]() { ++call_count; sub.unsubscribe(); });
+
+    s.notify();
+    s.notify();
+
+    ASSERT_EQ(1, call_count);
+}
+
 TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
 {
     auto s = subject<void()> { };
@@ -173,32 +187,6 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
 
     ASSERT_EQ(old_call_count, 10);
     ASSERT_EQ(new_call_count, 0);
-}
-
-TEST(subject_test, can_unsubscribe_while_notification_is_running)
-{
-    auto s = subject<void()> { };
-    std::atomic_int call_count { 0 };
-    auto subs = std::vector<shared_subscription> { };
-
-    for(auto i = 0; i < 10; ++i)
-        subs.emplace_back(s.subscribe([&]() {
-                              ++call_count;
-                              std::this_thread::sleep_for(5ms);
-                          }));
-
-    auto t = std::thread { [&]() { 
-                s.notify();
-                std::this_thread::sleep_for(1ms);
-             } };
-
-    for(auto i = 0; i < 100 && call_count == 0; ++i)
-        ;
-
-    subs.clear();
-    t.join();
-
-    ASSERT_EQ(1, call_count);
 }
 
 TEST(subject_test, can_use_subject_enclosed_in_class)
