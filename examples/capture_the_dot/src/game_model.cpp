@@ -54,6 +54,9 @@ GameModel::GameModel()
                     select(is_captured,
                            500ms,
                            construct<milliseconds>(clamp(
+                                // Decrease the delay logarithmically as the score
+                                // increases. The magic numbers are empirical values
+                                // that yield a decent delay curve.
                                 static_expr_cast<int>(2200 / log10(40 + score / 3)),
                                 600,
                                 1500
@@ -65,6 +68,8 @@ GameModel::GameModel()
         if(!captured)
             return;
 
+        // The harder it is to click on the dot (i.e. small radius or big
+        // scene), the more points you should get.
         auto const k = 1 - dot_radius.get() / max_radius;
         auto const a = scene_width.get() * scene_height.get();
         auto const n = std::pow(k * 10, 2) + a / 10000;
