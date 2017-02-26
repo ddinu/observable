@@ -22,6 +22,7 @@ Here's a small example:
 
 .. code-block:: C++
 
+    #include <cmath>
     #include "observable/observable.hpp"
 
     int main()
@@ -55,6 +56,7 @@ Here's how using an `updater`_ works:
 
 .. code-block:: C++
 
+    #include <cmath>
     #include "observable/observable.hpp"
 
     int main()
