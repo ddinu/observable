@@ -5,9 +5,12 @@ Capture The Dot Example
   :alt: Game screenshot
   :align: center
 
-*Capture The Dot* is a simple game built with Qt and the Observable library
-to showcase how you can use observable objects to build the model part of
-a MVC app.
+*Capture The Dot* is a simple game where you try to click on a dot that moves
+to random positions. If you manage to click the dot, you have captured it and
+get some points.
+
+The game is built with Qt and the Observable library, to showcase how you can
+use observable objects to build the model part of a MVC app.
 
 The code is using a simple MVC architecture, consisting of a game controller,
 model and view, and has just 3 classes in total.
