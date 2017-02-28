@@ -3,6 +3,7 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="user" visible="yes" url="../index.html" title="Documentation Home"/>
+    <tab type="user" visible="yes" url="https://github.com/ddinu/observable" title="GitHub"/>
     <tab type="mainpage" visible="no" title=""/>
     <tab type="namespaces" visible="no" title=""/>
     <tab type="classes" visible="no" title=""/>
