@@ -1,0 +1,57 @@
+body, table, div, p, dl {
+    font-family: Helvetica, Arial, sans-serif !important;
+}
+
+#titlearea {
+    padding: 1rem;
+    border: none;
+}
+
+#projectname {
+    font-size: 2rem;
+}
+
+.sm, .sm a, div.header {
+    background-image: none;
+    border: none;
+    background-color: inherit;
+}
+
+#main-nav {
+    background-color: #F7F7F7;
+}
+
+.mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft,
+.memTemplItemRight, .memTemplParams {
+    background-color: inherit;
+}
+
+.memtitle {
+    background-color: inherit;
+    background-image: none;
+    border-color: #DEE4F0 !important;
+}
+
+.memdoc {
+    border-color: #DEE4F0 !important;
+    background-image: none;
+    box-shadow: none;
+}
+
+.memproto {
+    border-bottom: 1px solid;
+    border-color: #DEE4F0 !important;
+    background-color: inherit;
+    background-image: none;
+    box-shadow: none;
+}
+
+.groupheader {
+    background-color: #F7F7F7;
+    border-bottom-color: #DEE4F0 !important;
+    padding: 0.3rem;
+}
+
+.navpath ul {
+    background-image: none;
+}
