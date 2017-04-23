@@ -24,8 +24,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 endif()
 
 configure_compiler(tests)
-target_link_libraries(tests observable shared gtest gtest_main)
-target_include_directories(tests PRIVATE src shared_lib)
+target_link_libraries(tests observable gtest gtest_main)
+target_include_directories(tests PRIVATE src)
 
 add_test(NAME tests
          COMMAND tests
