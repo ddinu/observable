@@ -92,6 +92,7 @@ Any relatively recent compiler with C++14 support should work.
 
 The code has been tested with the following compilers:
 
+ * MSVC 15 (Visual Studio 2017)
  * MSVC 14 (Visual Studio 2015)
  * GCC 5.4, 6.2
  * Clang 3.6, 3.7, 3.8, 3.9
@@ -99,16 +100,27 @@ The code has been tested with the following compilers:
 Build status
 ------------
 
+Visual Studio 2017 builds:
+
+ * |win32 15 build|_ (32 bit)
+ * |win64 15 build|_ (64 bit)
+
+.. |win32 15 build| image:: https://ci.appveyor.com/api/projects/status/sgomsxwri8wknode?svg=true
+.. _win32 15 build: https://ci.appveyor.com/projects?tag=observable
+
+.. |win64 15 build| image:: https://ci.appveyor.com/api/projects/status/tpr4qem5gxo7dntb?svg=true
+.. _win64 15 build: https://ci.appveyor.com/projects?tag=observable
+
 Visual Studio 2015 builds:
 
- * |win32 build|_ (32 bit)
- * |win64 build|_ (64 bit)
+ * |win32 14 build|_ (32 bit)
+ * |win64 14 build|_ (64 bit)
 
-.. |win32 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
-.. _win32 build: https://ci.appveyor.com/project/ddinu/observable-xwigk/branch/master
+.. |win32 14 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
+.. _win32 14 build: https://ci.appveyor.com/projects?tag=observable
 
-.. |win64 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
-.. _win64 build: https://ci.appveyor.com/project/ddinu/observable/branch/master
+.. |win64 14 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
+.. _win64 14 build: https://ci.appveyor.com/projects?tag=observable
 
 Linux (GCC, Clang) and OS X (Clang) builds:
 
