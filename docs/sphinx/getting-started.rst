@@ -34,7 +34,7 @@ when some event occurs.
 
     #include <iostream>
     #include <string>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     using namespace std;
     using namespace observable;
@@ -87,7 +87,7 @@ or ``b`` value changes.
 
     #include <iostream>
     #include <string>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     using namespace std;
     using namespace observable;
@@ -136,7 +136,7 @@ setters inaccessible from outside the enclosing class.
 
     #include <iostream>
     #include <string>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     using namespace std;
     using namespace observable;

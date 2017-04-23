@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <cassert>
 #include <cmath>
-#include "observable/observable.hpp"
+#include <observable/observable.hpp>
 #include "gtest/gtest.h"
 
 using namespace std::string_literals;

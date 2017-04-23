@@ -1,7 +1,7 @@
 #include <functional>
-#include "observable/value.hpp"
-#include "observable/expressions/operators.hpp"
-#include "observable/expressions/tree.hpp"
+#include <observable/value.hpp>
+#include <observable/expressions/operators.hpp>
+#include <observable/expressions/tree.hpp>
 #include "gtest.h"
 
 namespace { // Operators should be usable with ADL.

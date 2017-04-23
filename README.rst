@@ -15,7 +15,7 @@ Example:
 .. code:: C++
 
     #include <iostream>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     using namespace std;
     using namespace observable;

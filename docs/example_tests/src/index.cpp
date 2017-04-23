@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "observable/observable.hpp"
+#include <observable/observable.hpp>
 #include "gtest/gtest.h"
 #include "utility.h"
 

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
-#include "observable/expressions/utility.hpp"
+#include <observable/expressions/utility.hpp>
 
 //! Create an expression filter from a callable.
 //!

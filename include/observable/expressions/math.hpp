@@ -1,7 +1,7 @@
 #pragma once
 #include <cmath>
 #include <cstdlib>
-#include "observable/expressions/filters.hpp"
+#include <observable/expressions/filters.hpp>
 
 namespace observable { inline namespace expr {
 

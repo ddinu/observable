@@ -1,5 +1,5 @@
-#include "observable/observe.hpp"
-#include "observable/value.hpp"
+#include <observable/observe.hpp>
+#include <observable/value.hpp>
 #include "gtest.h"
 
 namespace observable { namespace test {

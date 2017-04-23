@@ -4,7 +4,7 @@
 #include <thread>
 #include <vector>
 #include <unordered_set>
-#include "observable/detail/collection.hpp"
+#include <observable/detail/collection.hpp>
 #include "gtest.h"
 
 namespace observable { namespace detail { namespace test {

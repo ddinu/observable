@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
-#include "observable/expressions/utility.hpp"
-#include "observable/expressions/tree.hpp"
+#include <observable/expressions/utility.hpp>
+#include <observable/expressions/tree.hpp>
 
 //! Create a unary operator.
 //!

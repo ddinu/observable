@@ -6,9 +6,9 @@
 #include <mutex>
 #include <type_traits>
 #include <utility>
-#include "observable/subscription.hpp"
-#include "observable/value.hpp"
-#include "observable/expressions/tree.hpp"
+#include <observable/subscription.hpp>
+#include <observable/value.hpp>
+#include <observable/expressions/tree.hpp>
 
 namespace observable { inline namespace expr {
 

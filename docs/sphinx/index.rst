@@ -8,7 +8,7 @@ If you want to write code in a reactive style, this is for you.
 .. code-block:: C++
 
     #include <iostream>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     using namespace std;
     using namespace observable;

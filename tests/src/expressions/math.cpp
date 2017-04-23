@@ -1,7 +1,7 @@
 #include <cmath>
-#include "observable/observe.hpp"
-#include "observable/value.hpp"
-#include "observable/expressions/math.hpp"
+#include <observable/observe.hpp>
+#include <observable/value.hpp>
+#include <observable/expressions/math.hpp>
 #include "gtest.h"
 
 namespace { // Filters should be usable with ADL.

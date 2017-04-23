@@ -23,7 +23,7 @@ Here's a small example:
 .. code-block:: C++
 
     #include <cmath>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     int main()
     {
@@ -57,7 +57,7 @@ Here's how using an `updater`_ works:
 .. code-block:: C++
 
     #include <cmath>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     int main()
     {
@@ -111,7 +111,7 @@ unqualified name.
 .. code-block:: C++
 
     #include <cmath>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     int main()
     {
@@ -145,7 +145,7 @@ Let's take a look at an example:
 .. code-block:: C++
 
     #include <cmath>
-    #include "observable/observable.hpp"
+    #include <observable/observable.hpp>
 
     double square_(double val) { return std::pow(val, 2); }
     OBSERVABLE_ADAPT_FILTER(square, square_)

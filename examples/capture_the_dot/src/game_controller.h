@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 #include <QTimer>
-#include "observable/subscription.hpp"
+#include <observable/subscription.hpp>
 
 class GameView;
 class GameModel;

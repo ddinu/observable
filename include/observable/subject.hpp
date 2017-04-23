@@ -3,9 +3,9 @@
 #include <functional>
 #include <memory>
 #include <type_traits>
-#include "observable/detail/collection.hpp"
-#include "observable/detail/type_traits.hpp"
-#include "observable/subscription.hpp"
+#include <observable/detail/collection.hpp>
+#include <observable/detail/type_traits.hpp>
+#include <observable/subscription.hpp>
 
 namespace observable {
 

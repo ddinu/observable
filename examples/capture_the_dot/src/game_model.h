@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 #include <random>
-#include "observable/observable.hpp"
+#include <observable/observable.hpp>
 
 //! Capture the dot game logic.
 class GameModel
