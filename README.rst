@@ -106,10 +106,10 @@ Visual Studio 2017 builds:
  * |win64 15 build|_ (64 bit)
 
 .. |win32 15 build| image:: https://ci.appveyor.com/api/projects/status/sgomsxwri8wknode?svg=true
-.. _win32 15 build: https://ci.appveyor.com/projects?tag=observable
+.. _win32 15 build: https://ci.appveyor.com/project/ddinu/observable-crrsf
 
 .. |win64 15 build| image:: https://ci.appveyor.com/api/projects/status/tpr4qem5gxo7dntb?svg=true
-.. _win64 15 build: https://ci.appveyor.com/projects?tag=observable
+.. _win64 15 build: https://ci.appveyor.com/project/ddinu/observable-uyjd7
 
 Visual Studio 2015 builds:
 
@@ -117,10 +117,10 @@ Visual Studio 2015 builds:
  * |win64 14 build|_ (64 bit)
 
 .. |win32 14 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
-.. _win32 14 build: https://ci.appveyor.com/projects?tag=observable
+.. _win32 14 build: https://ci.appveyor.com/project/ddinu/observable-xwigk
 
 .. |win64 14 build| image:: https://ci.appveyor.com/api/projects/status/abi5swnpvc2nof3r/branch/master?svg=true
-.. _win64 14 build: https://ci.appveyor.com/projects?tag=observable
+.. _win64 14 build: https://ci.appveyor.com/project/ddinu/observable
 
 Linux (GCC, Clang) and OS X (Clang) builds:
 
