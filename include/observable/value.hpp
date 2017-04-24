@@ -140,7 +140,7 @@ public:
     //!
     //! \see subject<void(Args ...)>::subscribe()
     template <typename Callable>
-    auto subscribe(Callable && callable)
+    auto subscribe(Callable && callable) const
     {
         static_assert(detail::is_compatible_with_subject<Callable, void_subject>::value ||
                       detail::is_compatible_with_subject<Callable, value_subject>::value,
@@ -251,7 +251,7 @@ public:
 
 private:
     template <typename Callable>
-    auto subscribe_impl(Callable && observer) ->
+    auto subscribe_impl(Callable && observer) const ->
         std::enable_if_t<detail::is_compatible_with_subject<Callable, void_subject>::value &&
                          !detail::is_compatible_with_subject<Callable, value_subject>::value,
                          infinite_subscription>
@@ -260,7 +260,7 @@ private:
     }
 
     template <typename Callable>
-    auto subscribe_impl(Callable && observer) ->
+    auto subscribe_impl(Callable && observer) const ->
         std::enable_if_t<detail::is_compatible_with_subject<Callable,
                                                             value_subject>::value,
                          infinite_subscription>
@@ -285,8 +285,8 @@ private:
         [](auto && a, auto && b) { return detail::equal_to { }(a, b); }
     };
 
-    void_subject void_observers_;
-    value_subject value_observers_;
+    mutable void_subject void_observers_;
+    mutable value_subject value_observers_;
     std::unique_ptr<value_updater<ValueType>> updater_;
 
     template <typename, typename ...>

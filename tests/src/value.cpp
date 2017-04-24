@@ -122,6 +122,18 @@ TEST(value_test, can_subscribe_to_value_changes)
     ASSERT_EQ(call_count, 1);
 }
 
+TEST(value_test, can_subscribe_to_value_changes_on_const_values)
+{
+    auto call_count = 0;
+
+    auto val = value<int> { 123 };
+    auto const & const_val = val;
+    const_val.subscribe([&]() { ++call_count; });
+    val.set(1234);
+
+    ASSERT_EQ(call_count, 1);
+}
+
 TEST(value_test, can_subscribe_to_value_changes_and_get_value)
 {
     struct p { int a; };
