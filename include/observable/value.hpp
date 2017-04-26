@@ -114,7 +114,7 @@ public:
 
         updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
                                                this,
-                                                _1));
+                                                std::placeholders::_1));
         set_impl(updater_->get());
     }
 
@@ -216,7 +216,7 @@ public:
         if(updater_)
             updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
                                                    this,
-                                                   _1));
+                                                   std::placeholders::_1));
 
         moved.notify(*this);
         other.destroyed = decltype(destroyed) { };
@@ -242,7 +242,7 @@ public:
         if(updater_)
             updater_->set_value_notifier(std::bind(&value<ValueType>::set_impl,
                                                    this,
-                                                   _1));
+                                                   std::placeholders::_1));
 
         moved.notify(*this);
         other.destroyed = decltype(destroyed) { };
