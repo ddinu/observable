@@ -205,4 +205,24 @@ TEST(subject_test, can_use_subject_enclosed_in_class)
     ASSERT_TRUE(called);
 }
 
+TEST(subject_test, can_subscribe_and_immediately_call_observer)
+{
+    auto s = subject<void()> { };
+
+    auto call_count = 0;
+    auto sub = s.subscribe_and_call([&]() { ++call_count; });
+
+    ASSERT_EQ(1, call_count);
+}
+
+TEST(subject_test, immediately_called_observer_receives_arguments)
+{
+    auto s = subject<void(int)> { };
+
+    auto arg = 0;
+    auto sub = s.subscribe_and_call([&](int v) { arg = v; }, 7);
+
+    ASSERT_EQ(7, arg);
+}
+
 } }

@@ -128,6 +128,10 @@ public:
     //!
     //! These subscriptions will be triggered whenever the stored value changes.
     //!
+    //! \param[in] observer A callable that will be called whenever the value
+    //!                     changes. The observer must satisfy the Callable
+    //!                     concept.
+    //!
     //! \tparam Callable A callable taking no parameters or a callable taking one
     //!                  parameter that will be called with the new value:
     //!
@@ -140,14 +144,44 @@ public:
     //!
     //! \see subject<void(Args ...)>::subscribe()
     template <typename Callable>
-    auto subscribe(Callable && callable) const
+    auto subscribe(Callable && observer) const
     {
         static_assert(detail::is_compatible_with_subject<Callable, void_subject>::value ||
                       detail::is_compatible_with_subject<Callable, value_subject>::value,
                       "Observer is not valid. Please provide a void observer or an "
                       "observer that takes a ValueType as its only argument.");
 
-        return subscribe_impl(std::forward<Callable>(callable));
+        return subscribe_impl(std::forward<Callable>(observer));
+    }
+
+    //! Subscribe to changes to the observable value and also call the observer
+    //! callback immediately with the current value.
+    //!
+    //! If the observer throws an exception during the initial call, it will
+    //! not be subscribed.
+    //!
+    //! \note The observer is not subscribed during the initial call.
+    //!
+    //! \param[in] observer A callable that will be called whenever the value
+    //!                     changes. The observer must satisfy the Callable
+    //!                     concept.
+    //!
+    //! \tparam Callable A callable taking no parameters or a callable taking
+    //!                  one parameter that will be called with the new value:
+    //!
+    //!                  - ``void()`` -- will be called when the value changes
+    //!                    but will not receive the new value.
+    //!
+    //!                  - ``void(T const &)`` or ``void(T)`` -- will be called
+    //!                    with the new value. The expression
+    //!                    ``T { value.get() }`` must be correct.
+    //!
+    //! \see subscribe()
+    template <typename Callable>
+    auto subscribe_and_call(Callable && observer) const
+    {
+        call_impl(observer);
+        return subscribe(std::forward<Callable>(observer));
     }
 
     //! Set a new value, possibly notifying any subscribed observers.
@@ -266,6 +300,22 @@ private:
                          infinite_subscription>
     {
         return value_observers_.subscribe(std::forward<Callable>(observer));
+    }
+
+    template <typename Callable>
+    auto call_impl(Callable && observer) const ->
+            std::enable_if_t<detail::is_compatible_with_subject<Callable, void_subject>::value &&
+            !detail::is_compatible_with_subject<Callable, value_subject>::value>
+    {
+        observer();
+    }
+
+    template <typename Callable>
+    auto call_impl(Callable && observer) const ->
+            std::enable_if_t<detail::is_compatible_with_subject<Callable,
+            value_subject>::value>
+    {
+        observer(value_);
     }
 
     void set_impl(ValueType new_value)

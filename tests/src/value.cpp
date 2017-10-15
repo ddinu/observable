@@ -326,4 +326,24 @@ TEST(value_test, moved_value_keeps_custom_equality_comparator)
     ASSERT_EQ(5, moved.get());
 }
 
+TEST(value_test, can_subscribe_and_immediately_call_observer)
+{
+    auto v = value<int> { 5 };
+
+    auto call_count = 0;
+    auto sub = v.subscribe_and_call([&]() { ++call_count; });
+
+    ASSERT_EQ(1, call_count);
+}
+
+TEST(value_test, immediately_called_observer_receives_the_current_value)
+{
+    auto v = value<int> { 5 };
+
+    auto call_value = 3;
+    auto sub = v.subscribe_and_call([&](int v) { call_value = v; });
+
+    ASSERT_EQ(5, call_value);
+}
+
 } }

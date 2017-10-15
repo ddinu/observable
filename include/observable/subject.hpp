@@ -83,6 +83,45 @@ public:
         };
     }
 
+    //! Subscribe an observer to notifications and immediately call it with
+    //! the provided arguments.
+    //!
+    //! This method works exactly like the regular subscribe except it also
+    //! invokes the observer.
+    //!
+    //! If the observer call throws an exception during the initial call, it
+    //! will not be subscribed.
+    //!
+    //! \note The observer will not be subscribed during the initial call.
+    //!
+    //! \param[in] observer An observer callable that will be subscribed to
+    //!                     notifications from this subject and immediately
+    //!                     invoked with the provided arguments.
+    //! \param[in] arguments Arguments to pass to the observer when called.
+    //!
+    //! \tparam Callable Type of the observer callable. This type must satisfy
+    //!         the Callable concept and must be storable inside a
+    //!         ``std::function<void(Args...)>``.
+    //!
+    //! \return An unique subscription that can be used to unsubscribe the
+    //!         provided observer from receiving notifications from this
+    //!         subject.
+    //!
+    //! \warning Observers must be valid to be called for as long as they are
+    //!          subscribed and there is a possibility to be called.
+    //!
+    //! \warning Observers must be safe to be called in parallel, if the notify()
+    //!          method will be called from multiple threads.
+    //!
+    //! \see subscribe()
+    template <typename Callable, typename ... ActualArgs>
+    auto subscribe_and_call(Callable && observer, ActualArgs ... arguments)
+        -> infinite_subscription
+    {
+        observer(std::forward<Args ...>(arguments)...);
+        return subscribe(std::forward<Callable>(observer));
+    }
+
     //! Notify all currently subscribed observers.
     //!
     //! This method will block until all subscribed observers are called. The
