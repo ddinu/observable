@@ -241,10 +241,10 @@ public:
         moved { std::move(other.moved) },
         destroyed { std::move(other.destroyed) },
         value_(std::move(other.value_)),
+        eq_ { std::move(other.eq_) },
         void_observers_ { std::move(other.void_observers_) },
         value_observers_ { std::move(other.value_observers_) },
-        updater_ { std::move(other.updater_) },
-        eq_ { std::move(other.eq_) }
+        updater_ { std::move(other.updater_) }
     {
         using namespace std::placeholders;
         if(updater_)
