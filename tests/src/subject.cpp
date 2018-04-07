@@ -225,4 +225,19 @@ TEST(subject_test, immediately_called_observer_receives_arguments)
     ASSERT_EQ(7, arg);
 }
 
+TEST(subject_test, empty_returns_true_for_subject_with_no_subscribers)
+{
+    auto const s = subject<void()> { };
+
+    ASSERT_TRUE(s.empty());
+}
+
+TEST(subject_test, empty_returns_false_for_subject_with_subscribers)
+{
+    auto s = subject<void()> { };
+    auto const sub = s.subscribe([]() { });
+
+    ASSERT_FALSE(s.empty());
+}
+
 } }

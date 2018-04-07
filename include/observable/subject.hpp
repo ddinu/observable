@@ -152,6 +152,13 @@ public:
         observers_->apply([&](auto && observer) { observer(arguments ...); });
     }
 
+    //! Return true if there are no subscribers.
+    auto empty() const noexcept
+    {
+        assert(observers_);
+        return observers_->empty();
+    }
+
 public:
     //! Constructor. Will create an empty subject.
     subject() =default;
