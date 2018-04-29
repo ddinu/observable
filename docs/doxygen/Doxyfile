@@ -1,7 +1,7 @@
 PROJECT_NAME = "Observable Reference"
 PROJECT_BRIEF = "Generic observable objects for C++"
 OUTPUT_DIRECTORY = ${OUTPUT_DIR}
-INPUT = ${CMAKE_SOURCE_DIR}/include/observable
+INPUT = ${CMAKE_SOURCE_DIR}/observable/include/observable
 LAYOUT_FILE = ${CMAKE_CURRENT_SOURCE_DIR}/DoxygenLayout.xml
 
 JAVADOC_AUTOBRIEF = YES

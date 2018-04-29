@@ -7,8 +7,8 @@ pattern, this is for you.
 Quick start
 -----------
 
-The library is header-only and has no dependencies; copy the
-``include/observable`` directory into your include path and you're set.
+The library is header-only and has no dependencies; add the
+``observable/include`` directory to your include path and you're set.
 
 Example:
 

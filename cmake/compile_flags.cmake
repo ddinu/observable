@@ -4,26 +4,35 @@
 # - target_name Name of the configured target.
 function(enable_strict_warnings target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-        set(release /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd4627 /wd5026
-                    /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868 /wd4571)
-        set(debug /WX)
+        target_compile_options(${target_name}
+            PRIVATE
+                /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd4627 /wd5026
+                /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868 /wd4571
+
+                $<$<CONFIG:Debug>:/WX>
+        )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-        set(release -Wall -Wextra -pedantic -Wshadow -Wabi)
-        set(debug -Werror)
+        target_compile_options(${target_name}
+            PRIVATE
+                -Wall -Wextra -pedantic -Wshadow -Wabi
+
+                $<$<CONFIG:Debug>:-Werror>
+        )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-        set(release -Weverything -Wno-system-headers -Wabi -Wno-c++98-compat
-                    -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
-                    -Wno-global-constructors -Wno-missing-prototypes
-                    -Wno-padded -Wno-documentation-unknown-command)
-        set(debug -Werror)
+        target_compile_options(${target_name}
+            PRIVATE
+                -Weverything -Wno-system-headers -Wabi -Wno-c++98-compat
+                -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
+                -Wno-global-constructors -Wno-missing-prototypes
+                -Wno-padded -Wno-documentation-unknown-command
+
+                $<$<CONFIG:Debug>:-Werror>
+        )
     else()
         message(WARNING "Custom compiler flags not set.\n"
                         "Your compiler is not supported.\n"
                         "Detected id is '${CMAKE_CXX_COMPILER_ID}'.")
     endif()
-
-    target_compile_options(${target_name} PRIVATE ${release})
-    target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${debug}>)
 endfunction(enable_strict_warnings)
 
 # Disablee all warnings.
