@@ -65,6 +65,7 @@ class value<ValueType>
 {
     using void_subject = subject<void()>;
     using value_subject = subject<void(ValueType const &)>;
+    using modify_subject = subject<void(ValueType &)>;
 
 public:
     //! The observable value's stored value type.
@@ -201,6 +202,31 @@ public:
             };
 
         set_impl(std::move(new_value));
+    }
+
+    //! In-place modification of the observable value. Use this instead of set()
+    //! to update "expensive" value objects, where creating a temporary copy would be
+    //! costly or undesirable (such as collections).
+    //!
+    //! This method skips the equality check, and subscribers are always notified.
+    //!
+    //! \param[in] modifier A callable that will be called to modify the value in-place.
+    //!
+    //! \tparam Callable A callable taking one parameter that will be called with
+    //!                  a reference to the value so it can apply the change.
+    //!
+    //!                  - ``void(T &)`` -- will be called with a mutable reference to the value.
+    //!
+    template <typename Callable>
+    void modify(Callable && modifier)
+    {
+        static_assert(detail::is_compatible_with_subject<Callable, modify_subject>::value,
+            "Modifier is not valid. Please provide a modifier that takes a ValueType "
+            "reference as its only argument.");
+
+        modifier(value_);
+        void_observers_.notify();
+        value_observers_.notify(value_);
     }
 
     //! Set a new value. Will just call set(ValueType &&).
