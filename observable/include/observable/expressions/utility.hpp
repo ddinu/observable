@@ -4,6 +4,9 @@
 #include <observable/value.hpp>
 #include <observable/expressions/tree.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable { inline namespace expr { namespace expr_detail {
 
 //! Check if a type is either an expression_node or an observable
@@ -74,10 +77,17 @@ using val_type_t = typename val_type<T>::type;
 template <typename Op, typename ... Args>
 struct result_node
 {
+#if defined(__cpp_lib_invoke) && __cpp_lib_invoke && defined(_HAS_CXX17) && _HAS_CXX17
     using type = expression_node<
-                            std::decay_t<
-                                std::result_of_t<
-                                    std::decay_t<Op>(val_type_t<Args> ...)>>>;
+                    std::decay_t<
+                        std::invoke_result_t<
+                            std::decay_t<Op>, val_type_t<Args> ...>>>;
+#else
+    using type = expression_node<
+                    std::decay_t<
+                        std::result_of_t<
+                            std::decay_t<Op>(val_type_t<Args> ...)>>>;
+#endif
 };
 
 //! Type of the expression_node created for an expression with callable ``Op`` and
@@ -127,3 +137,5 @@ inline auto make_node(Op && op, Args && ... args)
 }
 
 } } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

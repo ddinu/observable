@@ -9,6 +9,9 @@
 #include <observable/subscription.hpp>
 #include <observable/value.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable { inline namespace expr {
 
 //! \cond
@@ -201,7 +204,7 @@ private:
     }
 
     template <typename Tuple, std::size_t I=0>
-    static auto eval_tuple(Tuple & nodes) ->
+    static auto eval_tuple(Tuple &) ->
         std::enable_if_t<I >= std::tuple_size<Tuple>::value>
     {
         // Do nothing.
@@ -244,3 +247,5 @@ template <typename T>
 struct is_expression_node : is_expression_node_<std::decay_t<T>> { };
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

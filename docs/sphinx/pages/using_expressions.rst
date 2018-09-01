@@ -30,11 +30,11 @@ Here's a small example:
         auto radius = observable::value<double> { 5 };
         auto circumference = observe(2 * M_PI * radius);
 
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         radius = 7;
 
-        assert(circumference.get() == 2 * M_PI * 7);
+        assert(fabs(circumference.get() - 2 * M_PI * 7) < 0.001);
     }
 
 The ``radius`` variable is an observable value. Because of that, it can be used
@@ -66,13 +66,13 @@ Here's how using an `updater`_ works:
         auto updater = observable::updater { };
         auto circumference = observe(updater, 2 * M_PI * radius);
 
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         radius = 7;
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         updater.update_all();
-        assert(circumference.get() == 2 * M_PI * 7);
+        assert(fabs(circumference.get() - 2 * M_PI * 7) < 0.001);
     }
 
 When you call ``update_all()``, all values returned by ``observe()`` calls,
@@ -119,12 +119,12 @@ unqualified name.
         auto area = observe(M_PI * pow(radius, 2));
         auto is_large = observe(select(area > 100, true, false));
 
-        assert(area.get() == M_PI * std::pow(5, 2));
+        assert(fabs(area.get() - M_PI * std::pow(5, 2)) < 0.001);
         assert(is_large.get() == false);
 
         radius = 70;
 
-        assert(area.get() == M_PI * std::pow(70, 2));
+        assert(fabs(area.get() - M_PI * std::pow(70, 2)) < 0.001);
         assert(is_large.get() == true);
     }
 
@@ -155,11 +155,11 @@ Let's take a look at an example:
         auto radius = observable::value<double> { 5 };
         auto area = observe(M_PI * square(radius));
 
-        assert(area.get() == M_PI * std::pow(5, 2));
+        assert(fabs(area.get() - M_PI * std::pow(5, 2)) < 0.001);
 
         radius = 70;
 
-        assert(area.get() == M_PI * std::pow(70, 2));
+        assert(fabs(area.get() - M_PI * std::pow(70, 2)) < 0.001);
     }
 
 The function that you provide to the macro will be called each time

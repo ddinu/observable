@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <observable/expressions/filters.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable { inline namespace expr {
 
 //! \cond
@@ -239,7 +242,7 @@ struct round_
 template <typename T>
 auto abs(T && val);
 #endif
-OBSERVABLE_ADAPT_FILTER(abs, filter_detail::abs_ { });
+OBSERVABLE_ADAPT_FILTER(abs, filter_detail::abs_ { })
 
 #if defined(DOXYGEN)
 //! Compute both the quotient and the remainder of the division of the
@@ -250,7 +253,7 @@ OBSERVABLE_ADAPT_FILTER(abs, filter_detail::abs_ { });
 template <typename X, typename Y>
 auto div(X && x, Y && y);
 #endif
-OBSERVABLE_ADAPT_FILTER(div, filter_detail::div_ { });
+OBSERVABLE_ADAPT_FILTER(div, filter_detail::div_ { })
 
 #if defined(DOXYGEN)
 //! Computes e (Euler's number) raised to the given power.
@@ -260,7 +263,7 @@ OBSERVABLE_ADAPT_FILTER(div, filter_detail::div_ { });
 template <typename T>
 auto exp(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(exp, filter_detail::exp_ { });
+OBSERVABLE_ADAPT_FILTER(exp, filter_detail::exp_ { })
 
 #if defined(DOXYGEN)
 //! Computes 2 raised to the given power.
@@ -270,7 +273,7 @@ OBSERVABLE_ADAPT_FILTER(exp, filter_detail::exp_ { });
 template <typename T>
 auto exp2(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(exp2, filter_detail::exp2_ { });
+OBSERVABLE_ADAPT_FILTER(exp2, filter_detail::exp2_ { })
 
 #if defined(DOXYGEN)
 //! Computes the the natural (base e) logarithm of the provided argument.
@@ -280,7 +283,7 @@ OBSERVABLE_ADAPT_FILTER(exp2, filter_detail::exp2_ { });
 template <typename T>
 auto log(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(log, filter_detail::log_ { });
+OBSERVABLE_ADAPT_FILTER(log, filter_detail::log_ { })
 
 #if defined(DOXYGEN)
 //! Computes the common (base-10) logarithm of the provided argument.
@@ -290,7 +293,7 @@ OBSERVABLE_ADAPT_FILTER(log, filter_detail::log_ { });
 template <typename T>
 auto log10(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(log10, filter_detail::log10_ { });
+OBSERVABLE_ADAPT_FILTER(log10, filter_detail::log10_ { })
 
 #if defined(DOXYGEN)
 //! Computes the binary (base-2) logarithm of the provided argument.
@@ -300,7 +303,7 @@ OBSERVABLE_ADAPT_FILTER(log10, filter_detail::log10_ { });
 template <typename T>
 auto log2(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(log2, filter_detail::log2_ { });
+OBSERVABLE_ADAPT_FILTER(log2, filter_detail::log2_ { })
 
 #if defined(DOXYGEN)
 //! Computes the value of the provided base raised to the power of the provided
@@ -311,7 +314,7 @@ OBSERVABLE_ADAPT_FILTER(log2, filter_detail::log2_ { });
 template <typename B, typename E>
 auto pow(B && b, E && e);
 #endif
-OBSERVABLE_ADAPT_FILTER(pow, filter_detail::pow_ { });
+OBSERVABLE_ADAPT_FILTER(pow, filter_detail::pow_ { })
 
 #if defined(DOXYGEN)
 //! Computes the square root of the provided argument.
@@ -321,7 +324,7 @@ OBSERVABLE_ADAPT_FILTER(pow, filter_detail::pow_ { });
 template <typename T>
 auto sqrt(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(sqrt, filter_detail::sqrt_ { });
+OBSERVABLE_ADAPT_FILTER(sqrt, filter_detail::sqrt_ { })
 
 #if defined(DOXYGEN)
 //! Computes the cubic root of the provided argument.
@@ -331,7 +334,7 @@ OBSERVABLE_ADAPT_FILTER(sqrt, filter_detail::sqrt_ { });
 template <typename T>
 auto cbrt(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(cbrt, filter_detail::cbrt_ { });
+OBSERVABLE_ADAPT_FILTER(cbrt, filter_detail::cbrt_ { })
 
 #if defined(DOXYGEN)
 //! Computes the square root of the sum of the squares of x and y, without undue
@@ -342,7 +345,7 @@ OBSERVABLE_ADAPT_FILTER(cbrt, filter_detail::cbrt_ { });
 template <typename X, typename Y>
 auto hypot(X && x, Y && y);
 #endif
-OBSERVABLE_ADAPT_FILTER(hypot, filter_detail::hypot_ { });
+OBSERVABLE_ADAPT_FILTER(hypot, filter_detail::hypot_ { })
 
 #if defined(DOXYGEN)
 //! Computes the sine of the provided argument (measured in radians).
@@ -352,7 +355,7 @@ OBSERVABLE_ADAPT_FILTER(hypot, filter_detail::hypot_ { });
 template <typename T>
 auto sin(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(sin, filter_detail::sin_ { });
+OBSERVABLE_ADAPT_FILTER(sin, filter_detail::sin_ { })
 
 #if defined(DOXYGEN)
 //! Computes the cosine of the provided argument (measured in radians).
@@ -362,7 +365,7 @@ OBSERVABLE_ADAPT_FILTER(sin, filter_detail::sin_ { });
 template <typename T>
 auto cos(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(cos, filter_detail::cos_ { });
+OBSERVABLE_ADAPT_FILTER(cos, filter_detail::cos_ { })
 
 #if defined(DOXYGEN)
 //! Computes the tangent of the provided argument (measured in radians).
@@ -372,7 +375,7 @@ OBSERVABLE_ADAPT_FILTER(cos, filter_detail::cos_ { });
 template <typename T>
 auto tan(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(tan, filter_detail::tan_ { });
+OBSERVABLE_ADAPT_FILTER(tan, filter_detail::tan_ { })
 
 #if defined(DOXYGEN)
 //! Computes the arc sine of the provided argument.
@@ -382,7 +385,7 @@ OBSERVABLE_ADAPT_FILTER(tan, filter_detail::tan_ { });
 template <typename T>
 auto asin(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(asin, filter_detail::asin_ { });
+OBSERVABLE_ADAPT_FILTER(asin, filter_detail::asin_ { })
 
 #if defined(DOXYGEN)
 //! Computes the arc cosine of the provided argument.
@@ -392,7 +395,7 @@ OBSERVABLE_ADAPT_FILTER(asin, filter_detail::asin_ { });
 template <typename T>
 auto acos(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(acos, filter_detail::acos_ { });
+OBSERVABLE_ADAPT_FILTER(acos, filter_detail::acos_ { })
 
 #if defined(DOXYGEN)
 //! Computes the arc tangent of the provided argument.
@@ -402,7 +405,7 @@ OBSERVABLE_ADAPT_FILTER(acos, filter_detail::acos_ { });
 template <typename T>
 auto atan(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(atan, filter_detail::atan_ { });
+OBSERVABLE_ADAPT_FILTER(atan, filter_detail::atan_ { })
 
 #if defined(DOXYGEN)
 //! Computes the arc tangent of y / x using the signs of arguments to determine
@@ -413,7 +416,7 @@ OBSERVABLE_ADAPT_FILTER(atan, filter_detail::atan_ { });
 template <typename Y, typename X>
 auto atan2(Y && y, X && x);
 #endif
-OBSERVABLE_ADAPT_FILTER(atan2, filter_detail::atan2_ { });
+OBSERVABLE_ADAPT_FILTER(atan2, filter_detail::atan2_ { })
 
 #if defined(DOXYGEN)
 //! Nearest integer not less than the given value.
@@ -423,7 +426,7 @@ OBSERVABLE_ADAPT_FILTER(atan2, filter_detail::atan2_ { });
 template <typename T>
 auto ceil(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(ceil, filter_detail::ceil_ { });
+OBSERVABLE_ADAPT_FILTER(ceil, filter_detail::ceil_ { })
 
 #if defined(DOXYGEN)
 //! Nearest integer not greater than the given value.
@@ -433,7 +436,7 @@ OBSERVABLE_ADAPT_FILTER(ceil, filter_detail::ceil_ { });
 template <typename T>
 auto floor(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(floor, filter_detail::floor_ { });
+OBSERVABLE_ADAPT_FILTER(floor, filter_detail::floor_ { })
 
 #if defined(DOXYGEN)
 //! Nearest integer not greater in magnitude than the given value.
@@ -443,7 +446,7 @@ OBSERVABLE_ADAPT_FILTER(floor, filter_detail::floor_ { });
 template <typename T>
 auto trunc(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(trunc, filter_detail::trunc_ { });
+OBSERVABLE_ADAPT_FILTER(trunc, filter_detail::trunc_ { })
 
 #if defined(DOXYGEN)
 //! Nearest integer, rounding away from zero in halfway cases.
@@ -453,6 +456,8 @@ OBSERVABLE_ADAPT_FILTER(trunc, filter_detail::trunc_ { });
 template <typename T>
 auto round(T && v);
 #endif
-OBSERVABLE_ADAPT_FILTER(round, filter_detail::round_ { });
+OBSERVABLE_ADAPT_FILTER(round, filter_detail::round_ { })
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

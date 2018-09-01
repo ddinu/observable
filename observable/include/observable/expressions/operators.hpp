@@ -3,6 +3,9 @@
 #include <observable/expressions/utility.hpp>
 #include <observable/expressions/tree.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 //! Create a unary operator.
 //!
 //! \ingroup observable_detail
@@ -145,3 +148,5 @@ OBSERVABLE_DEFINE_BINARY_OP(&&)
 OBSERVABLE_DEFINE_BINARY_OP(||)
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

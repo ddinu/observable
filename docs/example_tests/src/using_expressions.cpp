@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <observable/observable.hpp>
-#include "gtest/gtest.h"
+#include "gtest.h"
 
 using namespace std::string_literals;
 
@@ -15,11 +15,11 @@ TEST(example_tests, using_expressions_simple_expressions)
         auto radius = observable::value<double> { 5 };
         auto circumference = observe(2 * M_PI * radius);
 
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         radius = 7;
 
-        assert(circumference.get() == 2 * M_PI * 7);
+        assert(fabs(circumference.get() - 2 * M_PI * 7) < 0.001);
     }
 
     // END EXAMPLE CODE
@@ -36,13 +36,13 @@ TEST(example_tests, using_expressions_with_updater)
         auto updater = observable::updater { };
         auto circumference = observe(updater, 2 * M_PI * radius);
 
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         radius = 7;
-        assert(circumference.get() == 2 * M_PI * 5);
+        assert(fabs(circumference.get() - 2 * M_PI * 5) < 0.001);
 
         updater.update_all();
-        assert(circumference.get() == 2 * M_PI * 7);
+        assert(fabs(circumference.get() - 2 * M_PI * 7) < 0.001);
     }
 
     // END EXAMPLE CODE
@@ -58,12 +58,12 @@ TEST(example_tests, using_expressions_predefined_filters)
         auto area = observe(M_PI * pow(radius, 2));
         auto is_large = observe(select(area > 100, true, false));
 
-        assert(area.get() == M_PI * std::pow(5, 2));
+        assert(fabs(area.get() - M_PI * std::pow(5, 2)) < 0.001);
         assert(is_large.get() == false);
 
         radius = 70;
 
-        assert(area.get() == M_PI * std::pow(70, 2));
+        assert(fabs(area.get() - M_PI * std::pow(70, 2)) < 0.001);
         assert(is_large.get() == true);
     }
 
@@ -84,11 +84,11 @@ TEST(example_tests, using_expressions_user_filters)
         auto radius = observable::value<double> { 5 };
         auto area = observe(M_PI * square(radius));
 
-        assert(area.get() == M_PI * std::pow(5, 2));
+        assert(fabs(area.get() - M_PI * std::pow(5, 2)) < 0.001);
 
         radius = 70;
 
-        assert(area.get() == M_PI * std::pow(70, 2));
+        assert(fabs(area.get() - M_PI * std::pow(70, 2)) < 0.001);
     }
 
     // END EXAMPLE CODE

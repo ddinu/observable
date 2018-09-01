@@ -9,6 +9,9 @@
 #include <observable/subscription.hpp>
 #include <observable/detail/type_traits.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable {
 
 //! \cond
@@ -43,6 +46,7 @@ struct equal_to
 //! Exception thrown if you try to set a value that has an associated updater.
 struct readonly_value : std::runtime_error
 {
+    readonly_value() = delete;
     using std::runtime_error::runtime_error;
 };
 
@@ -457,6 +461,21 @@ public:
 
     //! Destructor.
     virtual ~value_updater() { }
+
+    //! Value updaters are default-constructible.
+    value_updater() =default;
+
+    //! Value updaters are copy-constructible.
+    value_updater(value_updater const &) =default;
+
+    //! Value updaters are move-constructible.
+    value_updater(value_updater &&) =default;
+
+    //! Value updaters are copy-assignable.
+    value_updater & operator=(value_updater const &) =default;
+
+    //! Value updaters are move-assignable.
+    value_updater & operator=(value_updater &&) =default;
 };
 
 //! \cond
@@ -474,3 +493,5 @@ template <typename T>
 struct is_value : is_value_<std::decay_t<T>> { };
 
 }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

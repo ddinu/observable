@@ -14,6 +14,7 @@ add_custom_target(observable_headers # Just to generate a project in IDEs.
         include/observable/expressions/tree.hpp
         include/observable/expressions/utility.hpp
         include/observable/detail/collection.hpp
+        include/observable/detail/compiler_config.hpp
         include/observable/detail/type_traits.hpp
 )
 

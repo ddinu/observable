@@ -18,7 +18,7 @@ namespace {
         };
     }
 
-    OBSERVABLE_ADAPT_FILTER(captive, captive_);
+    OBSERVABLE_ADAPT_FILTER(captive, captive_)
 
     //! Compute the distance between two points.
     double distance(GameModel::Point const & p1, GameModel::Point const & p2)

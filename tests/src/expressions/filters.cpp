@@ -9,7 +9,7 @@ namespace { // Filters should be usable with ADL.
 using observable::value;
 
 auto test_filter_(int a, int b) { return a + b; }
-OBSERVABLE_ADAPT_FILTER(test_filter, test_filter_);
+OBSERVABLE_ADAPT_FILTER(test_filter, test_filter_)
 
 TEST(filter_test, adapted_filter_computes_initial_value)
 {

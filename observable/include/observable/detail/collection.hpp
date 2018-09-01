@@ -1,6 +1,10 @@
 #pragma once
 #include <atomic>
 #include <cassert>
+#include <type_traits>
+
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
 
 namespace observable { namespace detail {
 
@@ -111,7 +115,8 @@ public:
     //!
     //! \tparam UnaryFunctor Type of the ``fun`` parameter.
     template <typename UnaryFunctor>
-    void apply(UnaryFunctor && fun) const noexcept(noexcept(fun(ValueType { })))
+    void apply(UnaryFunctor && fun) const
+        noexcept(noexcept(fun(std::declval<ValueType>())))
     {
         auto const block_gc = gc_blocker { this };
 
@@ -225,3 +230,5 @@ private:
 };
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

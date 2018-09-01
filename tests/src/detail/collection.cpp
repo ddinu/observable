@@ -71,6 +71,7 @@ TEST(collection_test, apply_is_nothrow_for_nothrow_functor)
 {
     collection<int> col;
     auto fun = [](auto) noexcept(true) { };
+
     ASSERT_TRUE(noexcept(col.apply(fun)));
 }
 
@@ -78,6 +79,7 @@ TEST(collection_test, apply_is_not_nothrow_for_throwing_functor)
 {
     collection<int> col;
     auto fun = [](auto) noexcept(false) { };
+
     ASSERT_FALSE(noexcept(col.apply(fun)));
 }
 

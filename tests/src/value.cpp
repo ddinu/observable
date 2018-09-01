@@ -18,9 +18,9 @@ struct mock_updater : value_updater<int>
     mock_updater(int initial) : v_ { initial }
     { }
 
-    auto get() const -> int override { return v_; }
+    auto get() const -> int override;
 
-    void set_value_notifier(std::function<void(int &&)> const & f) { fun_ = f; }
+    void set_value_notifier(std::function<void(int &&)> const & f) override;
 
     void set(int v) { v_ = v; fun_(std::move(v_)); }
 
@@ -28,6 +28,16 @@ private:
     std::function<void(int &&)> fun_;
     int v_;
 };
+
+auto mock_updater::get() const -> int
+{
+    return v_;
+}
+
+void mock_updater::set_value_notifier(std::function<void(int &&)> const & f)
+{
+    fun_ = f;
+}
 
 TEST(value_test, is_default_constructible)
 {
@@ -338,10 +348,10 @@ TEST(value_test, can_subscribe_and_immediately_call_observer)
 
 TEST(value_test, immediately_called_observer_receives_the_current_value)
 {
-    auto v = value<int> { 5 };
+    auto val = value<int> { 5 };
 
     auto call_value = 3;
-    auto sub = v.subscribe_and_call([&](int v) { call_value = v; });
+    auto sub = val.subscribe_and_call([&](int v) { call_value = v; });
 
     ASSERT_EQ(5, call_value);
 }

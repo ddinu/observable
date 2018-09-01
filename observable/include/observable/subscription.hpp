@@ -3,6 +3,9 @@
 #include <functional>
 #include <memory>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable {
 
 //! Infinite subscription that will not unsubscribe the associated observer
@@ -176,3 +179,5 @@ private:
 };
 
 }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

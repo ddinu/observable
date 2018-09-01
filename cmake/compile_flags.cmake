@@ -6,26 +6,23 @@ function(enable_strict_warnings target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         target_compile_options(${target_name}
             PRIVATE
-                /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd4627 /wd5026
-                /wd5027 /wd4710 /wd4668 /wd4711 /wd4548 /wd4868 /wd4571
-
+                /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd5026 /wd5027 /wd4710
+                /wd4571 /wd5039 /wd4623 /wd4774 /wd4548 /wd4711
                 $<$<CONFIG:Debug>:/WX>
         )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         target_compile_options(${target_name}
             PRIVATE
                 -Wall -Wextra -pedantic -Wshadow -Wabi
-
                 $<$<CONFIG:Debug>:-Werror>
         )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
         target_compile_options(${target_name}
             PRIVATE
-                -Weverything -Wno-system-headers -Wabi -Wno-c++98-compat
-                -Wno-c++98-compat-pedantic -Wno-exit-time-destructors
+                -Weverything -Wno-system-headers -Wabi
+                -Wno-reserved-id-macro -Wno-padded -Wno-c++98-compat
                 -Wno-global-constructors -Wno-missing-prototypes
-                -Wno-padded -Wno-documentation-unknown-command
-
+                -Wno-unused-macros
                 $<$<CONFIG:Debug>:-Werror>
         )
     else()
@@ -40,11 +37,11 @@ endfunction(enable_strict_warnings)
 # - target_name Name of the configured target.
 function(disable_warnings target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-        target_compile_options(${target_name} PUBLIC /W0)
+        target_compile_options(${target_name} PRIVATE /W0)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-        target_compile_options(${target_name} PUBLIC -w)
+        target_compile_options(${target_name} PRIVATE -w)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-        target_compile_options(${target_name} PUBLIC -w)
+        target_compile_options(${target_name} PRIVATE -w)
     endif()
 endfunction(disable_warnings)
 
@@ -54,6 +51,10 @@ endfunction(disable_warnings)
 function(set_default_flags target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         set(flags /MP /GF /Za)
+
+        if(${MSVC_VERSION} GREATER 1900)
+            set(flags ${flags} /Zc:__cplusplus)
+        endif()
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         set(flags -fpic)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)

@@ -4,6 +4,9 @@
 #include <utility>
 #include <observable/expressions/utility.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 //! Create an expression filter from a callable.
 //!
 //! Expression filters take expression nodes as arguments and return an expression
@@ -261,3 +264,5 @@ auto zip(Args && ... args);
 OBSERVABLE_ADAPT_FILTER(zip, filter_detail::zip_ { })
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

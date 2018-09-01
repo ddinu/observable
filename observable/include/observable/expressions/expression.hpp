@@ -10,6 +10,9 @@
 #include <observable/value.hpp>
 #include <observable/expressions/tree.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable { inline namespace expr {
 
 //! Expression evaluators can be used to manually evaluate multiple expressions at
@@ -30,9 +33,6 @@ public:
         for(auto && p : data_->funs)
             p.second();
     }
-
-    //! Destructor.
-    virtual ~expression_evaluator() { }
 
 private:
     // Expressions are inserted and removed in the order in which they are
@@ -222,3 +222,5 @@ private:
 };
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

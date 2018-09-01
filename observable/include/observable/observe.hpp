@@ -6,6 +6,9 @@
 #include <observable/expressions/operators.hpp>
 #include <observable/expressions/tree.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable {
 
 //! Update all observable values that were associated with an updater instance.
@@ -111,3 +114,5 @@ inline auto observe(UpdaterType & ud, expr::expression_node<ValueType> && root)
 }
 
 }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

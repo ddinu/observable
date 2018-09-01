@@ -2,6 +2,9 @@
 #include <functional>
 #include <type_traits>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable { namespace detail {
 
 //! Check if a callable type is compatible with an observer type.
@@ -59,3 +62,5 @@ struct are_equality_comparable<A, B, std::enable_if_t<
 //! \endcond
 
 } }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS

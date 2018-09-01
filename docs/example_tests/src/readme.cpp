@@ -1,6 +1,6 @@
 #include <iostream>
 #include <observable/observable.hpp>
-#include "gtest/gtest.h"
+#include "gtest.h"
 #include "utility.h"
 
 using namespace std::string_literals;

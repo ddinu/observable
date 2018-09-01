@@ -7,6 +7,9 @@
 #include <observable/detail/type_traits.hpp>
 #include <observable/subscription.hpp>
 
+#include <observable/detail/compiler_config.hpp>
+OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
+
 namespace observable {
 
 //! \cond
@@ -210,3 +213,5 @@ private:
 };
 
 }
+
+OBSERVABLE_END_CONFIGURE_WARNINGS
