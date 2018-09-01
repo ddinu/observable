@@ -71,7 +71,25 @@ endfunction(set_default_flags)
 #
 # - target_name Name of the configured target.
 function(set_cpp_standard target_name)
-    set_property(TARGET ${target_name} PROPERTY CXX_STANDARD 14)
+    get_property(cpp_standard GLOBAL PROPERTY cpp_standard)
+
+    if(NOT CPP_STANDARD AND NOT cpp_standard)
+        set(cpp_standard 14)
+        message(STATUS "You can set the C++ standard by defining CPP_STANDARD")
+    elseif(NOT cpp_standard)
+        set(cpp_standard ${CPP_STANDARD})
+    endif()
+    set_property(GLOBAL PROPERTY cpp_standard ${cpp_standard})
+
+    get_property(cpp_standard_message_printed
+        GLOBAL
+        PROPERTY cpp_standard_message_printed)
+    if(NOT cpp_standard_message_printed)
+        message(STATUS "Using the C++${cpp_standard} standard")
+        set_property(GLOBAL PROPERTY cpp_standard_message_printed TRUE)
+    endif()
+
+    set_property(TARGET ${target_name} PROPERTY CXX_STANDARD ${cxx_standard})
     set_property(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED on)
 endfunction(set_cpp_standard)
 
