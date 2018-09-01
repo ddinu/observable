@@ -102,19 +102,27 @@ Build status
 
 Visual Studio 2017 builds:
 
- * |win32 15 build|_ (32 bit)
- * |win64 15 build|_ (64 bit)
+ * |win32 15 build C++14|_ (32 bit, C++14)
+ * |win64 15 build C++14|_ (64 bit, C++14)
+ * |win32 15 build C++17|_ (32 bit, C++17)
+ * |win64 15 build C++17|_ (64 bit, C++17)
 
-.. |win32 15 build| image:: https://ci.appveyor.com/api/projects/status/sgomsxwri8wknode?svg=true
-.. _win32 15 build: https://ci.appveyor.com/project/ddinu/observable-crrsf
+.. |win32 15 build C++14| image:: https://ci.appveyor.com/api/projects/status/sgomsxwri8wknode?svg=true
+.. _win32 15 build C++14: https://ci.appveyor.com/project/ddinu/observable-crrsf
 
-.. |win64 15 build| image:: https://ci.appveyor.com/api/projects/status/tpr4qem5gxo7dntb?svg=true
-.. _win64 15 build: https://ci.appveyor.com/project/ddinu/observable-uyjd7
+.. |win64 15 build C++14| image:: https://ci.appveyor.com/api/projects/status/tpr4qem5gxo7dntb?svg=true
+.. _win64 15 build C++14: https://ci.appveyor.com/project/ddinu/observable-uyjd7
+
+.. |win32 15 build C++17| image:: https://ci.appveyor.com/api/projects/status/296i1mvgm7fht0f6?svg=true
+.. _win32 15 build C++17: https://ci.appveyor.com/project/ddinu/observable-2lmia
+
+.. |win64 15 build C++17| image:: https://ci.appveyor.com/api/projects/status/i948buecj8j51by0?svg=true
+.. _win64 15 build C++17: https://ci.appveyor.com/project/ddinu/observable-ha4xx
 
 Visual Studio 2015 builds:
 
- * |win32 14 build|_ (32 bit)
- * |win64 14 build|_ (64 bit)
+ * |win32 14 build|_ (32 bit, C++14)
+ * |win64 14 build|_ (64 bit, C++14)
 
 .. |win32 14 build| image:: https://ci.appveyor.com/api/projects/status/bee1g4nlh25olmct/branch/master?svg=true
 .. _win32 14 build: https://ci.appveyor.com/project/ddinu/observable-xwigk
