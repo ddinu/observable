@@ -13,7 +13,7 @@ addons:
 
 matrix:
   include:
-    - env: CC=gcc-7 CXX=g++-7
+    - env: CC=gcc-7 CXX=g++-7 STD=14
       os: linux
       dist: trusty
       sudo: require
@@ -24,7 +24,18 @@ matrix:
             - gcc-7
             - g++-7
 
-    - env: CC=gcc-6 CXX=g++-6
+    - env: CC=gcc-7 CXX=g++-7 STD=17
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - gcc-7
+            - g++-7
+
+    - env: CC=gcc-6 CXX=g++-6 STD=14
       os: linux
       dist: trusty
       sudo: require
@@ -35,7 +46,18 @@ matrix:
             - gcc-6
             - g++-6
 
-    - env: CC=gcc-5 CXX=g++-5
+    - env: CC=gcc-6 CXX=g++-6 STD=17
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - gcc-6
+            - g++-6
+
+    - env: CC=gcc-5 CXX=g++-5 STD=14
       os: linux
       dist: trusty
       sudo: require
@@ -46,7 +68,18 @@ matrix:
             - gcc-5
             - g++-5
 
-    - env: CC=clang-3.8 CXX=clang++-3.8
+    - env: CC=gcc-5 CXX=g++-5 STD=17
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - gcc-5
+            - g++-5
+
+    - env: CC=clang-3.8 CXX=clang++-3.8 STD=14
       os: linux
       dist: trusty
       sudo: require
@@ -57,7 +90,18 @@ matrix:
             - g++-6 # Hack to make clang work.
             - clang-3.8
 
-    - env: CC=clang-3.6 CXX=clang++-3.6
+    - env: CC=clang-3.8 CXX=clang++-3.8 STD=17
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - g++-6 # Hack to make clang work.
+            - clang-3.8
+
+    - env: CC=clang-3.6 CXX=clang++-3.6 STD=14
       os: linux
       dist: trusty
       sudo: require
@@ -67,11 +111,26 @@ matrix:
           packages:
             - clang-3.6
 
-    - os: osx
+    - env: CC=clang-3.6 CXX=clang++-3.6 STD=17
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - clang-3.6
+
+    - env: STD=14
+      os: osx
+      osx_image: xcode8.2
+
+    - env: STD=17
+      os: osx
       osx_image: xcode8.2
 
 script:
     - mkdir build && cd build
-    - cmake ..
+    - cmake -DCXX_STANDARD=${STD} ..
     - cmake --build . --config debug
     - ctest -V -C debug
