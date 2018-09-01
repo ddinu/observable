@@ -13,6 +13,17 @@ addons:
 
 matrix:
   include:
+    - env: CC=gcc-7 CXX=g++-7
+      os: linux
+      dist: trusty
+      sudo: require
+      addons:
+        apt:
+          sources: *sources
+          packages:
+            - gcc-7
+            - g++-7
+
     - env: CC=gcc-6 CXX=g++-6
       os: linux
       dist: trusty
