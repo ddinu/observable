@@ -92,10 +92,11 @@ Any relatively recent compiler with C++14 support should work.
 
 The code has been tested with the following compilers:
 
- * MSVC 15 (Visual Studio 2017)
- * MSVC 14 (Visual Studio 2015)
- * GCC 5.4, 6.2
- * Clang 3.6, 3.7, 3.8, 3.9
+* MSVC 15 (Visual Studio 2017)
+* MSVC 14 (Visual Studio 2015)
+* GCC 5, 6, 7
+* Clang 3.6, 3.8
+* AppleClang 9.1
 
 Build status
 ------------
