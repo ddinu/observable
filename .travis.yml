@@ -131,6 +131,6 @@ matrix:
 
 script:
     - mkdir build && cd build
-    - cmake -DCXX_STANDARD=${STD} ..
+    - cmake -DCPP_STANDARD=${STD} ..
     - cmake --build . --config debug
     - ctest -V -C debug

@@ -90,7 +90,7 @@ function(set_cpp_standard target_name)
         set_property(GLOBAL PROPERTY cpp_standard_message_printed TRUE)
     endif()
 
-    set_property(TARGET ${target_name} PROPERTY CXX_STANDARD ${cxx_standard})
+    set_property(TARGET ${target_name} PROPERTY CXX_STANDARD ${cpp_standard})
     set_property(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED on)
 endfunction(set_cpp_standard)
 
