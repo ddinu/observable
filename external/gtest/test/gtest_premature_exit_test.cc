@@ -26,7 +26,8 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+//
+// Author: wan@google.com (Zhanyong Wan)
 //
 // Tests that Google Test manipulates the premature-exit-detection
 // file correctly.
@@ -42,6 +43,10 @@ using ::testing::internal::posix::Stat;
 using ::testing::internal::posix::StatStruct;
 
 namespace {
+
+// Is the TEST_PREMATURE_EXIT_FILE environment variable expected to be
+// set?
+const bool kTestPrematureExitFileEnvVarShouldBeSet = false;
 
 class PrematureExitTest : public Test {
  public:
@@ -90,6 +95,16 @@ TEST_F(PrematureExitDeathTest, FileExistsDuringExecutionOfDeathTest) {
         exit(1);
       }
     }, "");
+}
+
+// Tests that TEST_PREMATURE_EXIT_FILE is set where it's expected to
+// be set.
+TEST_F(PrematureExitTest, TestPrematureExitFileEnvVarIsSet) {
+  if (kTestPrematureExitFileEnvVarShouldBeSet) {
+    const char* const filepath = GetEnv("TEST_PREMATURE_EXIT_FILE");
+    ASSERT_TRUE(filepath != NULL);
+    ASSERT_NE(*filepath, '\0');
+  }
 }
 
 // Tests that the premature-exit file exists during the execution of a

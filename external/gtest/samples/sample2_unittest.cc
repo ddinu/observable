@@ -28,6 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // A sample program demonstrating using Google C++ testing framework.
+//
+// Author: wan@google.com (Zhanyong Wan)
+
 
 // This sample shows how to write a more complex unit test for a class
 // that has multiple member functions.
@@ -39,7 +42,7 @@
 
 #include "sample2.h"
 #include "gtest/gtest.h"
-namespace {
+
 // In this example, we test the MyString class (a simple string).
 
 // Tests the default c'tor.
@@ -104,4 +107,3 @@ TEST(MyString, Set) {
   s.Set(NULL);
   EXPECT_STREQ(NULL, s.c_string());
 }
-}  // namespace

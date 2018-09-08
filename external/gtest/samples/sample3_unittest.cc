@@ -28,6 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // A sample program demonstrating using Google C++ testing framework.
+//
+// Author: wan@google.com (Zhanyong Wan)
+
 
 // In this example, we use a more advanced feature of Google Test called
 // test fixture.
@@ -62,14 +65,14 @@
 
 #include "sample3-inl.h"
 #include "gtest/gtest.h"
-namespace {
+
 // To use a test fixture, derive a class from testing::Test.
-class QueueTestSmpl3 : public testing::Test {
+class QueueTest : public testing::Test {
  protected:  // You should make the members protected s.t. they can be
              // accessed from sub-classes.
 
   // virtual void SetUp() will be called before each test is run.  You
-  // should define it if you need to initialize the variables.
+  // should define it if you need to initialize the varaibles.
   // Otherwise, this can be skipped.
   virtual void SetUp() {
     q1_.Enqueue(1);
@@ -117,13 +120,13 @@ class QueueTestSmpl3 : public testing::Test {
 // instead of TEST.
 
 // Tests the default c'tor.
-TEST_F(QueueTestSmpl3, DefaultConstructor) {
+TEST_F(QueueTest, DefaultConstructor) {
   // You can access data in the test fixture here.
   EXPECT_EQ(0u, q0_.Size());
 }
 
 // Tests Dequeue().
-TEST_F(QueueTestSmpl3, Dequeue) {
+TEST_F(QueueTest, Dequeue) {
   int * n = q0_.Dequeue();
   EXPECT_TRUE(n == NULL);
 
@@ -141,9 +144,8 @@ TEST_F(QueueTestSmpl3, Dequeue) {
 }
 
 // Tests the Queue::Map() function.
-TEST_F(QueueTestSmpl3, Map) {
+TEST_F(QueueTest, Map) {
   MapTester(&q0_);
   MapTester(&q1_);
   MapTester(&q2_);
 }
-}  // namespace
