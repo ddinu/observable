@@ -1,38 +1,44 @@
 #include <type_traits>
+#include <catch/catch.hpp>
 #include <observable/subject.hpp>
 #include <observable/detail/type_traits.hpp>
-#include "gtest.h"
 
 namespace observable { namespace detail { namespace test {
 
-TEST(type_traits_test, is_compatible_with_observer_is_true_for_compatible_function)
+TEST_CASE("type_traits/is_compatible_with_observer", "[type_traits]")
 {
-    auto compat = is_compatible_with_observer<
-                        void(int),
-                        subject<void(int)>::observer_type
-                  >::value;
-    ASSERT_TRUE(compat);
+    SECTION("is_compatible_with_observer is true for compatible function")
+    {
+        auto compat = is_compatible_with_observer<
+                            void(int),
+                            subject<void(int)>::observer_type
+                      >::value;
+        REQUIRE(compat);
+    }
+
+    SECTION("is_compatible_with_observer is false for incompatible function")
+    {
+        auto compat = is_compatible_with_observer<
+                            void(int &),
+                            subject<void(int)>::observer_type
+                      >::value;
+        REQUIRE_FALSE(compat);
+    }
 }
 
-TEST(type_traits_test, is_compatible_with_observer_is_false_for_incompatible_function)
+TEST_CASE("type_traits/is_compatible_with_subject", "[type_traits]")
 {
-    auto compat = is_compatible_with_observer<
-                        void(int &),
-                        subject<void(int)>::observer_type
-                  >::value;
-    ASSERT_FALSE(compat);
-}
+    SECTION("is_compatible_with_subject is true for compatible function")
+    {
+        auto compat = is_compatible_with_subject<void(int), subject<void(int)>>::value;
+        REQUIRE(compat);
+    }
 
-TEST(type_traits_test, is_compatible_with_subject_is_true_for_compatible_function)
-{
-    auto compat = is_compatible_with_subject<void(int), subject<void(int)>>::value;
-    ASSERT_TRUE(compat);
-}
-
-TEST(type_traits_test, is_compatible_with_subject_is_false_for_incompatible_function)
-{
-    auto compat = is_compatible_with_subject<void(int &), subject<void(int)>>::value;
-    ASSERT_FALSE(compat);
+    SECTION("is_compatible_with_subject is false for incompatible function")
+    {
+        auto compat = is_compatible_with_subject<void(int &), subject<void(int)>>::value;
+        REQUIRE_FALSE(compat);
+    }
 }
 
 } } }

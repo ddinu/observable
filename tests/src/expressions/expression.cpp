@@ -1,148 +1,163 @@
 #include <memory>
+#include <catch/catch.hpp>
 #include <observable/expressions/expression.hpp>
-#include "gtest.h"
 
 namespace observable { inline namespace expr { namespace test {
 
-TEST(expression_test, can_create_immediate_expression)
+TEST_CASE("expression/expression creation", "[expression]")
 {
-    auto e = expression<int, immediate_evaluator> { expression_node<int> { 5 } };
+    SECTION("can create immediate-update expression")
+    {
+        auto e = expression<int, immediate_evaluator> { expression_node<int> { 5 } };
+
+        REQUIRE(e.get() == 5);
+    }
+
+    SECTION("can create manual-update expression")
+    {
+        auto ev = expression_evaluator { };
+        auto e = expression<int> { expression_node<int> { 5 }, ev };
+
+        REQUIRE(e.get() == 5);
+    }
 }
 
-TEST(expression_test, can_create_manual_update_expression)
+TEST_CASE("expression/interactions with values", "[expression]")
 {
-    auto ev = expression_evaluator { };
-    auto e = expression<int> { expression_node<int> { 5 }, ev };
+    SECTION("can get immediate-update expression's value")
+    {
+        auto e = expression<int, immediate_evaluator> { expression_node<int> { 5 } };
+
+        REQUIRE(e.get() == 5);
+    }
+
+    SECTION("can get manual-update expression's value")
+    {
+        auto ev = expression_evaluator { };
+        auto e = expression<int> { expression_node<int> { 5 }, ev };
+
+        REQUIRE(e.get() == 5);
+    }
+
+    SECTION("can create value from expression")
+    {
+        auto val = value<int> {
+            std::make_unique<expression<int, immediate_evaluator>>(
+                expression_node<int> { 5 }
+            )
+        };
+
+        REQUIRE(val.get() == 5);
+    }
+
+    SECTION("expression change updates value")
+    {
+        auto val1 = value<int> { 5 };
+        auto val2 = value<int> {
+            std::make_unique<expression<int, immediate_evaluator>>(
+                expression_node<int> { val1 }
+            )
+        };
+
+        val1 = 7;
+
+        REQUIRE(val2.get() == 7);
+    }
+
+    SECTION("can convert expression to value")
+    {
+        auto val1 = value<int> { 5 };
+        auto val2 = value<int> {
+            std::make_unique<expression<int, immediate_evaluator>>(
+                expression_node<int> { val1 }
+            )
+        };
+        val1 = 7;
+
+        REQUIRE(val2.get() == 7);
+    }
 }
 
-TEST(expression_test, can_get_immediate_expression_value)
+TEST_CASE("expression/expression updating", "[expression]")
 {
-    auto e = expression<int, immediate_evaluator> { expression_node<int> { 5 } };
+    SECTION("immediate-update expression is updated on change")
+    {
+        auto val = value<int> { 5 };
+        auto e = expression<int, immediate_evaluator> { expression_node<int> { val } };
+        val = 7;
 
-    ASSERT_EQ(5, e.get());
-}
+        REQUIRE(e.get() == 7);
+    }
 
-TEST(expression_test, can_get_manual_update_expression_value)
-{
-    auto ev = expression_evaluator { };
-    auto e = expression<int> { expression_node<int> { 5 }, ev };
+    SECTION("immediate-update expression can be manually updated")
+    {
+        auto val = value<int> { 5 };
+        auto e = expression<int, immediate_evaluator> { expression_node<int> { val } };
+        val = 7;
+        e.eval();
 
-    ASSERT_EQ(5, e.get());
-}
+        REQUIRE(e.get() == 7);
+    }
 
-TEST(expression_test, immediate_update_expression_is_updated_on_change)
-{
-    auto val = value<int> { 5 };
-    auto e = expression<int, immediate_evaluator> { expression_node<int> { val } };
-    val = 7;
+    SECTION("manual-update expression is not updated on change")
+    {
+        auto ev = expression_evaluator { };
 
-    ASSERT_EQ(7, e.get());
-}
+        auto val = value<int> { 5 };
+        auto e = expression<int> { expression_node<int> { val }, ev };
+        val = 7;
 
-TEST(expression_test, immediate_update_expression_can_be_manually_updated)
-{
-    auto val = value<int> { 5 };
-    auto e = expression<int, immediate_evaluator> { expression_node<int> { val } };
-    val = 7;
-    e.eval();
-}
+        REQUIRE(e.get() == 5);
+    }
 
-TEST(expression_test, manual_update_expression_is_not_updated_on_change)
-{
-    auto ev = expression_evaluator { };
+    SECTION("manual-update expression can be updated")
+    {
+        auto ev = expression_evaluator { };
 
-    auto val = value<int> { 5 };
-    auto e = expression<int> { expression_node<int> { val }, ev };
-    val = 7;
+        auto val = value<int> { 5 };
+        auto e = expression<int> { expression_node<int> { val }, ev };
+        val = 7;
+        e.eval();
 
-    ASSERT_EQ(5, e.get());
-}
+        REQUIRE(e.get() == 7);
+    }
 
-TEST(expression_test, manual_update_expression_can_be_updated)
-{
-    auto ev = expression_evaluator { };
+    SECTION("can globally update arbitrary empty evaluator")
+    {
+        auto ev = expression_evaluator { };
+        ev.eval_all();
+    }
 
-    auto val = value<int> { 5 };
-    auto e = expression<int> { expression_node<int> { val }, ev };
-    val = 7;
-    e.eval();
+    SECTION("can globally update expression")
+    {
+        auto ev = expression_evaluator { };
 
-    ASSERT_EQ(7, e.get());
-}
+        auto val = value<int> { 5 };
+        auto e = expression<int> { expression_node<int> { val }, ev };
+        val = 7;
+        ev.eval_all();
 
-TEST(expression_test, can_globally_update_arbitrary_empty_evaluator)
-{
-    auto ev = expression_evaluator { };
-    ev.eval_all();
-}
+        REQUIRE(e.get() == 7);
+    }
 
-TEST(expression_test, can_globally_update_expression)
-{
-    auto ev = expression_evaluator { };
+    SECTION("can globally update multiple expressions")
+    {
+        auto ev = expression_evaluator { };
 
-    auto val = value<int> { 5 };
-    auto e = expression<int> { expression_node<int> { val }, ev };
-    val = 7;
-    ev.eval_all();
+        auto val1 = value<int> { 5 };
+        auto e1 = expression<int> { expression_node<int> { val1 }, ev };
 
-    ASSERT_EQ(7, e.get());
-}
+        auto val2 = value<int> { 13 };
+        auto e2 = expression<int> { expression_node<int> { val2 }, ev };
 
-TEST(expression_test, can_globally_update_multiple_expressions)
-{
-    auto ev = expression_evaluator { };
+        val1 = 7;
+        val2 = 17;
 
-    auto val1 = value<int> { 5 };
-    auto e1 = expression<int> { expression_node<int> { val1 }, ev };
+        ev.eval_all();
 
-    auto val2 = value<int> { 13 };
-    auto e2 = expression<int> { expression_node<int> { val2 }, ev };
-
-    val1 = 7;
-    val2 = 17;
-
-    ev.eval_all();
-
-    ASSERT_EQ(7, e1.get());
-    ASSERT_EQ(17, e2.get());
-}
-
-TEST(expression_test, can_create_value_from_expression)
-{
-    auto val = value<int> {
-                   std::make_unique<expression<int, immediate_evaluator>>(
-                       expression_node<int> { 5 }
-                   )
-               };
-
-    ASSERT_EQ(5, val.get());
-}
-
-TEST(expression_test, expression_change_updates_value)
-{
-    auto val1 = value<int> { 5 };
-    auto val2 = value<int> {
-                    std::make_unique<expression<int, immediate_evaluator>>(
-                        expression_node<int> { val1 }
-                    )
-                };
-
-    val1 = 7;
-
-    ASSERT_EQ(7, val2.get());
-}
-
-TEST(expression_test, can_convert_expression_to_value)
-{
-    auto val1 = value<int> { 5 };
-    auto val2 = value<int> {
-                    std::make_unique<expression<int, immediate_evaluator>>(
-                        expression_node<int> { val1 }
-                    )
-                };
-    val1 = 7;
-
-    ASSERT_EQ(7, val2.get());
+        REQUIRE(e1.get() == 7);
+        REQUIRE(e2.get() == 17);
+    }
 }
 
 } } }

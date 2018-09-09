@@ -1,17 +1,16 @@
 #include <iostream>
 #include <string>
+#include <catch/catch.hpp>
 #include <observable/observable.hpp>
-#include "gtest.h"
 #include "utility.h"
 
 using namespace std::string_literals;
 
-TEST(example_tests, index)
+TEST_CASE("documentation examples/index", "[documentation examples]")
 {
     capture_cout cout_buf { };
 
     // BEGIN EXAMPLE CODE
-
     using namespace std;
     using namespace observable;
 
@@ -28,8 +27,7 @@ TEST(example_tests, index)
 
         //return 0;
     }
-
     // END EXAMPLE CODE
 
-    ASSERT_EQ("10"s, cout_buf.str());
+    REQUIRE("10"s == cout_buf.str());
 }

@@ -1,93 +1,105 @@
 #include <type_traits>
 #include <utility>
+#include <catch/catch.hpp>
 #include <observable/subscription.hpp>
-#include "gtest.h"
 
 namespace observable { namespace test {
 
-TEST(unique_subscription_test, is_default_constructible)
+TEST_CASE("unique_subscription/creation", "[unique_subscription]")
 {
-    ASSERT_TRUE(std::is_default_constructible<unique_subscription>::value);
-}
-
-TEST(unique_subscription_test, can_create_initialized_subscription)
-{
-    unique_subscription { infinite_subscription { []() {} } };
-}
-
-TEST(unique_subscription_test, unsubscribe_function_is_called)
-{
-    auto call_count = 0;
-    auto sub = unique_subscription {
-                    infinite_subscription { [&]() { ++call_count; } }
-               };
-
-    sub.unsubscribe();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(unique_subscription_test, destructor_calls_unsubscribe_function)
-{
-    auto call_count = 0;
-
+    SECTION("unique subscriptions are default-constructible")
     {
-        unique_subscription {
-            infinite_subscription { [&]() { ++call_count; } }
-        };
+        REQUIRE(std::is_default_constructible<unique_subscription>::value);
     }
 
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(unique_subscription_test, calling_unsubscribe_multiple_times_calls_function_once)
-{
-    auto call_count = 0;
-
-    auto sub = unique_subscription {
-                    infinite_subscription { [&]() { ++call_count; } }
-               };
-    sub.unsubscribe();
-    sub.unsubscribe();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(unique_subscription_test, is_not_copy_constructible)
-{
-    ASSERT_FALSE(std::is_copy_constructible<unique_subscription>::value);
-}
-
-TEST(unique_subscription_test, is_not_copy_assignable)
-{
-    ASSERT_FALSE(std::is_copy_assignable<unique_subscription>::value);
-}
-
-TEST(unique_subscription_test, is_move_constructible)
-{
-    ASSERT_TRUE(std::is_move_constructible<unique_subscription>::value);
-}
-
-TEST(unique_subscription_test, is_move_assignable)
-{
-    ASSERT_TRUE(std::is_move_assignable<unique_subscription>::value);
-}
-
-TEST(unique_subscription_test, unsubscribing_from_moved_subscription_calls_function)
-{
-    auto call_count = 0;
-    unique_subscription other;
-
+    SECTION("can create initialized subscription")
     {
+        unique_subscription { infinite_subscription { []() {} } };
+    }
+}
+
+TEST_CASE("unique_subscription/unsubscribing", "[unique_subscription]")
+{
+    SECTION("unsubscribe function is called")
+    {
+        auto call_count = 0;
         auto sub = unique_subscription {
                         infinite_subscription { [&]() { ++call_count; } }
                    };
-        other = std::move(sub);
+
+        sub.unsubscribe();
+
+        REQUIRE(call_count == 1);
     }
 
-    other.unsubscribe();
+    SECTION("destructor calls unsubscribe function")
+    {
+        auto call_count = 0;
 
-    ASSERT_EQ(call_count, 1);
+        {
+            unique_subscription {
+                infinite_subscription { [&]() { ++call_count; } }
+            };
+        }
+
+        REQUIRE(call_count == 1);
+    }
+
+    SECTION("calling unsubscribe multiple times calls function once")
+    {
+        auto call_count = 0;
+
+        auto sub = unique_subscription {
+                        infinite_subscription { [&]() { ++call_count; } }
+                   };
+        sub.unsubscribe();
+        sub.unsubscribe();
+
+        REQUIRE(call_count == 1);
+    }
+}
+
+TEST_CASE("unique_subscription/copying", "[unique_subscription]")
+{
+    SECTION("unique subscriptions are not copy-constructible")
+    {
+        REQUIRE_FALSE(std::is_copy_constructible<unique_subscription>::value);
+    }
+
+    SECTION("unique subscriptions are not copy-assignable")
+    {
+        REQUIRE_FALSE(std::is_copy_assignable<unique_subscription>::value);
+    }
+}
+
+TEST_CASE("unique_subscription/moving", "[unique_subscription]")
+{
+    SECTION("unique subscriptions are move-constructible")
+    {
+        REQUIRE(std::is_move_constructible<unique_subscription>::value);
+    }
+
+    SECTION("unique subscriptions are move-assignable")
+    {
+        REQUIRE(std::is_move_assignable<unique_subscription>::value);
+    }
+
+    SECTION("unsubscribing from moved subscription calls function")
+    {
+        auto call_count = 0;
+        unique_subscription other;
+
+        {
+            auto sub = unique_subscription {
+                            infinite_subscription { [&]() { ++call_count; } }
+                       };
+            other = std::move(sub);
+        }
+
+        other.unsubscribe();
+
+        REQUIRE(call_count == 1);
+    }
 }
 
 } }

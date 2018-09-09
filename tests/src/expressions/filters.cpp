@@ -1,8 +1,8 @@
+#include <catch/catch.hpp>
 #include <observable/observe.hpp>
 #include <observable/value.hpp>
 #include <observable/expressions/operators.hpp>
 #include <observable/expressions/filters.hpp>
-#include "gtest.h"
 
 namespace { // Filters should be usable with ADL.
 
@@ -11,59 +11,62 @@ using observable::value;
 auto test_filter_(int a, int b) { return a + b; }
 OBSERVABLE_ADAPT_FILTER(test_filter, test_filter_)
 
-TEST(filter_test, adapted_filter_computes_initial_value)
+TEST_CASE("filter/adapter_filter", "[filter]")
 {
-    auto val = value<int> { 5 };
-    auto res = observe(test_filter(val, 2));
+    SECTION("adapter_filter computes initial value")
+    {
+        auto val = value<int> { 5 };
+        auto res = observe(test_filter(val, 2));
 
-    ASSERT_EQ(5 + 2, res.get());
+        REQUIRE(res.get() == 5 + 2);
+    }
+
+    SECTION("adapted_filter recomputes value")
+    {
+        auto val = value<int> { 5 };
+        auto res = observe(test_filter(val, 2));
+
+        val = 7;
+
+        REQUIRE(res.get() == (7 + 2));
+    }
+
+    SECTION("adapted_filter can take expression parameters")
+    {
+        auto a = value<int> { 1 };
+        auto b = value<int> { 2 };
+        auto c = value<int> { 3 };
+
+        auto res = observe(test_filter(a + b, b + c));
+
+        REQUIRE(res.get() == 1 + 2 + 2 + 3);
+
+        a = 10;
+        b = 20;
+        c = 30;
+
+        REQUIRE(res.get() == 10 + 20 + 20 + 30);
+    }
+
+    SECTION("adapted_filter can participate in expression")
+    {
+        auto a = value<int> { 1 };
+        auto b = value<int> { 2 };
+        auto c = value<int> { 3 };
+
+        auto res = observe(a + test_filter(b, c) * 20);
+
+        REQUIRE(res.get() == 1 + (2 + 3) * 20);
+
+        a = 10;
+        b = 20;
+        c = 30;
+
+        REQUIRE(res.get() == 10 + (20 + 30) * 20);
+    }
 }
 
-TEST(filter_test, adapted_filter_recomputes_value)
-{
-    auto val = value<int> { 5 };
-    auto res = observe(test_filter(val, 2));
-
-    val = 7;
-
-    ASSERT_EQ(7 + 2, res.get());
-}
-
-TEST(filter_test, adapted_filter_can_take_expression_parameters)
-{
-    auto a = value<int> { 1 };
-    auto b = value<int> { 2 };
-    auto c = value<int> { 3 };
-
-    auto res = observe(test_filter(a + b, b + c));
-
-    ASSERT_EQ(1 + 2 + 2 + 3, res.get());
-
-    a = 10;
-    b = 20;
-    c = 30;
-
-    ASSERT_EQ(10 + 20 + 20 + 30, res.get());
-}
-
-TEST(filter_test, adapted_filter_can_participate_in_expression)
-{
-    auto a = value<int> { 1 };
-    auto b = value<int> { 2 };
-    auto c = value<int> { 3 };
-
-    auto res = observe(a + test_filter(b, c) * 20);
-
-    ASSERT_EQ(1 + (2 + 3) * 20, res.get());
-
-    a = 10;
-    b = 20;
-    c = 30;
-
-    ASSERT_EQ(10 + (20 + 30) * 20, res.get());
-}
-
-TEST(filter_test, select)
+TEST_CASE("filter/select", "[filter]")
 {
     auto p = value<bool> { true };
     auto a = value<int> { 1 };
@@ -71,22 +74,22 @@ TEST(filter_test, select)
 
     auto res = observe(select(p, a, b));
 
-    ASSERT_EQ(1, res.get());
+    REQUIRE(res.get() == 1);
 
     a = 10;
-    ASSERT_EQ(10, res.get());
+    REQUIRE(res.get() == 10);
 
     b = 20;
-    ASSERT_EQ(10, res.get());
+    REQUIRE(res.get() == 10);
 
     p = false;
-    ASSERT_EQ(20, res.get());
+    REQUIRE(res.get() == 20);
 
     b = 200;
-    ASSERT_EQ(200, res.get());
+    REQUIRE(res.get() == 200);
 }
 
-TEST(filter_test, min)
+TEST_CASE("filter/min", "[filter]")
 {
     auto a = value<int> { 1 };
     auto b = value<int> { 2 };
@@ -94,16 +97,16 @@ TEST(filter_test, min)
 
     auto res = observe(min(a, b, c));
 
-    ASSERT_EQ(1, res.get());
+    REQUIRE(res.get() == 1);
 
     a = 50;
     b = 30;
     c = 40;
 
-    ASSERT_EQ(30, res.get());
+    REQUIRE(res.get() == 30);
 }
 
-TEST(filter_test, max)
+TEST_CASE("filter/max", "[filter]")
 {
     auto a = value<int> { 1 };
     auto b = value<int> { 2 };
@@ -111,16 +114,16 @@ TEST(filter_test, max)
 
     auto res = observe(max(a, b, c));
 
-    ASSERT_EQ(3, res.get());
+    REQUIRE(res.get() == 3);
 
     a = 50;
     b = 30;
     c = 40;
 
-    ASSERT_EQ(50, res.get());
+    REQUIRE(res.get() == 50);
 }
 
-TEST(filter_test, mean)
+TEST_CASE("filter/mean", "[filter]")
 {
     auto a = value<int> { 1 };
     auto b = value<int> { 2 };
@@ -128,16 +131,16 @@ TEST(filter_test, mean)
 
     auto res = observe(mean(a, b, c));
 
-    ASSERT_EQ((1 + 2 + 3) / 3.0, res.get());
+    REQUIRE(res.get() == (1 + 2 + 3) / 3.0);
 
     a = 10;
     b = 20;
     c = 30;
 
-    ASSERT_EQ((10 + 20 + 30) / 3.0, res.get());
+    REQUIRE(res.get() == (10 + 20 + 30) / 3.0);
 }
 
-TEST(filter_test, clamp)
+TEST_CASE("filter/clamp", "[filter]")
 {
     auto val = value<int> { 2 };
     auto low = value<int> { 1 };
@@ -145,19 +148,19 @@ TEST(filter_test, clamp)
 
     auto res = observe(clamp(val, low, high));
 
-    ASSERT_EQ(2, res.get());
+    REQUIRE(res.get() == 2);
 
     val = 30;
-    ASSERT_EQ(3, res.get());
+    REQUIRE(res.get() == 3);
 
     high = 40;
-    ASSERT_EQ(30, res.get());
+    REQUIRE(res.get() == 30);
 
     low = 35;
-    ASSERT_EQ(35, res.get());
+    REQUIRE(res.get() == 35);
 }
 
-TEST(filter_test, zip)
+TEST_CASE("filter/zip", "[filter]")
 {
     auto a = value<int> { 1 };
     auto b = value<int> { 2 };
@@ -167,20 +170,20 @@ TEST(filter_test, zip)
 
     using std::get;
 
-    ASSERT_EQ(1, get<0>(res.get()));
-    ASSERT_EQ(2, get<1>(res.get()));
-    ASSERT_EQ(3, get<2>(res.get()));
+    REQUIRE(get<0>(res.get()) == 1);
+    REQUIRE(get<1>(res.get()) == 2);
+    REQUIRE(get<2>(res.get()) == 3);
 
     a = 10;
     b = 20;
     c = 30;
 
-    ASSERT_EQ(10, get<0>(res.get()));
-    ASSERT_EQ(20, get<1>(res.get()));
-    ASSERT_EQ(30, get<2>(res.get()));
+    REQUIRE(get<0>(res.get()) == 10);
+    REQUIRE(get<1>(res.get()) == 20);
+    REQUIRE(get<2>(res.get()) == 30);
 }
 
-TEST(filter_test, construct)
+TEST_CASE("filter/construct", "[filter]")
 {
     struct mock
     {
@@ -196,16 +199,16 @@ TEST(filter_test, construct)
     auto a = value<int> { 5 };
     auto res = observe(observable::construct<mock>(a, 5));
 
-    ASSERT_EQ(5, res.get().ma);
-    ASSERT_EQ(5, res.get().mb);
+    REQUIRE(res.get().ma == 5);
+    REQUIRE(res.get().mb == 5);
 
     a = 7;
 
-    ASSERT_EQ(7, res.get().ma);
-    ASSERT_EQ(5, res.get().mb);
+    REQUIRE(res.get().ma == 7);
+    REQUIRE(res.get().mb == 5);
 }
 
-TEST(filter_test, static_expr_cast)
+TEST_CASE("filter/static_expr_cast", "[filter]")
 {
     struct mock
     {
@@ -223,25 +226,25 @@ TEST(filter_test, static_expr_cast)
     auto a = value<mock> { mock { 5 } };
     auto res = observe(observable::static_expr_cast<int>(a));
 
-    ASSERT_EQ(5, res.get());
+    REQUIRE(res.get() == 5);
 
     a = mock { 7 };
 
-    ASSERT_EQ(7, res.get());
+    REQUIRE(res.get() == 7);
 }
 
-TEST(filter_test, reinterpret_expr_cast)
+TEST_CASE("filter/reinterpret_expr_cast", "[filter]")
 {
     auto v1 = 5;
     auto s = value<char *> { reinterpret_cast<char *>(&v1) };
     auto res = observe(observable::reinterpret_expr_cast<int *>(s));
 
-    ASSERT_EQ(5, *res.get());
+    REQUIRE(*res.get() == 5);
 
     auto v2 = 7;
     s = reinterpret_cast<char *>(&v2);
 
-    ASSERT_EQ(7, *res.get());
+    REQUIRE(*res.get() == 7);
 }
 
 }

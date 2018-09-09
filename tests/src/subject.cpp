@@ -5,8 +5,8 @@
 #include <type_traits>
 #include <chrono>
 #include <vector>
+#include <catch/catch.hpp>
 #include <observable/subject.hpp>
-#include "gtest.h"
 
 namespace observable { namespace test {
 
@@ -15,14 +15,13 @@ void dummy_args(int, float) { }
 
 using namespace std::chrono_literals;
 
-TEST(subject_test, is_default_constructible)
+TEST_CASE("subject/subjects are default-constructible", "[subject]")
 {
     subject<void()> { };
-
-    ASSERT_TRUE(std::is_default_constructible<subject<void()>>::value);
+    REQUIRE(std::is_default_constructible<subject<void()>>::value);
 }
 
-TEST(subject_test, can_subscribe_to_subject)
+TEST_CASE("subject/can subscribe to subject", "[subject]")
 {
     auto s1 = subject<void()> { };
     s1.subscribe(dummy);
@@ -37,47 +36,50 @@ TEST(subject_test, can_subscribe_to_subject)
     s2.subscribe([=](auto, auto) mutable { });
 }
 
-TEST(subject_test, can_notify_subject_with_no_subscribed_observers)
+TEST_CASE("subject/can notify subject with no subscribed observers", "[subject]")
 {
     auto s = subject<void()> { };
     s.notify();
 }
 
-TEST(subject_test, observers_are_called)
+TEST_CASE("subject/observers are called", "[subject]")
 {
-    auto s = subject<void()> { };
+    SECTION("observers are called")
+    {
+        auto s = subject<void()> { };
 
-    auto call_count = 0;
-    s.subscribe([&]() { ++call_count; }).release();
-    s.subscribe([&]() { ++call_count; }).release();
-    s.notify();
+        auto call_count = 0;
+        s.subscribe([&]() { ++call_count; }).release();
+        s.subscribe([&]() { ++call_count; }).release();
+        s.notify();
 
-    ASSERT_EQ(call_count, 2);
+        REQUIRE(call_count == 2);
+    }
+
+    SECTION("observer with const reference parameters is called")
+    {
+        auto s = subject<void(int)> { };
+        auto call_count = 0;
+
+        s.subscribe([&](int const &) { ++call_count; }).release();
+        s.notify(5);
+
+        REQUIRE(call_count == 1);
+    }
+
+    SECTION("subject with const reference parameter calls observer")
+    {
+        auto s = subject<void(int const &)> { };
+        auto call_count = 0;
+
+        s.subscribe([&](int) { ++call_count; }).release();
+        s.notify(5);
+
+        REQUIRE(call_count == 1);
+    }
 }
 
-TEST(subject_test, observer_with_const_reference_parameters_is_called)
-{
-    auto s = subject<void(int)> { };
-    auto call_count = 0;
-
-    s.subscribe([&](int const &) { ++call_count; }).release();
-    s.notify(5);
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, subject_with_const_reference_parameter_calls_observer)
-{
-    auto s = subject<void(int const &)> { };
-    auto call_count = 0;
-
-    s.subscribe([&](int) { ++call_count; }).release();
-    s.notify(5);
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, observer_is_not_called_after_unsubscribing)
+TEST_CASE("subject/observer is not called after unsubscribing", "[subject]")
 {
     auto s = subject<void()> { };
     auto call_count = 0;
@@ -86,73 +88,82 @@ TEST(subject_test, observer_is_not_called_after_unsubscribing)
     sub.unsubscribe();
     s.notify();
 
-    ASSERT_EQ(call_count, 0);
+    REQUIRE(call_count == 0);
 }
 
-TEST(subject_test, is_nothrow_move_constructible)
+TEST_CASE("subject/copying", "[subject]")
 {
-    ASSERT_TRUE(std::is_nothrow_move_constructible<subject<void()>>::value);
+    SECTION("subjects are not copy-constructible")
+    {
+        REQUIRE_FALSE(std::is_copy_constructible<subject<void()>>::value);
+    }
+
+    SECTION("subjects are not copy-assignable")
+    {
+        REQUIRE_FALSE(std::is_copy_assignable<subject<void()>>::value);
+    }
 }
 
-TEST(subject_test, is_nothrow_move_assignable)
+TEST_CASE("subject/moving", "[subject]")
 {
-    ASSERT_TRUE(std::is_nothrow_move_assignable<subject<void()>>::value);
+    SECTION("subjects are nothrow move-constructible")
+    {
+        REQUIRE(std::is_nothrow_move_constructible<subject<void()>>::value);
+    }
+
+    SECTION("subjects are nothrow move-assignable")
+    {
+        REQUIRE(std::is_nothrow_move_assignable<subject<void()>>::value);
+    }
+
+    SECTION("moved subject keeps subscribed observers")
+    {
+        auto s1 = subject<void()> { };
+        auto call_count = 0;
+
+        s1.subscribe([&]() { ++call_count; }).release();
+        auto s2 = std::move(s1);
+        s2.notify();
+
+        REQUIRE(call_count == 1);
+    }
 }
 
-TEST(subject_test, is_not_copy_constructible)
+TEST_CASE("subject/subjects are reentrant", "[subject]")
 {
-    ASSERT_FALSE(std::is_copy_constructible<subject<void()>>::value);
+    SECTION("observer added from running notify is called on second notification")
+    {
+        auto s = subject<void()> { };
+        auto call_count = 0;
+
+        auto sub = s.subscribe([&]() {
+            ++call_count;
+            s.subscribe([&]() { ++call_count; }).release();
+        });
+
+        s.notify();
+        REQUIRE(call_count == 1);
+
+        s.notify();
+        REQUIRE(call_count == 3);
+    }
+
+    SECTION("can unsubscribe while notification is running")
+    {
+        auto s = subject<void()> { };
+        auto call_count = 0;
+
+        auto sub = unique_subscription { };
+        sub = s.subscribe([&]() { ++call_count; sub.unsubscribe(); });
+
+        s.notify();
+        s.notify();
+
+        REQUIRE(call_count == 1);
+    }
 }
 
-TEST(subject_test, is_not_copy_assignable)
-{
-    ASSERT_FALSE(std::is_copy_assignable<subject<void()>>::value);
-}
-
-TEST(subject_test, moved_subject_keeps_subscribed_observers)
-{
-    auto s1 = subject<void()> { };
-    auto call_count = 0;
-
-    s1.subscribe([&]() { ++call_count; }).release();
-    auto s2 = std::move(s1);
-    s2.notify();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(subject_test, observer_added_from_running_notify_is_called_on_second_notification)
-{
-    auto s = subject<void()> { };
-    auto call_count = 0;
-
-    auto sub = s.subscribe([&]() {
-        ++call_count;
-        s.subscribe([&]() { ++call_count; }).release();
-    });
-
-    s.notify();
-    ASSERT_EQ(call_count, 1);
-
-    s.notify();
-    ASSERT_EQ(call_count, 3);
-}
-
-TEST(subject_test, can_unsubscribe_while_notification_is_running)
-{
-    auto s = subject<void()> { };
-    auto call_count = 0;
-
-    auto sub = unique_subscription { };
-    sub = s.subscribe([&]() { ++call_count; sub.unsubscribe(); });
-
-    s.notify();
-    s.notify();
-
-    ASSERT_EQ(1, call_count);
-}
-
-TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
+TEST_CASE("subject/observers run on the thread that calls notify", "[subject]")
 {
     auto s = subject<void()> { };
     auto other_id = std::thread::id { };
@@ -160,10 +171,10 @@ TEST(subject_test, observers_run_on_the_thread_that_calls_notify)
     s.subscribe([&]() { other_id = std::this_thread::get_id(); });
     std::thread { [&]() { s.notify(); } }.join();
 
-    ASSERT_NE(other_id, std::this_thread::get_id());
+    REQUIRE(std::this_thread::get_id() != other_id);
 }
 
-TEST(subject_test, observer_added_from_other_thread_while_notification_is_running_is_not_called)
+TEST_CASE("subject/observer added during notification is not called", "[subject]")
 {
     auto s = subject<void()> { };
     std::atomic_int old_call_count { 0 };
@@ -185,11 +196,11 @@ TEST(subject_test, observer_added_from_other_thread_while_notification_is_runnin
 
     t.join();
 
-    ASSERT_EQ(old_call_count, 10);
-    ASSERT_EQ(new_call_count, 0);
+    REQUIRE(old_call_count == 10);
+    REQUIRE(new_call_count == 0);
 }
 
-TEST(subject_test, can_use_subject_enclosed_in_class)
+TEST_CASE("subject/can use subject enclosed in class", "[subject]")
 {
     struct Foo
     {
@@ -202,42 +213,45 @@ TEST(subject_test, can_use_subject_enclosed_in_class)
     foo.test.subscribe([&]() { called = true; }).release();
     foo.notify_test();
 
-    ASSERT_TRUE(called);
+    REQUIRE(called);
 }
 
-TEST(subject_test, can_subscribe_and_immediately_call_observer)
+TEST_CASE("subject/can subscribe and immediately call observer", "[subject]")
 {
     auto s = subject<void()> { };
 
     auto call_count = 0;
     auto sub = s.subscribe_and_call([&]() { ++call_count; });
 
-    ASSERT_EQ(1, call_count);
+    REQUIRE(call_count == 1);
 }
 
-TEST(subject_test, immediately_called_observer_receives_arguments)
+TEST_CASE("subject/immediately called observer receives arguments", "[subject]")
 {
     auto s = subject<void(int)> { };
 
     auto arg = 0;
     auto sub = s.subscribe_and_call([&](int v) { arg = v; }, 7);
 
-    ASSERT_EQ(7, arg);
+    REQUIRE(arg == 7);
 }
 
-TEST(subject_test, empty_returns_true_for_subject_with_no_subscribers)
+TEST_CASE("subject/empty", "[subject]")
 {
-    auto const s = subject<void()> { };
+    SECTION("empty returns true for subject with no subscribers")
+    {
+        auto const s = subject<void()> { };
 
-    ASSERT_TRUE(s.empty());
-}
+        REQUIRE(s.empty());
+    }
 
-TEST(subject_test, empty_returns_false_for_subject_with_subscribers)
-{
-    auto s = subject<void()> { };
-    auto const sub = s.subscribe([]() { });
+    SECTION("empty returns false for subject with subscribers")
+    {
+        auto s = subject<void()> { };
+        auto const sub = s.subscribe([]() { });
 
-    ASSERT_FALSE(s.empty());
+        REQUIRE_FALSE(s.empty());
+    }
 }
 
 } }

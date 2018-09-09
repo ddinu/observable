@@ -1,87 +1,99 @@
 #include <memory>
 #include <type_traits>
+#include <catch/catch.hpp>
 #include <observable/subscription.hpp>
-#include "gtest.h"
 
 namespace observable { namespace test {
 
-TEST(shared_subscription_test, is_default_constructible)
+TEST_CASE("shared_subscripton/creation", "[shared_subscription]")
 {
-    ASSERT_TRUE(std::is_nothrow_default_constructible<shared_subscription>::value);
-}
-
-TEST(shared_subscription_test, can_create_shared_subscription_from_infinite_subscription)
-{
-    shared_subscription { infinite_subscription { []() {} } };
-}
-
-TEST(shared_subscription_test, can_create_shared_subscription_from_unique_subscription)
-{
-    shared_subscription {
-        unique_subscription {
-            infinite_subscription { []() {} }
-        }
-    };
-}
-
-TEST(shared_subscription_test, unsubscribe_is_called_when_destroyed)
-{
-    auto call_count = 0;
-
+    SECTION("shared subscriptions are default-constructible")
     {
-        shared_subscription { infinite_subscription { [&]() { ++call_count; } } };
+        REQUIRE(std::is_nothrow_default_constructible<shared_subscription>::value);
     }
 
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(shared_subscription_test, can_manually_call_unsubscribe)
-{
-    auto call_count = 0;
-
-    auto sub = shared_subscription { infinite_subscription { [&]() { ++call_count; } } };
-    sub.unsubscribe();
-
-    ASSERT_EQ(call_count, 1);
-}
-
-TEST(shared_subscription_test, is_copy_constructible)
-{
-    ASSERT_TRUE(std::is_copy_constructible<shared_subscription>::value);
-}
-
-TEST(shared_subscription_test, is_copy_assignable)
-{
-    ASSERT_TRUE(std::is_copy_assignable<shared_subscription>::value);
-}
-
-TEST(shared_subscription_test, is_move_constructible)
-{
-    ASSERT_TRUE(std::is_move_constructible<shared_subscription>::value);
-}
-
-TEST(shared_subscription_test, is_move_assignable)
-{
-    ASSERT_TRUE(std::is_move_assignable<shared_subscription>::value);
-}
-
-TEST(shared_subscription_test, unsubscribe_is_called_by_last_instance_destroyed)
-{
-    auto call_count = 0;
-
+    SECTION("can create a shared_subscription from an infinite_subscription")
     {
-        auto sub = shared_subscription {
-                        infinite_subscription { [&]() { ++call_count; } }
-                   };
+        shared_subscription { infinite_subscription { []() {} } };
+    }
+
+    SECTION("can create a shared_subscription from an unique_subscription")
+    {
+        shared_subscription {
+            unique_subscription {
+                infinite_subscription { []() {} }
+            }
+        };
+    }
+}
+
+TEST_CASE("shared_subscripton/unsubscribing", "[shared_subscription]")
+{
+    SECTION("unsubscribe is called when destroyed")
+    {
+        auto call_count = 0;
 
         {
-            auto copy = sub;
+            shared_subscription { infinite_subscription { [&]() { ++call_count; } } };
         }
 
-        ASSERT_EQ(call_count, 0);
+        REQUIRE(call_count == 1);
     }
 
-    ASSERT_EQ(call_count, 1);
+    SECTION("can manually call unsubscribe()")
+    {
+        auto call_count = 0;
+
+        auto sub = shared_subscription { infinite_subscription { [&]() { ++call_count; } } };
+        sub.unsubscribe();
+
+        REQUIRE(call_count == 1);
+    }
+
+    SECTION("unsubscribe is called by last instance when destroyed")
+    {
+        auto call_count = 0;
+
+        {
+            auto sub = shared_subscription {
+                infinite_subscription { [&]() { ++call_count; } }
+            };
+
+            {
+                auto copy = sub;
+            }
+
+            REQUIRE(call_count == 0);
+        }
+
+        REQUIRE(call_count == 1);
+    }
+}
+
+TEST_CASE("shared_subscripton/copying", "[shared_subscription]")
+{
+    SECTION("shared subscriptions are copy-constructible")
+    {
+        REQUIRE(std::is_copy_constructible<shared_subscription>::value);
+    }
+
+    SECTION("shared subscriptions are copy-assignable")
+    {
+        REQUIRE(std::is_copy_assignable<shared_subscription>::value);
+    }
+}
+
+TEST_CASE("shared_subscripton/moving", "[shared_subscripton]")
+{
+    SECTION("shared subscriptions are move-constructible")
+    {
+        REQUIRE(std::is_move_constructible<shared_subscription>::value);
+    }
+
+    SECTION("shared subscriptions are move-assignable")
+    {
+        REQUIRE(std::is_move_assignable<shared_subscription>::value);
+    }
 }
 
 } }

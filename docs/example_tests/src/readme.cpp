@@ -1,17 +1,16 @@
 #include <iostream>
+#include <catch/catch.hpp>
 #include <observable/observable.hpp>
-#include "gtest.h"
 #include "utility.h"
 
 using namespace std::string_literals;
 
-TEST(example_tests, readme)
+TEST_CASE("documentation examples/readme", "[documentation examples]")
 {
     provide_cin cin_buf { "Jane"s };
     capture_cout cout_buf { };
 
     // BEGIN EXAMPLE CODE
-
     using namespace std;
     using namespace observable;
 
@@ -41,9 +40,8 @@ TEST(example_tests, readme)
 
         //return 0;
     }
-
     // END EXAMPLE CODE
 
-    ASSERT_TRUE("Hello world!\n10\nnot equal\n"s == cout_buf.str() ||
-                "Hello world!\nnot equal\n10\n"s == cout_buf.str());
+    REQUIRE(("Hello world!\n10\nnot equal\n"s == cout_buf.str() ||
+            "Hello world!\nnot equal\n10\n"s == cout_buf.str()));
 }

@@ -7,7 +7,8 @@ function(enable_strict_warnings target_name)
         target_compile_options(${target_name}
             PRIVATE
                 /Wall /wd4820 /wd4514 /wd4625 /wd4626 /wd5026 /wd5027 /wd4710
-                /wd4571 /wd5039 /wd4623 /wd4774 /wd4548 /wd4711
+                /wd4571 /wd5039 /wd4623 /wd4774 /wd4548 /wd4711 /wd4868 /wd5045
+                /wd4628
                 $<$<CONFIG:Debug>:/WX>
         )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
@@ -50,7 +51,7 @@ endfunction(disable_warnings)
 # - target_name Name of the configured target.
 function(set_default_flags target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-        set(flags /MP /GF /Za)
+        set(flags /MP /GF)
 
         if(${MSVC_VERSION} GREATER 1900)
             set(flags ${flags} /Zc:__cplusplus)
