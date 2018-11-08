@@ -162,10 +162,10 @@ public:
     explicit operator bool() const noexcept { return !!unsubscribe_; }
 
 public:
-    //! This class is not copy-constructible.
+    //! This class is copy-constructible.
     shared_subscription(shared_subscription const & ) =default;
 
-    //! This class is not copy-assignable.
+    //! This class is copy-assignable.
     auto operator=(shared_subscription const &) -> shared_subscription & =default;
 
     //! This class is move-constructible.
