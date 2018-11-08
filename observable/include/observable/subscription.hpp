@@ -1,7 +1,9 @@
 #pragma once
 #include <atomic>
+#include <cassert>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include <observable/detail/compiler_config.hpp>
 OBSERVABLE_BEGIN_CONFIGURE_WARNINGS
@@ -144,7 +146,8 @@ public:
     //!                     shared subscription.
     //! \note The unique subscription will be released.
     explicit shared_subscription(infinite_subscription && subscription) :
-        unsubscribe_ { std::make_shared<unique_subscription>(std::move(subscription)) }
+        unsubscribe_ { std::make_shared<unique_subscription>(std::move(subscription)) },
+        mut_ { std::make_shared<std::mutex>() }
     {
     }
 
@@ -156,7 +159,17 @@ public:
     //! Unsubscribe the associated observer from receiving notifications.
     //!
     //! Only the first call of this method will have an effect.
-    void unsubscribe() { unsubscribe_.reset(); }
+    void unsubscribe()
+    {
+        if(!mut_)
+        {
+            assert(!unsubscribe_);
+            return;
+        }
+
+        std::lock_guard<std::mutex> lock { *mut_ };
+        unsubscribe_.reset();
+    }
 
     //! Return true if the subscription is not empty.
     explicit operator bool() const noexcept { return !!unsubscribe_; }
@@ -176,6 +189,7 @@ public:
 
 private:
     std::shared_ptr<unique_subscription> unsubscribe_;
+    std::shared_ptr<std::mutex> mut_;
 };
 
 }
