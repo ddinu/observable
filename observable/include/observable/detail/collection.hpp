@@ -1,6 +1,5 @@
 #pragma once
 #include <atomic>
-#include <cassert>
 #include <type_traits>
 
 #include <observable/detail/compiler_config.hpp>
