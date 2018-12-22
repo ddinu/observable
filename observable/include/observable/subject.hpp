@@ -76,7 +76,7 @@ public:
         auto const id = observers_->insert(observer);
 
         return infinite_subscription {
-            [this, id, weak_observers = std::weak_ptr<collection> { observers_ }]() {
+            [id, weak_observers = std::weak_ptr<collection> { observers_ }]() {
                 auto const observers = weak_observers.lock();
                 if(!observers)
                     return;

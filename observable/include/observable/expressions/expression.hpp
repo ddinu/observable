@@ -135,7 +135,7 @@ public:
     }
 
     //! Destructor.
-    virtual ~expression() { evaluator_.remove(expression_id_); }
+    virtual ~expression() override { evaluator_.remove(expression_id_); }
 
 public:
     //! Expressions are default-constructible.

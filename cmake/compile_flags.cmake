@@ -14,17 +14,15 @@ function(enable_strict_warnings target_name)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         target_compile_options(${target_name}
             PRIVATE
-                -Wall -Wextra -pedantic -Wshadow -Wabi
-                $<$<CONFIG:Debug>:-Werror>
+                -Wall -Werror -Wextra -pedantic -Wshadow
         )
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
         target_compile_options(${target_name}
             PRIVATE
-                -Weverything -Wno-system-headers -Wabi
+                -Werror -Weverything -Wno-system-headers -Wno-float-equal
                 -Wno-reserved-id-macro -Wno-padded -Wno-c++98-compat
                 -Wno-global-constructors -Wno-missing-prototypes
-                -Wno-unused-macros
-                $<$<CONFIG:Debug>:-Werror>
+                -Wno-unused-macros -Wno-disabled-macro-expansion
         )
     else()
         message(WARNING "Custom compiler flags not set.\n"
