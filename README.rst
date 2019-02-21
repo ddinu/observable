@@ -1,14 +1,13 @@
 Observable: Generic observable objects for C++
 ==============================================
 
-If you want to write code in a reactive style or just implement the observer
-pattern, this is for you.
+Write declarative, reactive expressions or just implement the observer pattern.
+
+Observable is a self-contained, header-only library that has no depencencies.
+Drop it somewhere in your include path and you're good to go.
 
 Quick start
 -----------
-
-The library is header-only and has no dependencies; add the
-``observable/include`` directory to your include path and you're set.
 
 Example:
 
@@ -25,7 +24,7 @@ Example:
         auto sub = subject<void(string)> { };
         sub.subscribe([](auto const & msg) { cout << msg << endl; });
 
-        // "Hello world!" will be printed on stdout.
+        // "Hello world!" will be printed to stdout.
         sub.notify("Hello world!");
 
         auto a = value<int> { 5 };
@@ -40,7 +39,7 @@ Example:
         avg.subscribe([](auto val) { cout << val << endl; });
         eq_msg.subscribe([](auto const & msg) { cout << msg << endl; });
 
-        // "10" and "not equal" will be printed on stdout in an
+        // "10" and "not equal" will be printed to stdout in an
         // unspecified order.
         b = 15;
 
@@ -56,34 +55,22 @@ https://danieldinu.com/observable/.
 What's with the CMake files?
 ----------------------------
 
-The library is using CMake to build the tests, benchmarks and documentation. You
-won't need CMake if you don't want to work on the library as a developer.
-
-Why not just use Boost.Signals2 or Qt?
---------------------------------------
-
-Boost.Signals2 and Qt are pretty cool libraries and do their jobs well.
-
-This library is not meant to replace signals and slots, it focuses more on 
-providing easy to use observable objects and expressions that can help with
-patterns like MVC and reactive programming.
-
-Choose whichever library works best for your case; you can even choose them
-both (for example, have your models use this library and your views use Qt). 
+The library uses CMake to build the tests, benchmarks and documentation. You
+do not need CMake if you don't plan on running the tests or benchmarks.
 
 Contributing
 ------------
 
 Bug reports, feature requests, documentation and code contributions are welcome 
-and highly appreciated.
+and highly appreciated. Please open an issue or feature request before you
+start working on any pull request.
 
 Legal and Licensing
 -------------------
 
 The library is licensed under the `Apache License version 2.0 <LICENSE.txt>`_.
 
-Please note that all contributions are considered to be provided under the
-terms of this license.
+All contributions must be provided under the terms of this license.
 
 Supported compilers
 -------------------
