@@ -5,6 +5,7 @@
 #include "utility.h"
 
 static auto const repeat_count = 100'000;
+static auto const loop_count = 4;
 volatile int dummy = 0;
 
 NOINLINE void consume(int v) { dummy += v; }
@@ -12,9 +13,9 @@ NOINLINE void consume(int v) { dummy += v; }
 void bench()
 {
     auto duration = benchmark::time_run([&]() {
-        for(int i = 0; i < 5; ++i)
-            for(int j = 0; j < 5; ++j)
-                for(int k = 0; k < 5; ++k)
+        for(int i = 0; i < loop_count; ++i)
+            for(int j = 0; j < loop_count; ++j)
+                for(int k = 0; k < loop_count; ++k)
                     consume(500 + (i * j + k) - (1 + k + j));
     }, repeat_count);
 
@@ -28,9 +29,9 @@ void bench()
         result.subscribe([](auto && x) { consume(x); }).release();
 
         expr_duration = benchmark::time_run([&]() {
-            for(i = 0; i.get() < 5; i = i.get() + 1)
-                for(j = 0; j.get() < 5; j = j.get() + 1)
-                    for(k = 0; k.get() < 5; k = k.get() + 1)
+            for(i = 0; i.get() < loop_count; i = i.get() + 1)
+                for(j = 0; j.get() < loop_count; j = j.get() + 1)
+                    for(k = 0; k.get() < loop_count; k = k.get() + 1)
                         ;
         }, repeat_count);
     }
