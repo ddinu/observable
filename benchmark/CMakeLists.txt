@@ -16,6 +16,13 @@ set_cpp_standard(bench_virtual)
 set_target_properties(bench_virtual PROPERTIES FOLDER benchmarks)
 target_link_libraries(bench_virtual observable)
 
+# Expressions benchmark target
+add_executable(bench_expressions src/utility.h
+                                 src/expressions.cpp)
+set_cpp_standard(bench_expressions)
+set_target_properties(bench_expressions PROPERTIES FOLDER benchmarks)
+target_link_libraries(bench_expressions observable)
+
 # Qt signal-slot benchmark target.
 setup_qt()
 find_package(Qt5 QUIET OPTIONAL_COMPONENTS Core)
