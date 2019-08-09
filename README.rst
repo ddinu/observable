@@ -24,8 +24,8 @@ Example:
         auto sub = subject<void(string)> { };
         sub.subscribe([](auto const & msg) { cout << msg << endl; });
 
-        // "Hello world!" will be printed to stdout.
-        sub.notify("Hello world!");
+        // "Hello, world!" will be printed to stdout.
+        sub.notify("Hello, world!");
 
         auto a = value<int> { 5 };
         auto b = value<int> { 5 };
