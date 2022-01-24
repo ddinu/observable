@@ -20,7 +20,8 @@
         _Pragma(OBSERVABLE_S(GCC diagnostic push))
 #elif defined(_MSC_VER)
     #define OBSERVABLE_BEGIN_CONFIGURE_WARNINGS \
-        __pragma(warning(push))
+        __pragma(warning(push)) \
+        __pragma(warning(disable: 5219))
 #endif
 
 /**

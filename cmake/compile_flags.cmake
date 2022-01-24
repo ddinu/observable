@@ -50,6 +50,9 @@ endfunction(disable_warnings)
 function(set_default_flags target_name)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         set(flags /MP /GF)
+        target_compile_definitions(
+            ${target_name}
+            PRIVATE __STDC_WANT_SECURE_LIB__)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         set(flags -fpic)
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)

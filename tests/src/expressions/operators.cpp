@@ -93,7 +93,7 @@ TEST_CASE("expression operator/nodes are updated", "[expression operator]")
 
     r.eval();
 
-    REQUIRE(r.get() == Approx { ((a.get() + b.get()) * c.get()) / 2.5f });
+    REQUIRE(r.get() == Approx { ((static_cast<float>(a.get()) + static_cast<float>(b.get())) * c.get()) / 2.5f });
 }
 
 }
