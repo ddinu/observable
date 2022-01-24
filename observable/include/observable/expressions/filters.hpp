@@ -31,6 +31,31 @@ inline auto NAME(Args && ... args) \
     return ::observable::expr::expr_detail::make_node(OP, std::forward<Args>(args) ...); \
 }
 
+//! Create an expression filter from a callable.
+//!
+//! Expression filters take expression nodes as arguments and return an expression
+//! node.
+//!
+//! This macro wraps a regular callable (i.e. one that does not work with
+//! expression nodes) and turns it into an expression filter.
+//!
+//! \param NAME The name that will be used for the expression filter. This must
+//!             be a valid function identifier.
+//! \param OP Callable instance that will be converted to an expression filter.
+//!           This instance must be copy-constructible.
+//! \tparam T The type parameter for the expression filter.
+//!
+//! \ingroup observable_expressions
+#define OBSERVABLE_ADAPT_FILTER_TEMPLATE(NAME, OP) \
+template <typename T, typename ... Args> \
+inline auto NAME(Args && ... args) \
+                -> std::enable_if_t< \
+                        ::observable::expr::expr_detail::are_any_observable<Args ...>::value, \
+                        ::observable::expr::expr_detail::result_node_t<decltype(OP<T>), Args ...>> \
+{ \
+    return ::observable::expr::expr_detail::make_node(OP<T>, std::forward<Args>(args) ...); \
+}
+
 namespace observable { inline namespace expr {
 
 //! \cond

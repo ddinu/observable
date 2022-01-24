@@ -66,6 +66,61 @@ TEST_CASE("filter/adapter_filter", "[filter]")
     }
 }
 
+template<typename T>
+T test_filter_template_(int a) { return static_cast<T>(a) / 2; }
+OBSERVABLE_ADAPT_FILTER_TEMPLATE(test_filter_template, test_filter_template_)
+
+TEST_CASE("filter/adapter_filter_template", "[filter]")
+{
+    SECTION("adapter_filter_template computes initial value")
+    {
+        auto val = value<int> { 5 };
+        auto res = observe(test_filter_template<float>(val));
+
+        REQUIRE(res.get() == 2.5f);
+    }
+
+    SECTION("adapter_filter_template recomputes value")
+    {
+        auto val = value<int> { 5 };
+        auto res = observe(test_filter_template<float>(val));
+
+        val = 7;
+
+        REQUIRE(res.get() == 3.5f);
+    }
+
+    SECTION("adapter_filter_template can take expression parameters")
+    {
+        auto a = value<int> { 1 };
+        auto b = value<int> { 2 };
+
+        auto res = observe(test_filter_template<float>(a + b));
+
+        REQUIRE(res.get() == static_cast<float>(1 + 2) / 2);
+
+        a = 2;
+        b = 3;
+
+        REQUIRE(res.get() == static_cast<float>(2 + 3) / 2);
+    }
+
+    SECTION("adapter_filter_template can participate in expression")
+    {
+        auto a = value<int> { 1 };
+        auto b = value<int> { 3 };
+
+        auto res = observe(a + test_filter_template<float>(b) * 20);
+
+        REQUIRE(res.get() == 1 + (3.0f / 2) * 20);
+
+        a = 2;
+        b = 3;
+
+        REQUIRE(res.get() == 2 + (3.0f / 2) * 20);
+    }
+}
+
 TEST_CASE("filter/select", "[filter]")
 {
     auto p = value<bool> { true };
